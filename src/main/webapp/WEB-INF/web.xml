@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <servlet>
+        <servlet-name>Servlet1</servlet-name>
+        <servlet-class>org.dellapenna.we.test.AServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Servlet1</servlet-name>
+        <url-pattern>/aservletpath</url-pattern>
+        <!-- we can add more than a path for a servlet, even with (ending) wildcards -->
+        <!-- possiamo aggiungere più di un path per una servlet, anche con wildcard finali -->
+        <url-pattern>/another/servletpath</url-pattern>
+        <url-pattern>/all/these/*</url-pattern>
+    </servlet-mapping>
+    
+    
+    <!-- diagnostic servlet for development only -->
+    <servlet>
+        <servlet-name>Diagnostic</servlet-name>
+        <servlet-class>org.dellapenna.we.test.DiagnosticServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>Diagnostic</servlet-name>
+        <url-pattern>/diagnostic</url-pattern>
+    </servlet-mapping>
+    
+    
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+    <!-- here we can specify (if we need to!) the default path for the context -->
+    <!-- qui possiamo specificare (se necessario!) il path di default del contesto -->
+    <welcome-file-list>
+        <welcome-file>another/servletpath</welcome-file>
+    </welcome-file-list>
+</web-app>
