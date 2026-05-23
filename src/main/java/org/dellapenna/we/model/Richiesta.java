@@ -3,13 +3,16 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package org.dellapenna.we.model;
+
 import org.dellapenna.we.data.DataItem;
+import java.util.Date;
 
 /**
  *
  * @author Mattia Nanni
  */
 public interface Richiesta extends DataItem<Integer>{
+    
     String getNome();
     void setNome(String nome);
 
