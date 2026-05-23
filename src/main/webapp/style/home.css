@@ -1,0 +1,35 @@
+/* Page-specific styling for SoccorsoWeb homepage */
+/* Rely on test/base.css for global variables and common components */
+
+.hero{padding:2rem 0}
+.hero h2{margin-top:0}
+
+.request-form{background:#fff;padding:1rem;border-radius:var(--radius);box-shadow:0 6px 18px rgba(15,20,30,0.06);display:grid;gap:0.75rem;width:100%;overflow:hidden}
+.request-form label{display:block;font-size:0.9rem;color:#333}
+/* Ensure controls never overflow their container (base.css provides base control styles) */
+.request-form input[type=text],.request-form input[type=email],.request-form textarea,.request-form input[type=file]{width:100%;max-width:100%;padding:0.5rem;box-sizing:border-box}
+.request-form textarea{resize:vertical}
+.form-actions{display:flex;flex-wrap:wrap;gap:0.5rem}
+.captcha{display:flex;align-items:center;gap:0.5rem;display: none;}
+.captcha input{width:5rem;max-width:30%;box-sizing:border-box}
+.hint{display:block;color:var(--muted);font-size:0.8rem}
+.info{padding:2rem 0}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:1rem}
+
+/* Larger screens: two-column form */
+@media(min-width:700px){
+  .request-form{grid-template-columns:repeat(2,1fr)}
+  /* make the last text area (descrizione) span both columns when layout allows */
+  .request-form textarea{grid-column:1/3}
+  .form-actions{grid-column:1/3}
+}
+
+/* Small screens: tighten spacing and stack captcha */
+@media(max-width:699px){
+  .hero{padding:1.25rem 0}
+  .hero h2{font-size:1.1rem}
+  .request-form{grid-template-columns:1fr;padding:0.75rem}
+  .captcha{flex-direction:column;align-items:flex-start}
+  .captcha input{width:80%;max-width:320px}
+  .form-actions{justify-content:flex-start}
+}

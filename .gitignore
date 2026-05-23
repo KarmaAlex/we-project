@@ -25,3 +25,12 @@ hs_err_pid*
 target/
 src/test/
 *.bak
+
+# netbeans
+nb-configuration.xml
+
+# vs code
+.vscode/
+
+#altro
+/test/

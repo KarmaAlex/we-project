@@ -1,0 +1,14 @@
+/* Page-specific styles for login page (extends base.css) */
+.login-card{max-width:480px;margin:3rem auto;padding:1.25rem}
+.login-card h2{margin:0 0 0.75rem 0;font-size:1.25rem}
+.login-form label{display:block;margin-bottom:0.75rem;font-size:0.95rem}
+.login-form input[type=text],.login-form input[type=password]{height:42px}
+.checkbox-row{display:flex;align-items:center;gap:0.5rem}
+.form-actions{display:flex;gap:0.5rem;margin-top:0.5rem}
+.note{margin-top:0.75rem}
+
+@media(max-width:480px){
+  .login-card{margin:1.5rem 1rem;padding:1rem}
+  .form-actions{flex-direction:column;align-items:stretch}
+  .form-actions .btn{width:100%}
+}
