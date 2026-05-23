@@ -5,7 +5,9 @@
 package org.dellapenna.we.model;
 import org.dellapenna.we.data.DataItem;
 import java.util.List;
+import java.time.LocalTime;
 import java.util.Date;
+
 
 /**
  *
@@ -33,11 +35,11 @@ public interface Missione extends DataItem<Integer>{
     boolean isCompletata();
     void setCompletata(boolean completata);
 
-    int getSuccesso(); // tinyint si mappa comodamente a int o byte
+    int getSuccesso();
     void setSuccesso(int successo);
 
-    String getDurata(); // TIME in SQL può essere mappato come String o java.sql.Time
-    void setDurata(String durata);
+    LocalTime getDurata(); 
+    void setDurata(LocalTime durata);
 
     List<Aggiornamento> getAggiornamenti();
     void setAggiornamenti(List<Aggiornamento> aggiornamenti);
