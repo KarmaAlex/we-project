@@ -65,7 +65,7 @@ public class DataLayer {
 
     //metodo dell'interfaccia AutoCloseable (permette di usare questa classe nei try-with-resources)
     //method from the Autocloseable interface (allows this class to be used in try-with-resources)
-    @Override
+
     public void close() throws Exception {
         destroy();
     }
