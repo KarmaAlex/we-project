@@ -7,6 +7,7 @@ drop table if exists assegna_mezzo;
 drop table if exists assegna_materiale;
 drop table if exists assegna_patente;
 drop table if exists assegna_abilita;
+drop table if exists assegna_credenziali;
 #Entità
 drop table if exists Desc_richiesta;
 drop table if exists Richiesta;
@@ -20,6 +21,7 @@ drop table if exists Aggiornamento;
 drop table if exists Missione;
 drop table if exists Commento;
 drop table if exists Squadra;
+drop table if exists Credenziali;
 #Creazione tabelle
 create table Richiesta(
 ID int unsigned auto_increment primary key,
@@ -105,8 +107,7 @@ durata time,
 constraint missione_richiesta foreign key(ID_RICHIESTA) references Richiesta(ID)
 on update cascade on delete restrict,
 constraint missione_squadra foreign key(ID_SQUADRA) references Squadra(ID) on
-update cascade on delete restrict, #una squadra non può essere eliminata se è stata
-associata ad una missione
+update cascade on delete restrict, #una squadra non può essere eliminata se è stata associata ad una missione
 constraint missione_admin foreign key(ID_ADMIN) references Utente(ID) on update
 cascade on delete restrict
 );
@@ -116,8 +117,7 @@ ID_MISSIONE int unsigned not null,
 ID_ADMIN int unsigned not null,
 testo text not null,
 constraint commento_missione foreign key(ID_MISSIONE) references Missione(ID) on
-update cascade on delete cascade, #se una missione viene eliminata eliminiamo anche
-commenti e aggiornamenti
+update cascade on delete cascade, #se una missione viene eliminata eliminiamo anche commenti e aggiornamenti
 constraint commento_admin foreign key(ID_ADMIN) references Utente(ID) on update
 cascade on delete restrict
 );
@@ -132,25 +132,29 @@ cascade on delete cascade,
 constraint agg_admin foreign key(ID_ADMIN) references Utente(ID) on update cascade
 on delete restrict
 );
+create table Credenziali(
+ID int unsigned auto_increment primary key,
+email varchar(255) not null,
+passwordhash binary(64) not null,
+constraint email_unica unique(email)
+);
+
+# Tabelle Relazioni
 create table assegna_squadra(
 ID_SQUADRA int unsigned not null,
 ID_UTENTE int unsigned not null,
-onstraint squadra foreign key(ID_SQUADRA) references Squadra(ID) on update
-cascade on delete restrict, # prima di eliminare una squadra dobbiamo eliminare i
-membri
+constraint squadra foreign key(ID_SQUADRA) references Squadra(ID) on update
+cascade on delete restrict, # prima di eliminare una squadra dobbiamo eliminare i membri
 constraint utente foreign key(ID_UTENTE) references Utente(ID) on update cascade
-on delete restrict # prima di eliminare un utente dobbiamo rimuoverlo dalle squadre di
-cui fa parte
+on delete restrict # prima di eliminare un utente dobbiamo rimuoverlo dalle squadre di cui fa parte
 );
 create table assegna_mezzo(
 ID_MEZZO int unsigned not null,
 ID_MISSIONE int unsigned not null,
 constraint mezzo foreign key(ID_MEZZO) references Mezzo(ID) on update cascade on
-delete restrict, # prima di eliminare un mezzo dobbiamo eliminarlo da tutte le
-missioni
+delete restrict, # prima di eliminare un mezzo dobbiamo eliminarlo da tutte le missioni
 constraint mezzo_missione foreign key(ID_MISSIONE) references Missione(ID) on
-update cascade on delete cascade # Quando eliminiamo una missione eliminiamo anche
-tutte le associazioni con i veicoli
+update cascade on delete cascade # Quando eliminiamo una missione eliminiamo anche tutte le associazioni con i veicoli
 );
 create table assegna_materiale(
 ID_MATERIALE int unsigned not null,
@@ -178,13 +182,20 @@ constraint abilita_utente foreign key(ID_UTENTE) references Utente(ID) on update
 cascade on delete cascade,
 constraint ass_abilita_unica unique(ID_UTENTE, ID_ABILITA)
 );
+create table assegna_credenziali(
+ID_UTENTE int unsigned not null,
+ID_CREDENZIALI int unsigned not null,
+constraint utente foreign key(ID_UTENTE) references Utente(ID) on update cascade on delete restrict,
+constraint credenziali foreign key(ID_CREDENZIALI) references Credenziali(ID) on update
+cascade on delete restrict,
+constraint ass_credenziali_unica unique(ID_UTENTE, ID_CREDENZIALI)
+);
+    
 #Utenti
 drop user if exists "user"@"localhost";
 create user "user"@"localhost" identified by
-"04f8996da763b7a969b1028ee3007569eaf3a635486ddab211d512c85b9df8fb"; -- Hash SHA256 di
-'user', usato nel login dall'interfaccia
-grant execute on * to "user"@"localhost"; #Per eseguire le procedure associate alle
-query
+"04f8996da763b7a969b1028ee3007569eaf3a635486ddab211d512c85b9df8fb"; -- Hash SHA256 di'user', usato nel login dall'interfaccia
+grant execute on * to "user"@"localhost"; #Per eseguire le procedure associate alle query
 grant select on Abilita to "user"@"localhost";
 grant select on Aggiornamento to "user"@"localhost";
 grant select on Commento to "user"@"localhost";
@@ -203,6 +214,5 @@ grant insert on Richiesta to "user"@"localhost";
 grant update on Richiesta to "user"@"localhost";
 drop user if exists "admin"@"localhost";
 create user "admin"@"localhost" identified by
-"8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"; -- Hash SHA256 di
-'admin', usato nel login dall'interfaccia
+"8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"; -- Hash SHA256 di'admin', usato nel login dall'interfaccia
 grant all on * to "admin"@"localhost";
