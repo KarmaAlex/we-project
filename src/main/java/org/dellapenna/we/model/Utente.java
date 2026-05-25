@@ -23,5 +23,11 @@ public interface Utente extends DataItem<Integer>{
 
     Anagrafica getAnagrafica();
     void setAnagrafica(Anagrafica anagrafica);
+    
+    String getHashedPassword();
+    void setHashedPassword(String hashedPassword);
+    
+    String getEmail();
+    void setEmail(String email);
 
 }
