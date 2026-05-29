@@ -6,6 +6,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>${title!"SoccorsoWeb"}</title>
+  <link rel="stylesheet" href="/style/base.css">
   <#if css?has_content>
     <#list css as c>
       <link rel="stylesheet" href="${(ctx!"") + c}" />

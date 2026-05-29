@@ -1,6 +1,6 @@
 <#-- Use the shared base layout -->
 <#include "base.ftl">
-<@layout title="SoccorsoWeb - Home" css=["/style/base.css","/style/home.css"]>
+<@layout title="SoccorsoWeb - Home" css=["/style/home.css"]>
   <section class="hero">
     <div class="container">
       <h2>Invia una richiesta di soccorso</h2>
