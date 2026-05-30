@@ -1,19 +1,13 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
 package org.dellapenna.we.model;
+
 import org.dellapenna.we.data.DataItem;
+import org.dellapenna.we.model.enums.EsitoMissione;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.time.LocalTime;
-import java.util.Date;
 
-
-/**
- *
- * @author Mattia Nanni
- */
 public interface Missione extends DataItem<Integer>{
+    
     Richiesta getRichiesta();
     void setRichiesta(Richiesta richiesta);
 
@@ -26,20 +20,20 @@ public interface Missione extends DataItem<Integer>{
     String getObiettivo();
     void setObiettivo(String obiettivo);
 
-    Date getInizio();
-    void setInizio(Date inizio);
+    LocalDateTime getInizio();
+    void setInizio(LocalDateTime inizio);
 
-    Date getFine();
-    void setFine(Date fine);
+    LocalDateTime getFine();
+    void setFine(LocalDateTime fine);
 
     boolean isCompletata();
     void setCompletata(boolean completata);
 
-    int getSuccesso();
-    void setSuccesso(int successo);
+    EsitoMissione getEsito();
+    void setSuccesso(EsitoMissione successo);
 
-    LocalTime getDurata(); 
-    void setDurata(LocalTime durata);
+    Duration getDurata(); 
+    void setDurata(Duration durata);
 
     List<Aggiornamento> getAggiornamenti();
     void setAggiornamenti(List<Aggiornamento> aggiornamenti);

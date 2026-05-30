@@ -1,18 +1,13 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
 package org.dellapenna.we.model;
-import org.dellapenna.we.data.DataItem;
 
-/**
- *
- * @author Mattia Nanni
- */
+import org.dellapenna.we.data.DataItem;
+import org.dellapenna.we.model.enums.TipoPatente;
+
 public interface Patente extends DataItem<Integer>{
+    
     String getNumero();
     void setNumero(String numero);
 
-    String getTipo();
-    void setTipo(String tipo);
+    TipoPatente getTipo();
+    void setTipo(TipoPatente tipo);
 }

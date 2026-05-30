@@ -1,16 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package org.dellapenna.we.model;
 
 import org.dellapenna.we.data.DataItem;
-import java.util.Date;
+import org.dellapenna.we.model.enums.StatoRichiesta;
+import java.time.LocalDateTime;
 
-/**
- *
- * @author Mattia Nanni
- */
 public interface Richiesta extends DataItem<Integer>{
     
     String getNome();
@@ -22,8 +15,8 @@ public interface Richiesta extends DataItem<Integer>{
     String getIP();
     void setIP(String ip);
 
-    String getStato();
-    void setStato(String stato);
+    StatoRichiesta getStato();
+    void setStato(StatoRichiesta stato);
 
     String getString();
     void setString(String string);
@@ -31,8 +24,8 @@ public interface Richiesta extends DataItem<Integer>{
     boolean isVerificato();
     void setVerificato(boolean verificato);
 
-    Date getData();
-    void setData(Date data);
+    LocalDateTime getData();
+    void setData(LocalDateTime data);
 
     DescRichiesta getDescrizioneDettaglio();
     void setDescrizioneDettaglio(DescRichiesta descrizioneDettaglio);
