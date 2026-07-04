@@ -55,5 +55,11 @@ public class DataCache {
             cache.get(c).remove(key);
         }
     }
+    
+    public void clear() {
+        if (this.cache != null) {
+            this.cache.clear();
+        }
+    }
 
 }
