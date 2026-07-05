@@ -1,6 +1,6 @@
 <#-- Use the shared base layout -->
 <#include "base.ftl">
-<@layout title="SoccorsoWeb - Login" css=["/style/login.css"]>
+<@basePage title="SoccorsoWeb - Login" css=["/style/login.css"]>
   <section class="container">
     <div class="card login-card">
       <h2>Accedi al pannello</h2>
@@ -20,4 +20,4 @@
       </form>
     </div>
   </section>
-</@layout>
+</@basePage>
