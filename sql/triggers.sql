@@ -1,4 +1,5 @@
 -- Procedura per verificare che il livello di successo di una missione sia compreso tra 0 e 5
+DELIMITER $$
 create procedure verifica_livello(livello smallint)
 begin
 if livello<0 and livello>5
@@ -8,15 +9,24 @@ set message_text='Livello di successo non valido';
 end;
 end if;
 end$
+DELIMITER ;
+
+DELIMITER $$
 create trigger livello_valido_ins before insert on Missione
 for each row begin
 call verifica_livello(New.successo);
 end$
+
+DELIMITER ;
+
+DELIMITER $$
 create trigger livello_valido_upd before update on Missione
 for each row begin
 call verifica_livello(New.successo);
 end$
+DELIMITER ;
 
+DELIMITER $$
 -- trigger per coerenza stato e flag di verifica delle richieste
 create trigger stato_richiesta_valido_ins before insert on richiesta
 for each row begin
@@ -27,6 +37,9 @@ set message_text='Stato non valido';
 end;
 end if;
 end$
+DELIMITER ;
+
+DELIMITER $$
 create trigger stato_richiesta_valido_upd before update on Richiesta
 for each row begin
 if new.stato!='in corso' and new.stato!='attiva' and new.stato!='chiusa' and
@@ -37,7 +50,10 @@ set message_text='Stato non valido';
 end;
 end if;
 end$
+DELIMITER ;
 
+
+DELIMITER $$
 -- controllo coerenza flag di completamento e stato delle missioni
 create trigger stato_missione_ins before insert on Missione
 for each row begin
@@ -50,13 +66,19 @@ set message_text='Richiesta non attiva';
 end;
 end if;
 end$
+DELIMITER ;
 
+
+DELIMITER $$
 -- procedura per ottenere lo stato di una missione
 create procedure get_conclusione(idm integer unsigned, out compl boolean)
 begin
 declare s boolean;
 set compl=(select completata from Missione where ID=idm);
 end$
+DELIMITER ;
+
+DELIMITER $$
 create trigger insertC before insert on Commento
 for each row begin
 call get_conclusione(new.ID_MISSIONE,@concl);
@@ -67,6 +89,9 @@ set message_text='Missione in corso';
 end;
 end if;
 end$
+DELIMITER ;
+
+DELIMITER $$
 create trigger updateC before update on Commento
 for each row begin
 call get_conclusione(new.ID_MISSIONE,@concl);
@@ -77,7 +102,10 @@ set message_text='Missione in corso';
 end;
 end if;
 end$
+DELIMITER ;
 
+
+DELIMITER $$
 -- trigger aggiornamenti
 create trigger updateA before update on Aggiornamento
 for each row begin
@@ -89,6 +117,9 @@ set message_text='Missione chiusa';
 end;
 end if;
 end$
+DELIMITER ;
+
+DELIMITER $$
 create trigger insertA before insert on Aggiornamento
 for each row begin
 call get_conclusione(new.ID_MISSIONE,@concl);
@@ -99,7 +130,10 @@ set message_text='Missione chiusa';
 end;
 end if;
 end$
+DELIMITER ;
 
+
+DELIMITER $$
 -- trigger controllo mezzi in missione
 create trigger mezzo_in_missione before insert on assegna_mezzo
 for each row begin
@@ -111,6 +145,9 @@ set message_text='Mezzo in uso';
 end;
 end if;
 end$
+DELIMITER ;
+
+DELIMITER $$
 --trigger controllo materiale coinvolto in missione
 create trigger materiale_in_missione before insert on assegna_materiale
 for each row begin
@@ -122,7 +159,9 @@ set message_text='Materiale in uso';
 end;
 end if;
 end$
+DELIMITER ;
 
+DELIMITER $$
 -- trigger per l'assegnazione di una patente ad un unico utente
 create trigger patente_assegnata before insert on assegna_patente
 for each row begin
@@ -134,7 +173,9 @@ set message_text='Patente già assegnata';
 end;
 end if;
 end$
+DELIMITER ;
 
+DELIMITER $$
 -- trigger controllo squadra
 create trigger is_capo before insert on assegna_squadra
 for each row begin
@@ -145,7 +186,9 @@ set message_text='Utente è il capo della squadra';
 end;
 end if;
 end$
+DELIMITER ;
 
+DELIMITER $$
 create trigger membri_disponibili before insert on Missione
 for each row begin
 declare in_m int default 0;
@@ -159,7 +202,9 @@ if in_m > 0 then
 signal sqlstate '45000'
 set message_text = 'Il caposquadra è impegnato in una missione attiva';
 end if;
+DELIMITER ;
 
+DELIMITER $$
 -- Controllo sui membri della squadra
 select count(*) into in_m from Missione m
 join assegna_squadra asq on m.ID_SQUADRA = asq.ID_SQUADRA
@@ -175,3 +220,4 @@ set message_text= 'Uno o più membri della squadra sono già in missione
 attiva';
 end if;
 end$
+DELIMITER ;

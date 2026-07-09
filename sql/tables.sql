@@ -185,8 +185,8 @@ constraint ass_abilita_unica unique(ID_UTENTE, ID_ABILITA)
 create table assegna_credenziali(
 ID_UTENTE int unsigned not null,
 ID_CREDENZIALI int unsigned not null,
-constraint utente foreign key(ID_UTENTE) references Utente(ID) on update cascade on delete restrict,
-constraint credenziali foreign key(ID_CREDENZIALI) references Credenziali(ID) on update
+constraint credenziali_utente foreign key(ID_UTENTE) references Utente(ID) on update cascade on delete restrict,
+constraint credenziali_cred foreign key(ID_CREDENZIALI) references Credenziali(ID) on update
 cascade on delete restrict,
 constraint ass_credenziali_unica unique(ID_UTENTE, ID_CREDENZIALI)
 );

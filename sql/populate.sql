@@ -18,10 +18,39 @@ delete from Aggiornamento;
 delete from Missione;
 delete from Commento;
 delete from Squadra;
+
+-- proceedure
+DELIMITER $$
+
+CREATE PROCEDURE InserisciRichiestaConCodice(
+    IN p_nome VARCHAR(50),
+    IN p_email VARCHAR(40),
+    IN p_ip VARCHAR(16),
+    IN p_posizione VARCHAR(50),
+    IN p_foto VARCHAR(255),
+    IN p_descrizione TEXT
+)
+BEGIN
+    DECLARE v_string VARCHAR(32);
+    DECLARE v_id INT UNSIGNED;
+
+    -- genera un codice casuale univoco
+    SET v_string = SUBSTRING(MD5(RAND()), 1, 32);
+
+    INSERT INTO Richiesta (nome, email, IP, stato, string, verificato, `data`)
+    VALUES (p_nome, p_email, p_ip, 'in attesa', v_string, false, NOW());
+
+    SET v_id = LAST_INSERT_ID();
+
+    INSERT INTO Desc_richiesta (ID_RICHIESTA, posizione, foto, descrizione)
+    VALUES (v_id, p_posizione, p_foto, p_descrizione);
+END$$
+
+DELIMITER ;
+
 -- dati richiesta
 insert into Richiesta
-values(1,"Antonio", 'antonio@gmail.com','192.168.10.10','chiusa','123456789',true,'25-
-06-25 13:40:01');
+values(1,"Antonio", 'antonio@gmail.com','192.168.10.10','chiusa','123456789',true,'25-06-25 13:40:01');
 insert into Desc_richiesta
 values(1,1,'Via Aldo Moro 33, Roma',null, 'Incidente stradale, ferito lieve');
 insert into Richiesta
@@ -30,8 +59,7 @@ values(2,"Giuseppa",
 insert into Desc_richiesta
 values(2,2,'Via dei caduti 55 , Milano',null, 'Incidente domestico');
 insert into Richiesta
-values(3,"Sara", 'saretta@gmail.com','183.168.15.10','chiusa','567892hydb',true,'23-
-01-25 23:40:01');
+values(3,"Sara", 'saretta@gmail.com','183.168.15.10','chiusa','567892hydb',true,'23-01-25 23:40:01');
 insert into Desc_richiesta
 values(3,3,'Piazza del Duomo , Firenze','https://archivio_soc/driveR3', 'Caduta albero
 su strada, ferito grave');
@@ -66,8 +94,8 @@ true, '25-08-29 16:30:56');
 insert into Desc_richiesta
 values (9,9, 'Centro commerciale porto solare, Napoli',
 'https://archivio_soc/driveR7', 'Parcheggio allagato');
-Call InserisciRichiestaConCodice("Giovanni", "giovanni1@gmail.com", "179.241.75.226","
-20.35112,122.25039",null,'Bloccati in mezzo al mare');
+Call InserisciRichiestaConCodice("Giovanni", "giovanni1@gmail.com", "179.241.75.226",
+"20.35112,122.25039",null,'Bloccati in mezzo al mare');
 Call InserisciRichiestaConCodice("Marta", "martilla@gmail.com", "179.251.75.226","
 20.35532,122.2039",null,'Incendio');
 -- Utenti
@@ -238,7 +266,7 @@ completata, successo, durata)
 values(1,1,1,'Soccorso feriti','25-06-25 11:45:18','25-06-25
 14:30:54',true,5,timediff('25-06-25 14:30:54', '25-06-25 11:45:18') );
 -- Visto che abbiamo inserito una missione già completata aggiorniamo manualmente il
-campo monte_ore dei partecipanti
+-- campo monte_ore dei partecipanti
 UPDATE Utente u JOIN assegna_squadra asq ON u.ID = asq.ID_UTENTE JOIN Squadra s ON
 s.ID = asq.ID_SQUADRA OR s.ID_CAPO = u.ID SET u.monte_ore = u.monte_ore + (SELECT
 FLOOR(TIME_TO_SEC(m.durata) / 3600) FROM Missione m WHERE m.ID = LAST_INSERT_ID())
