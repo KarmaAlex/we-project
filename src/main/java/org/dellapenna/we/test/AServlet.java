@@ -6,6 +6,9 @@ import org.dellapenna.we.data.dao.impl.RichiestaDAO_MySQL;
 import org.dellapenna.we.data.dao.impl.DescRichiestaDAO_MySQL;
 import org.dellapenna.we.data.dao.impl.PatenteDAO_MySQL;
 import org.dellapenna.we.data.dao.impl.AbilitaDAO_MySQL;
+import org.dellapenna.we.data.dao.impl.CredenzialiDAO_MySQL;
+import org.dellapenna.we.data.dao.impl.MaterialeDAO_MySQL;
+import org.dellapenna.we.data.dao.impl.MezzoDAO_MySQL;
 import org.dellapenna.we.data.DataLayer;
 import org.dellapenna.we.data.DataException;
 import org.dellapenna.we.model.Utente;
@@ -14,6 +17,9 @@ import org.dellapenna.we.model.Richiesta;
 import org.dellapenna.we.model.DescRichiesta;
 import org.dellapenna.we.model.Patente;
 import org.dellapenna.we.model.Abilita;
+import org.dellapenna.we.model.Credenziali;
+import org.dellapenna.we.model.Materiale;
+import org.dellapenna.we.model.Mezzo;
 import org.dellapenna.we.model.enums.StatoRichiesta;
 import org.dellapenna.we.model.enums.TipoPatente;
 
@@ -74,7 +80,7 @@ public class AServlet extends HttpServlet {
             out.println("<body>");
             out.println("<h1>This is servlet <em>" + getServletName() + "</em> (implemented in class <em>" + getClass().getSimpleName() + "</em>)" + "</h1>");
 
-            out.println("<h2>Esecuzione Test dei DAO con Relazioni, Credenziali, Patente e Abilità su MySQL</h2>");
+            out.println("<h2>Esecuzione Test dei DAO con Relazioni, Credenziali, Patente, Abilità, Materiale e Mezzo su MySQL</h2>");
             out.println("<hr/>");
 
             DataLayer dataLayer = null;
@@ -98,6 +104,9 @@ public class AServlet extends HttpServlet {
                 DescRichiestaDAO_MySQL descRichiestaDAO = new DescRichiestaDAO_MySQL(dataLayer);
                 PatenteDAO_MySQL patenteDAO = new PatenteDAO_MySQL(dataLayer);
                 AbilitaDAO_MySQL abilitaDAO = new AbilitaDAO_MySQL(dataLayer);
+                CredenzialiDAO_MySQL credenzialiDAO = new CredenzialiDAO_MySQL(dataLayer);
+                MaterialeDAO_MySQL materialeDAO = new MaterialeDAO_MySQL(dataLayer);
+                MezzoDAO_MySQL mezzoDAO = new MezzoDAO_MySQL(dataLayer);
                 
                 dataLayer.registerDAO(Utente.class, utenteDAO);
                 dataLayer.registerDAO(Anagrafica.class, anagraficaDAO);
@@ -105,18 +114,31 @@ public class AServlet extends HttpServlet {
                 dataLayer.registerDAO(DescRichiesta.class, descRichiestaDAO);
                 dataLayer.registerDAO(Patente.class, patenteDAO);
                 dataLayer.registerDAO(Abilita.class, abilitaDAO);
+                dataLayer.registerDAO(Credenziali.class, credenzialiDAO);
+                dataLayer.registerDAO(Materiale.class, materialeDAO);
+                dataLayer.registerDAO(Mezzo.class, mezzoDAO);
                 out.println("<p class='success'><b>[OK]</b> DAO inizializzati e registrati nel DataLayer.</p>");
 
-                out.println("<p>3. Test Inserimento Utente con Credenziali (INSERT)... </p>");
+                out.println("<p>3. Test Inserimento Utente (INSERT)... </p>");
                 Utente u = utenteDAO.createUtente();
                 u.setNomeUtente("usr" + String.valueOf(System.currentTimeMillis()).substring(9));
                 u.setAdmin(false);
                 u.setMonteOre(150);
-                u.setEmail("utente" + String.valueOf(System.currentTimeMillis()).substring(10) + "@test.it");
-                u.setHashedPassword("7528852395684348576238475263485726348572364857236485723648572364");
                 
                 utenteDAO.storeUtente(u);
                 out.println("<p class='success'><b>[OK]</b> Utente salvato! ID Generato: " + u.getKey() + "</p>");
+
+                out.println("<p>3b. Test Inserimento ed Associazione Credenziali (INSERT + ASSOCIAZIONE)... </p>");
+                Credenziali cb = credenzialiDAO.createCredenziali();
+                cb.setEmail("utente" + String.valueOf(System.currentTimeMillis()).substring(10) + "@test.it");
+                byte[] mockHash = new byte[64];
+                new Random().nextBytes(mockHash);
+                cb.setPasswordHash(mockHash);
+                credenzialiDAO.storeCredenziali(cb);
+                out.println("<p>Credenziali salvate! ID Generato: " + cb.getKey() + ". Collegamento all'utente in corso...</p>");
+                
+                credenzialiDAO.legaCredenzialiAUtente(cb, u);
+                out.println("<p class='success'><b>[OK]</b> Credenziali associate all'utente correttamente nel database (assegna_credenziali).</p>");
 
                 out.println("<p>4. Test Inserimento Anagrafica (INSERT)... </p>");
                 Anagrafica a = anagraficaDAO.createAnagrafica();
@@ -163,13 +185,28 @@ public class AServlet extends HttpServlet {
 
                 out.println("<p>8. Test Inserimento e Associazione Abilità (INSERT + ASSOCIAZIONE)... </p>");
                 Abilita ab = abilitaDAO.createAbilita();
-                
                 ab.setDesc("Soccorso " + String.valueOf(System.currentTimeMillis()).substring(7));
                 abilitaDAO.storeAbilita(ab);
                 out.println("<p>Abilità creata correttamente. ID Generato: " + ab.getKey() + ". Collegamento all'utente in corso...</p>");
+                
+                abilitaDAO.legaAbilitaAUtente(ab, u);
+                out.println("<p class='success'><b>[OK]</b> Abilità associata correttamente all'utente nel database (assegna_abilita).</p>");
 
-                 abilitaDAO.legaAbilitaAUtente(ab, u);
-                 out.println("<p class='success'><b>[OK]</b> Abilità associata correttamente all'utente nel database (assegna_abilita).</p>");
+                out.println("<p>8b. Test Inserimento Materiale (INSERT)... </p>");
+                Materiale m = materialeDAO.createMateriale();
+                m.setNome("Defibrillatore");
+                m.setDesc("DAA semiautomatico esterno professionale");
+                m.setCodMat("DAE" + String.valueOf(System.currentTimeMillis()).substring(10));
+                materialeDAO.storeMateriale(m);
+                out.println("<p class='success'><b>[OK]</b> Materiale salvato con cod_mat unico (<b>" + m.getCodMat() + "</b>)! ID Generato: " + m.getKey() + "</p>");
+
+                out.println("<p>8c. Test Inserimento Mezzo (INSERT)... </p>");
+                Mezzo mz = mezzoDAO.createMezzo();
+                mz.setNome("Ambulanza Tipo A");
+                mz.setDesc("Unità mobile di rianimazione e terapia intensiva con supporto vitale avanzato");
+                mz.setTarga("ZA" + String.valueOf(System.currentTimeMillis()).substring(11) + "AA");
+                mezzoDAO.storeMezzo(mz);
+                out.println("<p class='success'><b>[OK]</b> Mezzo salvato con targa unica (<b>" + mz.getTarga() + "</b>)! ID Generato: " + mz.getKey() + "</p>");
 
                 out.println("<p>9. Test Caricamento Relazioni e Cache Pulita (SELECT)... </p>");
                 dataLayer.getCache().clear();
@@ -177,6 +214,13 @@ public class AServlet extends HttpServlet {
 
                 Utente checkUtente = utenteDAO.getUtente(u.getKey());
                 out.println("<p>Utente ricaricato da DB: <b>" + checkUtente.getNomeUtente() + "</b></p>");
+
+                Credenziali checkCred = credenzialiDAO.getCredenzialiByUtente(checkUtente);
+                if (checkCred != null) {
+                    out.println("<p class='success'><b>[OK]</b> Lazy Loading Credenziali riuscito! Email estratta: " + checkCred.getEmail() + "</p>");
+                } else {
+                    out.println("<p class='error'><b>[FALLITO]</b> Credenziali correlate non trovate.</p>");
+                }
 
                 Anagrafica checkAnagrafica = checkUtente.getAnagrafica();
                 if (checkAnagrafica != null) {
@@ -193,7 +237,6 @@ public class AServlet extends HttpServlet {
                     out.println("<p class='error'><b>[FALLITO]</b> DescRichiesta correlata non trovata.</p>");
                 }
 
-                out.println("<p>Estrazione delle patenti associate all'utente ricaricato...</p>");
                 List<Patente> patentiUtente = patenteDAO.getPatentiByUtente(checkUtente);
                 if (patentiUtente != null && !patentiUtente.isEmpty()) {
                     Patente patenteCaricata = patentiUtente.get(0);
@@ -202,13 +245,27 @@ public class AServlet extends HttpServlet {
                     out.println("<p class='error'><b>[FALLITO]</b> Nessuna patente associata all'utente nel database.</p>");
                 }
 
-                out.println("<p>Estrazione delle abilità associate all'utente ricaricato...</p>");
                 List<Abilita> abilitaUtente = abilitaDAO.getAbilitaByUtente(checkUtente);
                 if (abilitaUtente != null && !abilitaUtente.isEmpty()) {
                     Abilita abilitaCaricata = abilitaUtente.get(0);
-                    out.println("<p class='success'><b>[OK]</b> Estrazione Abilità riuscita! Trovate " + abilitaUtente.size() + " abilità. Prima abilità -> Nome: " + abilitaCaricata.getNome() + ", Desc: " + abilitaCaricata.getDesc() + "</p>");
+                    out.println("<p class='success'><b>[OK]</b> Estrazione Abilità riuscita! Trovate " + abilitaUtente.size() + " abilità. Prima abilità -> Desc: " + abilitaCaricata.getDesc() + "</p>");
                 } else {
                     out.println("<p class='error'><b>[FALLITO]</b> Nessuna abilità associata all'utente nel database.</p>");
+                }
+
+                Materiale checkMateriale = materialeDAO.getMateriale(m.getKey());
+                if (checkMateriale != null) {
+                    out.println("<p class='success'><b>[OK]</b> Lettura Materiale riuscito! Nome: " + checkMateriale.getNome() + ", Cod: " + checkMateriale.getCodMat() + "</p>");
+                } else {
+                    out.println("<p class='error'><b>[FALLITO]</b> Impossibile caricare il record Materiale salvato.</p>");
+                }
+
+                out.println("<p>Estrazione e verifica del Mezzo inserito da DB...</p>");
+                Mezzo checkMezzo = mezzoDAO.getMezzo(mz.getKey());
+                if (checkMezzo != null) {
+                    out.println("<p class='success'><b>[OK]</b> Lettura Mezzo riuscito! Nome: " + checkMezzo.getNome() + ", Targa: " + checkMezzo.getTarga() + ", Descrizione: " + checkMezzo.getDesc() + "</p>");
+                } else {
+                    out.println("<p class='error'><b>[FALLITO]</b> Impossibile caricare il record Mezzo salvato.</p>");
                 }
 
                 utenteDAO.destroy();
@@ -217,6 +274,9 @@ public class AServlet extends HttpServlet {
                 descRichiestaDAO.destroy();
                 patenteDAO.destroy();
                 abilitaDAO.destroy();
+                credenzialiDAO.destroy();
+                materialeDAO.destroy();
+                mezzoDAO.destroy();
 
             } catch (SQLException ex) {
                 out.println("<p class='error'><b>[ERRORE SQL]</b> Errore di connettività o vincolo del DB: " + ex.getMessage() + "</p>");
@@ -257,6 +317,6 @@ public class AServlet extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "AServlet aggiornata per il corretto testing dei DAO relazionali con controllo credenziali, patenti e abilità";
+        return "AServlet aggiornata per il corretto testing dei DAO relazionali con controllo credenziali, patenti, abilità, materiale e mezzi";
     }
 }
