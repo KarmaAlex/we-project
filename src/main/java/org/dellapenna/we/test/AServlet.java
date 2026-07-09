@@ -5,6 +5,7 @@ import org.dellapenna.we.data.dao.impl.AnagraficaDAO_MySQL;
 import org.dellapenna.we.data.dao.impl.RichiestaDAO_MySQL;
 import org.dellapenna.we.data.dao.impl.DescRichiestaDAO_MySQL;
 import org.dellapenna.we.data.dao.impl.PatenteDAO_MySQL;
+import org.dellapenna.we.data.dao.impl.AbilitaDAO_MySQL;
 import org.dellapenna.we.data.DataLayer;
 import org.dellapenna.we.data.DataException;
 import org.dellapenna.we.model.Utente;
@@ -12,6 +13,7 @@ import org.dellapenna.we.model.Anagrafica;
 import org.dellapenna.we.model.Richiesta;
 import org.dellapenna.we.model.DescRichiesta;
 import org.dellapenna.we.model.Patente;
+import org.dellapenna.we.model.Abilita;
 import org.dellapenna.we.model.enums.StatoRichiesta;
 import org.dellapenna.we.model.enums.TipoPatente;
 
@@ -42,26 +44,18 @@ public class AServlet extends HttpServlet {
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "root";
 
-    // Metodo helper per generare un Codice Fiscale randomico (Pattern: 6L + 2N + 1L + 2N + 1L + 3N + 1L)
     private String generaCodiceFiscaleRandom() {
         String lettere = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         String numeri = "0123456789";
         Random r = new Random();
         StringBuilder sb = new StringBuilder();
 
-        // 6 Lettere (Cognome + Nome)
         for (int i = 0; i < 6; i++) sb.append(lettere.charAt(r.nextInt(lettere.length())));
-        // 2 Numeri (Anno)
         for (int i = 0; i < 2; i++) sb.append(numeri.charAt(r.nextInt(numeri.length())));
-        // 1 Lettera (Mese)
         sb.append(lettere.charAt(r.nextInt(lettere.length())));
-        // 2 Numeri (Giorno)
         for (int i = 0; i < 2; i++) sb.append(numeri.charAt(r.nextInt(numeri.length())));
-        // 1 Lettera (Comune)
         sb.append(lettere.charAt(r.nextInt(lettere.length())));
-        // 3 Numeri (Comune)
         for (int i = 0; i < 3; i++) sb.append(numeri.charAt(r.nextInt(numeri.length())));
-        // 1 Lettera (Carattere di controllo)
         sb.append(lettere.charAt(r.nextInt(lettere.length())));
 
         return sb.toString();
@@ -80,7 +74,7 @@ public class AServlet extends HttpServlet {
             out.println("<body>");
             out.println("<h1>This is servlet <em>" + getServletName() + "</em> (implemented in class <em>" + getClass().getSimpleName() + "</em>)" + "</h1>");
 
-            out.println("<h2>Esecuzione Test dei DAO con Relazioni, Credenziali e Patente su MySQL</h2>");
+            out.println("<h2>Esecuzione Test dei DAO con Relazioni, Credenziali, Patente e Abilità su MySQL</h2>");
             out.println("<hr/>");
 
             DataLayer dataLayer = null;
@@ -103,12 +97,14 @@ public class AServlet extends HttpServlet {
                 RichiestaDAO_MySQL richiestaDAO = new RichiestaDAO_MySQL(dataLayer);
                 DescRichiestaDAO_MySQL descRichiestaDAO = new DescRichiestaDAO_MySQL(dataLayer);
                 PatenteDAO_MySQL patenteDAO = new PatenteDAO_MySQL(dataLayer);
+                AbilitaDAO_MySQL abilitaDAO = new AbilitaDAO_MySQL(dataLayer);
                 
                 dataLayer.registerDAO(Utente.class, utenteDAO);
                 dataLayer.registerDAO(Anagrafica.class, anagraficaDAO);
                 dataLayer.registerDAO(Richiesta.class, richiestaDAO);
                 dataLayer.registerDAO(DescRichiesta.class, descRichiestaDAO);
                 dataLayer.registerDAO(Patente.class, patenteDAO);
+                dataLayer.registerDAO(Abilita.class, abilitaDAO);
                 out.println("<p class='success'><b>[OK]</b> DAO inizializzati e registrati nel DataLayer.</p>");
 
                 out.println("<p>3. Test Inserimento Utente con Credenziali (INSERT)... </p>");
@@ -127,7 +123,6 @@ public class AServlet extends HttpServlet {
                 a.setNome("TestNome");
                 a.setCognome("TestCognome");
                 
-                // Generazione dinamica del Codice Fiscale unico senza conflitti
                 String cfUnico = generaCodiceFiscaleRandom();
                 a.setCf(cfUnico);
                 
@@ -166,7 +161,17 @@ public class AServlet extends HttpServlet {
                 patenteDAO.legaPatenteAUtente(p, u);
                 out.println("<p class='success'><b>[OK]</b> Patente associata correttamente all'utente nel database (assegna_patente).</p>");
 
-                out.println("<p>8. Test Caricamento Relazioni e Cache Pulita (SELECT)... </p>");
+                out.println("<p>8. Test Inserimento e Associazione Abilità (INSERT + ASSOCIAZIONE)... </p>");
+                Abilita ab = abilitaDAO.createAbilita();
+                
+                ab.setDesc("Soccorso " + String.valueOf(System.currentTimeMillis()).substring(7));
+                abilitaDAO.storeAbilita(ab);
+                out.println("<p>Abilità creata correttamente. ID Generato: " + ab.getKey() + ". Collegamento all'utente in corso...</p>");
+
+                 abilitaDAO.legaAbilitaAUtente(ab, u);
+                 out.println("<p class='success'><b>[OK]</b> Abilità associata correttamente all'utente nel database (assegna_abilita).</p>");
+
+                out.println("<p>9. Test Caricamento Relazioni e Cache Pulita (SELECT)... </p>");
                 dataLayer.getCache().clear();
                 out.println("<p>Cache del DataLayer ripulita con successo.</p>");
 
@@ -183,7 +188,7 @@ public class AServlet extends HttpServlet {
                 Richiesta checkRichiesta = richiestaDAO.getRichiesta(r.getKey());
                 DescRichiesta checkDesc = checkRichiesta.getDescrizioneDettaglio();
                 if (checkDesc != null) {
-                    out.println("<p class='success'><b>[OK]</b> Lazy Loading DescRichiestaDoc riuscito! Posizione estratta: " + checkDesc.getPosizione() + "</p>");
+                    out.println("<p class='success'><b>[OK]</b> Lazy Loading DescRichiesta riuscito! Posizione estratta: " + checkDesc.getPosizione() + "</p>");
                 } else {
                     out.println("<p class='error'><b>[FALLITO]</b> DescRichiesta correlata non trovata.</p>");
                 }
@@ -197,11 +202,21 @@ public class AServlet extends HttpServlet {
                     out.println("<p class='error'><b>[FALLITO]</b> Nessuna patente associata all'utente nel database.</p>");
                 }
 
+                out.println("<p>Estrazione delle abilità associate all'utente ricaricato...</p>");
+                List<Abilita> abilitaUtente = abilitaDAO.getAbilitaByUtente(checkUtente);
+                if (abilitaUtente != null && !abilitaUtente.isEmpty()) {
+                    Abilita abilitaCaricata = abilitaUtente.get(0);
+                    out.println("<p class='success'><b>[OK]</b> Estrazione Abilità riuscita! Trovate " + abilitaUtente.size() + " abilità. Prima abilità -> Nome: " + abilitaCaricata.getNome() + ", Desc: " + abilitaCaricata.getDesc() + "</p>");
+                } else {
+                    out.println("<p class='error'><b>[FALLITO]</b> Nessuna abilità associata all'utente nel database.</p>");
+                }
+
                 utenteDAO.destroy();
                 anagraficaDAO.destroy();
                 richiestaDAO.destroy();
                 descRichiestaDAO.destroy();
                 patenteDAO.destroy();
+                abilitaDAO.destroy();
 
             } catch (SQLException ex) {
                 out.println("<p class='error'><b>[ERRORE SQL]</b> Errore di connettività o vincolo del DB: " + ex.getMessage() + "</p>");
@@ -242,6 +257,6 @@ public class AServlet extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "AServlet aggiornata per il corretto testing dei DAO relazionali con controllo credenziali e patenti";
+        return "AServlet aggiornata per il corretto testing dei DAO relazionali con controllo credenziali, patenti e abilità";
     }
 }
