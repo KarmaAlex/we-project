@@ -9,6 +9,10 @@ import org.soccorsoweb.data.dao.impl.AbilitaDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.CredenzialiDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.MaterialeDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.MezzoDAO_MySQL;
+import org.soccorsoweb.data.dao.impl.SquadraDAO_MySQL;
+import org.soccorsoweb.data.dao.impl.MissioneDAO_MySQL;
+import org.soccorsoweb.data.dao.impl.AggiornamentoDAO_MySQL;
+import org.soccorsoweb.model.Squadra;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.model.Utente;
@@ -20,8 +24,11 @@ import org.soccorsoweb.model.Abilita;
 import org.soccorsoweb.model.Credenziali;
 import org.soccorsoweb.model.Materiale;
 import org.soccorsoweb.model.Mezzo;
+import org.soccorsoweb.model.Missione;
+import org.soccorsoweb.model.Aggiornamento;
 import org.soccorsoweb.model.enums.StatoRichiesta;
 import org.soccorsoweb.model.enums.TipoPatente;
+import org.soccorsoweb.model.enums.EsitoMissione;
 
 import com.mysql.cj.jdbc.MysqlDataSource;
 
@@ -35,6 +42,7 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDate;
+import java.time.Duration;
 import java.util.List;
 import java.util.Random;
 
@@ -80,7 +88,7 @@ public class AServlet extends HttpServlet {
             out.println("<body>");
             out.println("<h1>This is servlet <em>" + getServletName() + "</em> (implemented in class <em>" + getClass().getSimpleName() + "</em>)" + "</h1>");
 
-            out.println("<h2>Esecuzione Test dei DAO con Relazioni, Credenziali, Patente, Abilità, Materiale e Mezzo su MySQL</h2>");
+            out.println("<h2>Esecuzione Test dei DAO con Relazioni, Credenziali, Patente, Abilità, Materiale, Mezzo, Squadra, Missione e Aggiornamento su MySQL</h2>");
             out.println("<hr/>");
 
             DataLayer dataLayer = null;
@@ -107,6 +115,9 @@ public class AServlet extends HttpServlet {
                 CredenzialiDAO_MySQL credenzialiDAO = new CredenzialiDAO_MySQL(dataLayer);
                 MaterialeDAO_MySQL materialeDAO = new MaterialeDAO_MySQL(dataLayer);
                 MezzoDAO_MySQL mezzoDAO = new MezzoDAO_MySQL(dataLayer);
+                SquadraDAO_MySQL squadraDAO = new SquadraDAO_MySQL(dataLayer);
+                MissioneDAO_MySQL missioneDAO = new MissioneDAO_MySQL(dataLayer);
+                AggiornamentoDAO_MySQL aggiornamentoDAO = new AggiornamentoDAO_MySQL(dataLayer);
                 
                 dataLayer.registerDAO(Utente.class, utenteDAO);
                 dataLayer.registerDAO(Anagrafica.class, anagraficaDAO);
@@ -117,12 +128,15 @@ public class AServlet extends HttpServlet {
                 dataLayer.registerDAO(Credenziali.class, credenzialiDAO);
                 dataLayer.registerDAO(Materiale.class, materialeDAO);
                 dataLayer.registerDAO(Mezzo.class, mezzoDAO);
+                dataLayer.registerDAO(Squadra.class, squadraDAO);
+                dataLayer.registerDAO(Missione.class, missioneDAO);
+                dataLayer.registerDAO(Aggiornamento.class, aggiornamentoDAO);
                 out.println("<p class='success'><b>[OK]</b> DAO inizializzati e registrati nel DataLayer.</p>");
 
                 out.println("<p>3. Test Inserimento Utente (INSERT)... </p>");
                 Utente u = utenteDAO.createUtente();
                 u.setNomeUtente("usr" + String.valueOf(System.currentTimeMillis()).substring(9));
-                u.setAdmin(false);
+                u.setAdmin(true); 
                 u.setMonteOre(150);
                 
                 utenteDAO.storeUtente(u);
@@ -151,7 +165,7 @@ public class AServlet extends HttpServlet {
                 a.setLuogoNasc("Roma");
                 a.setDataNasc(LocalDate.of(2000, 5, 15));
                 anagraficaDAO.storeAnagrafica(a, u);
-                out.println("<p class='success'><b>[OK]</b> Anagrafica salvata con CF Unico (<b>" + cfUnico + "</b>)! ID Generato: " + a.getKey() + "</p>");
+                out.println("<p class='success'><b>[OK]</b> Anagrafica salvana con CF Unico (<b>" + cfUnico + "</b>)! ID Generato: " + a.getKey() + "</p>");
 
                 out.println("<p>5. Test Inserimento Richiesta (INSERT)... </p>");
                 Richiesta r = richiestaDAO.createRichiesta();
@@ -203,10 +217,45 @@ public class AServlet extends HttpServlet {
                 out.println("<p>8c. Test Inserimento Mezzo (INSERT)... </p>");
                 Mezzo mz = mezzoDAO.createMezzo();
                 mz.setNome("Ambulanza Tipo A");
-                mz.setDesc("Unità mobile di rianimazione e terapia intensiva con supporto vitale avanzato");
+                mz.setDesc("Unità mobile di rianimazione");
                 mz.setTarga("ZA" + String.valueOf(System.currentTimeMillis()).substring(11) + "AA");
                 mezzoDAO.storeMezzo(mz);
                 out.println("<p class='success'><b>[OK]</b> Mezzo salvato con targa unica (<b>" + mz.getTarga() + "</b>)! ID Generato: " + mz.getKey() + "</p>");
+
+                out.println("<p>8d. Test Inserimento Squadra e Associazione Operatori (INSERT + ASSOCIAZIONE)... </p>");
+                Squadra sq = squadraDAO.createSquadra();
+                sq.setCapoSquadra(u); 
+                squadraDAO.storeSquadra(sq);
+                out.println("<p>Squadra creata con successo! ID Generato: " + sq.getKey() + " (Caposquadra ID: " + u.getKey() + ")</p>");
+                squadraDAO.aggiungiMembroASquadra(sq, u);
+                out.println("<p class='success'><b>[OK]</b> Operatore associato alla squadra correttamente (assegna_squadra).</p>");
+
+                // --- INSERIMENTO DELLA MISSIONE OBBLIGATORIA PER EVITARE L'ERRORE DI COSTRUTTO ---
+                out.println("<p>8e. Test Inserimento Missione (INSERT)... </p>");
+                Missione mis = missioneDAO.createMissione();
+                mis.setObiettivo("Soccorso stradale codice rosso");
+                mis.setInizio(LocalDateTime.now());
+                mis.setFine(LocalDateTime.now().plusHours(2));
+                mis.setCompletata(true);
+                mis.setSuccesso(EsitoMissione.SUCCESSO);
+                mis.setDurata(Duration.ofHours(2));
+                mis.setRichiesta(r);
+                mis.setSquadra(sq);
+                mis.setAdmin(u);
+                
+                missioneDAO.storeMissione(mis);
+                out.println("<p class='success'><b>[OK]</b> Missione salvata! ID Generato: " + mis.getKey() + "</p>");
+
+                // --- SALVATAGGIO DELL'AGGIORNAMENTO PASSANDO L'ID DELLA MISSIONE DIRETTAMENTE ---
+                out.println("<p>8f. Test Inserimento Aggiornamento legato alla Missione (INSERT)... </p>");
+                Aggiornamento agg = aggiornamentoDAO.createAggiornamento();
+                agg.setTesto("Nuova linea guida per la gestione delle emergenze su strada.");
+                agg.setTimestamp(LocalDateTime.now());
+                agg.setAdmin(u);
+
+                // Eseguiamo lo store passando esplicitamente la chiave esterna della missione
+                aggiornamentoDAO.storeAggiornamento(agg, mis.getKey());
+                out.println("<p class='success'><b>[OK]</b> Aggiornamento salvato! ID Generato: " + agg.getKey() + " associato all'admin ID: " + u.getKey() + " e alla missione ID: " + mis.getKey() + "</p>");
 
                 out.println("<p>9. Test Caricamento Relazioni e Cache Pulita (SELECT)... </p>");
                 dataLayer.getCache().clear();
@@ -215,11 +264,13 @@ public class AServlet extends HttpServlet {
                 Utente checkUtente = utenteDAO.getUtente(u.getKey());
                 out.println("<p>Utente ricaricato da DB: <b>" + checkUtente.getNomeUtente() + "</b></p>");
 
-                Credenziali checkCred = credenzialiDAO.getCredenzialiByUtente(checkUtente);
-                if (checkCred != null) {
-                    out.println("<p class='success'><b>[OK]</b> Lazy Loading Credenziali riuscito! Email estratta: " + checkCred.getEmail() + "</p>");
-                } else {
-                    out.println("<p class='error'><b>[FALLITO]</b> Credenziali correlate non trovate.</p>");
+                CheckCredenziali: {
+                    Credenziali checkCred = credenzialiDAO.getCredenzialiByUtente(checkUtente);
+                    if (checkCred != null) {
+                        out.println("<p class='success'><b>[OK]</b> Lazy Loading Credenziali riuscito! Email estratta: " + checkCred.getEmail() + "</p>");
+                    } else {
+                        out.println("<p class='error'><b>[FALLITO]</b> Credenziali correlate non trovate.</p>");
+                    }
                 }
 
                 Anagrafica checkAnagrafica = checkUtente.getAnagrafica();
@@ -260,12 +311,34 @@ public class AServlet extends HttpServlet {
                     out.println("<p class='error'><b>[FALLITO]</b> Impossibile caricare il record Materiale salvato.</p>");
                 }
 
-                out.println("<p>Estrazione e verifica del Mezzo inserito da DB...</p>");
                 Mezzo checkMezzo = mezzoDAO.getMezzo(mz.getKey());
                 if (checkMezzo != null) {
-                    out.println("<p class='success'><b>[OK]</b> Lettura Mezzo riuscito! Nome: " + checkMezzo.getNome() + ", Targa: " + checkMezzo.getTarga() + ", Descrizione: " + checkMezzo.getDesc() + "</p>");
+                    out.println("<p class='success'><b>[OK]</b> Lettura Mezzo riuscito! Nome: " + checkMezzo.getNome() + ", Targa: " + checkMezzo.getTarga() + "</p>");
                 } else {
                     out.println("<p class='error'><b>[FALLITO]</b> Impossibile caricare il record Mezzo salvato.</p>");
+                }
+
+                Squadra checkSquadra = squadraDAO.getSquadra(sq.getKey());
+                if (checkSquadra != null) {
+                    Utente checkCapo = checkSquadra.getCapoSquadra();
+                    out.println("<p class='success'><b>[OK]</b> Lettura Squadra riuscita! Caposquadra caricato correttamente: " + (checkCapo != null ? checkCapo.getNomeUtente() : "NULL") + "</p>");
+                    
+                    List<Utente> operatoriSquadra = checkSquadra.getOperatori();
+                    if (operatoriSquadra != null && !operatoriSquadra.isEmpty()) {
+                        out.println("<p class='success'><b>[OK]</b> Lazy Loading Operatori riuscito! Trovati " + operatoriSquadra.size() + " operatori.</p>");
+                    }
+                }
+
+                out.println("<p>Estrazione e verifica della Missione inserita da DB...</p>");
+                Missione checkMis = missioneDAO.getMissione(mis.getKey());
+                if (checkMis != null) {
+                    out.println("<p class='success'><b>[OK]</b> Lettura Missione riuscita! Obiettivo: \"" + checkMis.getObiettivo() + "\" Esito: " + checkMis.getEsito() + "</p>");
+                }
+
+                out.println("<p>Estrazione e verifica dell'Aggiornamento inserito da DB...</p>");
+                Aggiornamento checkAggiornamento = aggiornamentoDAO.getAggiornamento(agg.getKey());
+                if (checkAggiornamento != null) {
+                    out.println("<p class='success'><b>[OK]</b> Lettura Aggiornamento riuscita! Testo: \"" + checkAggiornamento.getTesto() + "\"</p>");
                 }
 
                 utenteDAO.destroy();
@@ -277,6 +350,9 @@ public class AServlet extends HttpServlet {
                 credenzialiDAO.destroy();
                 materialeDAO.destroy();
                 mezzoDAO.destroy();
+                squadraDAO.destroy();
+                missioneDAO.destroy();
+                aggiornamentoDAO.destroy();
 
             } catch (SQLException ex) {
                 out.println("<p class='error'><b>[ERRORE SQL]</b> Errore di connettività o vincolo del DB: " + ex.getMessage() + "</p>");
@@ -291,13 +367,6 @@ public class AServlet extends HttpServlet {
             }
 
             out.println("<hr/>");
-            out.println("<h2>Request Diagnostics Originali</h2>");
-            out.println("<ul>");
-            out.println("<li><strong>Request URL</strong>: " + request.getRequestURL() + "</li>");
-            out.println("<li><strong>Request Context</strong>: " + request.getContextPath() + "</li>");
-            out.println("<li><strong>Request Timestamp</strong>: " + LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME) + "</li>");
-            out.println("</ul>");
-
             out.println("</body>");
             out.println("</html>");
         }
@@ -317,6 +386,6 @@ public class AServlet extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "AServlet aggiornata per il corretto testing dei DAO relazionali con controllo credenziali, patenti, abilità, materiale e mezzi";
+        return "AServlet aggiornata per includere l'entità Missione integrata con la tabella Aggiornamenti";
     }
 }

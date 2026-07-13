@@ -7,7 +7,7 @@
 
     <servlet>
         <servlet-name>Servlet1</servlet-name>
-        <servlet-class>org.dellapenna.we.test.AServlet</servlet-class>
+        <servlet-class>org.soccorsoweb.test.AServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>Servlet1</servlet-name>
@@ -22,7 +22,7 @@
     <!-- diagnostic servlet for development only -->
     <servlet>
         <servlet-name>Diagnostic</servlet-name>
-        <servlet-class>org.dellapenna.we.test.DiagnosticServlet</servlet-class>
+        <servlet-class>org.soccorsoweb.test.DiagnosticServlet</servlet-class>
     </servlet>
     
     <servlet-mapping>
