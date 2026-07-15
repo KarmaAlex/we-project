@@ -4,7 +4,7 @@ import org.soccorsoweb.data.Dao;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.dao.AggiornamentoDAO;
-import org.soccorsoweb.data.proxy.AggiornamentoProxy;
+import org.soccorsoweb.model.impl.proxy.AggiornamentoProxy;
 import org.soccorsoweb.model.Aggiornamento;
 import org.soccorsoweb.model.Utente;
 

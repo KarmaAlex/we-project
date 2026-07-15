@@ -4,7 +4,7 @@ import org.soccorsoweb.data.Dao;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.dao.MissioneDAO;
-import org.soccorsoweb.data.proxy.MissioneProxy;
+import org.soccorsoweb.model.impl.proxy.MissioneProxy;
 import org.soccorsoweb.model.Missione;
 import org.soccorsoweb.model.Squadra;
 import org.soccorsoweb.model.enums.EsitoMissione;

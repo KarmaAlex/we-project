@@ -26,6 +26,7 @@
   <header class="site-header">
     <div class="container header-inner">
       <h1 class="logo"><a href="${(ctx!"") + '/'}">SoccorsoWeb</a></h1>
+      <a href="#main-content" class="skip-link">Skip to main content</a>
       <nav class="top-nav">
         <a href="${(ctx!"") + '/login.html'}" class="btn login">Accedi</a>
       </nav>

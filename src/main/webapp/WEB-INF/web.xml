@@ -31,6 +31,63 @@
     </servlet-mapping>
     
     
+    <!-- Admin Dashboard -->
+    <servlet>
+        <servlet-name>AdminDashboard</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.AdminDashboardServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>AdminDashboard</servlet-name>
+        <url-pattern>/admin-dashboard</url-pattern>
+    </servlet-mapping>
+    
+    
+    <!-- Operator Dashboard -->
+    <servlet>
+        <servlet-name>OperatorDashboard</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.OperatorDashboardServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>OperatorDashboard</servlet-name>
+        <url-pattern>/operator-dashboard</url-pattern>
+    </servlet-mapping>
+    
+    
+    <!-- Detail API Servlet (for modal content) -->
+    <servlet>
+        <servlet-name>DetailApi</servlet-name>
+        <servlet-class>org.soccorsoweb.test.DetailApiServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>DetailApi</servlet-name>
+        <url-pattern>/api/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>HomeServlet</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.HomeServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>HomeServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+        <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.LoginServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/login</url-pattern>
+    </servlet-mapping>
+    
+    
     <session-config>
         <session-timeout>
             30
@@ -39,6 +96,6 @@
     <!-- here we can specify (if we need to!) the default path for the context -->
     <!-- qui possiamo specificare (se necessario!) il path di default del contesto -->
     <welcome-file-list>
-        <welcome-file>another/servletpath</welcome-file>
+        <welcome-file>/home</welcome-file>
     </welcome-file-list>
 </web-app>

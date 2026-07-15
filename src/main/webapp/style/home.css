@@ -13,7 +13,6 @@
 .captcha{display:flex;align-items:center;gap:0.5rem;display: none;}
 .captcha input{width:5rem;max-width:30%;box-sizing:border-box}
 .hint{display:block;color:var(--muted);font-size:0.8rem}
-.info{padding:2rem 0}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-top:1rem}
 
 /* Larger screens: two-column form */

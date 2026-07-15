@@ -1,4 +1,4 @@
-package org.soccorsoweb.data.proxy;
+package org.soccorsoweb.model.impl.proxy;
 
 import org.soccorsoweb.data.DataItemImpl;
 import org.soccorsoweb.data.DataLayer;
