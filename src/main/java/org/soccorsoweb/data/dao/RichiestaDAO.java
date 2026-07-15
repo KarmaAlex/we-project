@@ -2,9 +2,10 @@ package org.soccorsoweb.data.dao;
 
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.model.Richiesta;
+import org.soccorsoweb.data.GenericDao;
 import java.util.List;
 
-public interface RichiestaDAO {
+public interface RichiestaDAO extends GenericDao{
     
     Richiesta createRichiesta();
     

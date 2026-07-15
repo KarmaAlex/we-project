@@ -2,9 +2,10 @@ package org.soccorsoweb.data.dao;
 
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.model.Materiale;
+import org.soccorsoweb.data.GenericDao;
 import java.util.List;
 
-public interface MaterialeDAO {
+public interface MaterialeDAO extends GenericDao{
 
     Materiale createMateriale();
 

@@ -1,5 +1,18 @@
 package org.soccorsoweb.test;
 
+import org.soccorsoweb.data.dao.UtenteDAO;
+import org.soccorsoweb.data.dao.AnagraficaDAO;
+import org.soccorsoweb.data.dao.RichiestaDAO;
+import org.soccorsoweb.data.dao.DescRichiestaDAO;
+import org.soccorsoweb.data.dao.PatenteDAO;
+import org.soccorsoweb.data.dao.AbilitaDAO;
+import org.soccorsoweb.data.dao.CredenzialiDAO;
+import org.soccorsoweb.data.dao.MaterialeDAO;
+import org.soccorsoweb.data.dao.MezzoDAO;
+import org.soccorsoweb.data.dao.SquadraDAO;
+import org.soccorsoweb.data.dao.MissioneDAO;
+import org.soccorsoweb.data.dao.AggiornamentoDAO;
+
 import org.soccorsoweb.data.dao.impl.UtenteDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.AnagraficaDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.RichiestaDAO_MySQL;
@@ -12,6 +25,7 @@ import org.soccorsoweb.data.dao.impl.MezzoDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.SquadraDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.MissioneDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.AggiornamentoDAO_MySQL;
+
 import org.soccorsoweb.model.Squadra;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.DataException;
@@ -106,18 +120,20 @@ public class AServlet extends HttpServlet {
                 out.println("<p class='success'><b>[OK]</b> DataLayer istanziato correttamente con il DataSource.</p>");
 
                 out.println("<p>2. Inizializzazione dei DAO... </p>");
-                UtenteDAO_MySQL utenteDAO = new UtenteDAO_MySQL(dataLayer);
-                AnagraficaDAO_MySQL anagraficaDAO = new AnagraficaDAO_MySQL(dataLayer);
-                RichiestaDAO_MySQL richiestaDAO = new RichiestaDAO_MySQL(dataLayer);
-                DescRichiestaDAO_MySQL descRichiestaDAO = new DescRichiestaDAO_MySQL(dataLayer);
-                PatenteDAO_MySQL patenteDAO = new PatenteDAO_MySQL(dataLayer);
-                AbilitaDAO_MySQL abilitaDAO = new AbilitaDAO_MySQL(dataLayer);
-                CredenzialiDAO_MySQL credenzialiDAO = new CredenzialiDAO_MySQL(dataLayer);
-                MaterialeDAO_MySQL materialeDAO = new MaterialeDAO_MySQL(dataLayer);
-                MezzoDAO_MySQL mezzoDAO = new MezzoDAO_MySQL(dataLayer);
-                SquadraDAO_MySQL squadraDAO = new SquadraDAO_MySQL(dataLayer);
-                MissioneDAO_MySQL missioneDAO = new MissioneDAO_MySQL(dataLayer);
-                AggiornamentoDAO_MySQL aggiornamentoDAO = new AggiornamentoDAO_MySQL(dataLayer);
+                
+                // Dichiarazione tramite le interfacce per rispettare l'astrazione
+                UtenteDAO utenteDAO = new UtenteDAO_MySQL(dataLayer);
+                AnagraficaDAO anagraficaDAO = new AnagraficaDAO_MySQL(dataLayer);
+                RichiestaDAO richiestaDAO = new RichiestaDAO_MySQL(dataLayer);
+                DescRichiestaDAO descRichiestaDAO = new DescRichiestaDAO_MySQL(dataLayer);
+                PatenteDAO patenteDAO = new PatenteDAO_MySQL(dataLayer);
+                AbilitaDAO abilitaDAO = new AbilitaDAO_MySQL(dataLayer);
+                CredenzialiDAO credenzialiDAO = new CredenzialiDAO_MySQL(dataLayer);
+                MaterialeDAO materialeDAO = new MaterialeDAO_MySQL(dataLayer);
+                MezzoDAO mezzoDAO = new MezzoDAO_MySQL(dataLayer);
+                SquadraDAO squadraDAO = new SquadraDAO_MySQL(dataLayer);
+                MissioneDAO missioneDAO = new MissioneDAO_MySQL(dataLayer);
+                AggiornamentoDAO aggiornamentoDAO = new AggiornamentoDAO_MySQL(dataLayer);
                 
                 dataLayer.registerDAO(Utente.class, utenteDAO);
                 dataLayer.registerDAO(Anagrafica.class, anagraficaDAO);

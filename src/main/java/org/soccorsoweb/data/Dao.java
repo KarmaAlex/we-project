@@ -1,7 +1,7 @@
 package org.soccorsoweb.data;
 import java.sql.Connection;
 
-public class Dao {
+public class Dao implements GenericDao {
     
     protected final DataLayer dataLayer;
     protected final Connection connection;
@@ -19,10 +19,12 @@ public class Dao {
         return connection;
     }
 
+    @Override
     public void init() throws DataException {
 
     }
 
+    @Override
     public void destroy() throws DataException {
 
     }

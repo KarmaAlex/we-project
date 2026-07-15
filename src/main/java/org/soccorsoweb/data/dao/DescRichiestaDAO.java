@@ -3,8 +3,9 @@ package org.soccorsoweb.data.dao;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.model.DescRichiesta;
 import org.soccorsoweb.model.Richiesta;
+import org.soccorsoweb.data.GenericDao;
 
-public interface DescRichiestaDAO {
+public interface DescRichiestaDAO extends GenericDao{
     
     DescRichiesta createDescRichiesta();
     

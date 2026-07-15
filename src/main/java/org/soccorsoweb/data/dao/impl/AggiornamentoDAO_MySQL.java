@@ -96,7 +96,6 @@ public class AggiornamentoDAO_MySQL extends Dao implements AggiornamentoDAO {
         return null;
     }
 
-    @Override
     public List<Aggiornamento> getAggiornamentiByAdmin(Utente admin) throws DataException {
         List<Aggiornamento> result = new ArrayList<>();
         try {
@@ -151,5 +150,10 @@ public class AggiornamentoDAO_MySQL extends Dao implements AggiornamentoDAO {
     @Override
     public void storeAggiornamento(Aggiornamento aggiornamento) throws DataException {
         this.storeAggiornamento(aggiornamento, 0);
+    }
+
+    @Override
+    public List<Aggiornamento> getAggiornamenti(Utente admin) throws DataException {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 }

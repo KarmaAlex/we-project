@@ -3,9 +3,10 @@ package org.soccorsoweb.data.dao;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.model.Abilita;
 import org.soccorsoweb.model.Utente;
+import org.soccorsoweb.data.GenericDao;
 import java.util.List;
 
-public interface AbilitaDAO {
+public interface AbilitaDAO extends GenericDao{
     
     Abilita createAbilita();
     

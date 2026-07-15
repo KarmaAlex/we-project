@@ -2,9 +2,10 @@ package org.soccorsoweb.data.dao;
 
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.model.Mezzo;
+import org.soccorsoweb.data.GenericDao;
 import java.util.List;
 
-public interface MezzoDAO {
+public interface MezzoDAO extends GenericDao{
 
     Mezzo createMezzo();
 

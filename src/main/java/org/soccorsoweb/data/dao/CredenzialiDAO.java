@@ -2,9 +2,10 @@ package org.soccorsoweb.data.dao;
 
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.model.Credenziali;
+import org.soccorsoweb.data.GenericDao;
 import org.soccorsoweb.model.Utente;
 
-public interface CredenzialiDAO {
+public interface CredenzialiDAO extends GenericDao{
 
     Credenziali createCredenziali();
 
