@@ -3,6 +3,7 @@ package org.soccorsoweb.model.impl;
 import org.soccorsoweb.data.DataItemImpl;
 import org.soccorsoweb.model.Squadra;
 import org.soccorsoweb.model.Utente;
+import org.soccorsoweb.model.Missione;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ public class SquadraImpl extends DataItemImpl<Integer> implements Squadra {
     private Utente capo;
     private List<Utente> operatori;
     private long version;
+    protected Missione missione;
 
     public SquadraImpl() {
         super();
@@ -54,5 +56,10 @@ public class SquadraImpl extends DataItemImpl<Integer> implements Squadra {
 
     public void setVersion(long version) {
         this.version = version;
+    }
+    
+    @Override
+    public Missione getMissione() {
+        return missione;
     }
 }

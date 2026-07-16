@@ -5,8 +5,10 @@ import org.soccorsoweb.data.DataItemProxy;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.model.impl.SquadraImpl;
 import org.soccorsoweb.model.Utente;
+import org.soccorsoweb.model.Missione;
 import org.soccorsoweb.data.dao.UtenteDAO;
 import org.soccorsoweb.data.dao.SquadraDAO;
+import org.soccorsoweb.data.dao.MissioneDAO;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -20,6 +22,7 @@ public class SquadraProxy extends SquadraImpl implements DataItemProxy {
     
     private Integer capoKey = null; 
     private boolean operatoriLoaded = false;
+    private boolean missioneLoaded = false;
 
     public SquadraProxy(DataLayer d) {
         super();
@@ -87,5 +90,20 @@ public class SquadraProxy extends SquadraImpl implements DataItemProxy {
         getOperatori(); 
         super.addOperatore(operatore);
         this.modified = true;
+    }
+
+    @Override
+    public Missione getMissione() {
+        if (!missioneLoaded) {
+            if (this.getKey() != null) {
+                try {
+                    this.missione = ((MissioneDAO) dataLayer.getDAO(Missione.class)).getMissione(this.getKey());
+                } catch (DataException ex) {
+                    Logger.getLogger(SquadraProxy.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            this.missioneLoaded = true;
+        }
+        return super.getMissione();
     }
 }

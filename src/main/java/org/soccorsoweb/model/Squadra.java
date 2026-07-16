@@ -11,4 +11,6 @@ public interface Squadra extends DataItem<Integer>{
     List<Utente> getOperatori();
     void setOperatori(List<Utente> operatori);
     void addOperatore(Utente operatore);
+
+    Missione getMissione();
 }
