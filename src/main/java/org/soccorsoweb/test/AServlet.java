@@ -96,7 +96,7 @@ public class AServlet extends HttpServlet {
             out.println("<body>");
             out.println("<h1>This is servlet <em>" + getServletName() + "</em> (implemented in class <em>" + getClass().getSimpleName() + "</em>)" + "</h1>");
 
-            out.println("<h2>Esecuzione Test dei DAO con Relazioni (Inclusi Mezzo e Materiale in Missione) su MySQL</h2>");
+            out.println("<h2>Esecuzione Test dei DAO con Relazioni su MySQL</h2>");
             out.println("<hr/>");
 
             DataLayer dataLayer = null;
@@ -231,7 +231,7 @@ public class AServlet extends HttpServlet {
                 squadraDAO.aggiungiMembroASquadra(sq, u);
                 out.println("<p class='success'><b>[OK]</b> Operatore associato alla squadra correttamente.</p>");
 
-                out.println("<p>8e. Test Inserimento Missione (INSERT)... </p>");
+                out.println("<p>8e. Test Inserimento Missione (INSERT) ed Assegnazione Squadra (DIRETTA)... </p>");
                 Missione mis = missioneDAO.createMissione();
                 mis.setObiettivo("Soccorso stradale codice rosso");
                 mis.setInizio(LocalDateTime.now());
@@ -240,11 +240,14 @@ public class AServlet extends HttpServlet {
                 mis.setSuccesso(EsitoMissione.SUCCESSO);
                 mis.setDurata(Duration.ofHours(2));
                 mis.setRichiesta(r);
-                mis.setSquadra(sq);
                 mis.setAdmin(u);
                 
+                // ASSEGNAZIONE DIRETTA DELLA SQUADRA ALLA MISSIONE
+                mis.setSquadra(sq); 
+                
                 missioneDAO.storeMissione(mis);
-                out.println("<p class='success'><b>[OK]</b> Missione salvata! ID Generato: " + mis.getKey() + "</p>");
+                out.println("<p class='success'><b>[OK]</b> Squadra (ID: " + sq.getKey() + ") associata alla missione ID: " + mis.getKey() + " tramite campo ID_SQUADRA.</p>");
+                out.println("<p class='success'><b>[OK]</b> Missione salvata con successo!</p>");
 
                 out.println("<p>8e-bis. Test Assegnazione Materiale e Mezzo alla Missione (INSERT IN TABELLE ASSOCIAZIONE)... </p>");
                 materialeDAO.assegnaMaterialeAMissione(m, mis);
@@ -310,6 +313,14 @@ public class AServlet extends HttpServlet {
                 Missione checkMis = missioneDAO.getMissione(mis.getKey());
                 if (checkMis != null) {
                     out.println("<p class='success'><b>[OK]</b> Lettura Missione riuscita! Obiettivo: \"" + checkMis.getObiettivo() + "\" Esito: " + checkMis.getEsito() + "</p>");
+                    
+                    // VERIFICA DEL CARICAMENTO DELLA SQUADRA TRAMITE LA MISSIONE
+                    Squadra checkSquadraMissione = checkMis.getSquadra();
+                    if (checkSquadraMissione != null) {
+                        out.println("<p class='success'><b>[OK]</b> Lazy Loading Squadra da Missione riuscito! ID Squadra associata: " + checkSquadraMissione.getKey() + "</p>");
+                    } else {
+                        out.println("<p class='error'><b>[FALLITO]</b> Impossibile caricare la Squadra associata alla Missione.</p>");
+                    }
                 }
 
                 out.println("<p>Estrazione e verifica dell'Aggiornamento inserito da DB...</p>");
@@ -366,6 +377,6 @@ public class AServlet extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "AServlet aggiornata per testare l'associazione di Materiale e Mezzo alla Missione";
+        return "AServlet aggiornata per testare l'associazione di Squadra, Materiale e Mezzo alla Missione";
     }
 }

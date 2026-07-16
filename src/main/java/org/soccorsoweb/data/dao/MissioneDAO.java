@@ -17,4 +17,6 @@ public interface MissioneDAO extends GenericDao{
     void storeMissione(Missione missione) throws DataException;
     
     void destroy() throws DataException;
+    
+    
 }
