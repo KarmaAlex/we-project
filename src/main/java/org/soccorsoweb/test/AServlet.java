@@ -45,6 +45,10 @@ import org.soccorsoweb.model.enums.TipoPatente;
 import org.soccorsoweb.model.enums.EsitoMissione;
 
 import com.mysql.cj.jdbc.MysqlDataSource;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -66,13 +70,7 @@ import java.util.Random;
  */
 public class AServlet extends HttpServlet {
 
-    private static final String DB_SERVER = "localhost";
-    private static final int DB_PORT = 3306;
-    private static final String DB_NAME = "soccorso"; 
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "root";
-
-    private String generaCodiceFiscaleRandom() {
+        private String generaCodiceFiscaleRandom() {
         String lettere = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         String numeri = "0123456789";
         Random r = new Random();
@@ -107,17 +105,15 @@ public class AServlet extends HttpServlet {
 
             DataLayer dataLayer = null;
             try {
-                out.println("<p>1. Inizializzazione DataSource MySQL... </p>");
-                MysqlDataSource dataSource = new MysqlDataSource();
-                dataSource.setServerName(DB_SERVER);
-                dataSource.setPortNumber(DB_PORT);
-                dataSource.setDatabaseName(DB_NAME);
-                dataSource.setUser(DB_USER);
-                dataSource.setPassword(DB_PASSWORD);
-                dataSource.setServerTimezone("UTC");
+                out.println("<p>1. Recupero DataSource dal Context (JNDI)... </p>");
+                
+                // Lookup JNDI della risorsa definita in context.xml
+                Context initContext = new InitialContext();
+                Context envContext  = (Context) initContext.lookup("java:comp/env");
+                DataSource dataSource = (DataSource) envContext.lookup("jdbc/soccorso");
 
                 dataLayer = new DataLayer(dataSource);
-                out.println("<p class='success'><b>[OK]</b> DataLayer istanziato correttamente con il DataSource.</p>");
+                out.println("<p class='success'><b>[OK]</b> DataLayer istanziato correttamente tramite JNDI.</p>");
 
                 out.println("<p>2. Inizializzazione dei DAO... </p>");
                 
@@ -370,6 +366,9 @@ public class AServlet extends HttpServlet {
                 missioneDAO.destroy();
                 aggiornamentoDAO.destroy();
 
+            } catch (NamingException ex) {
+                out.println("<p class='error'><b>[ERRORE JNDI]</b> Impossibile trovare la risorsa nel Context: " + ex.getMessage() + "</p>");
+                ex.printStackTrace(out);
             } catch (SQLException ex) {
                 out.println("<p class='error'><b>[ERRORE SQL]</b> Errore di connettività o vincolo del DB: " + ex.getMessage() + "</p>");
                 ex.printStackTrace(out);
