@@ -10,25 +10,9 @@
 
 <@layout title="Operatore Dashboard" section=section user=user>
 
-<#-- Breadcrumb -->
-<div class="breadcrumb">
-  <a href="/operator-dashboard">Dashboard</a>
-  <span>›</span>
-  <#switch section>
-    <#case "missions">
-      Missioni
-      <#break>
-    <#case "profile">
-      Profilo
-      <#break>
-    <#default>
-      Dashboard
-  </#switch>
-</div>
-
 <#-- Missions List Section -->
 <#if section == "missions">
-  <#include "operator/missions-list.ftl">
+  <#include "operator/missions-table.ftl">
 
 <#-- Profile Section -->
 <#elseif section == "profile">

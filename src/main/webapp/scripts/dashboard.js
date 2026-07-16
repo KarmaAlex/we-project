@@ -207,6 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
   ModalManager.init();
   DataLoader.attachHandlers();
   setupFilterHandlers();
+  // Hide submit button if javascript is enabled since in that case we use AJAX
+  document.getElementById("filter-submit").style.display = "none";
 });
 
 // Exports for opening modals from the table buttons

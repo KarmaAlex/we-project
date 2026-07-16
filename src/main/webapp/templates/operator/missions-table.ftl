@@ -1,30 +1,33 @@
 <#include "/filter-table.ftl">
 
 <#assign columns = [
-    {
+  {
         "field":"id",
         "label":"ID",
         "sortable":true
     },
     {
-        "field":"segnalante",
-        "label":"Segnalante",
-        "sortable":true
+        "field":"richiesta_id",
+        "label":"Richiesta"
     },
     {
-        "field":"indirizzo",
-        "label":"Indirizzo"
+        "field":"squadra",
+        "label":"Squadra"
+    },
+    {
+        "field":"obiettivo",
+        "label":"Obiettivo"
     },
     {
         "field":"stato",
         "label":"Stato",
-        "sortable": true,
-        "type": "badge"
+        "sortable":true,
+        "type":"badge"
     },
     {
-        "field":"data_creazione",
-        "label":"Data",
-        "sortable":true
+        "field": "data_inizio",
+        "label": "Data Inizio",
+        "sortable": true
     }
 ]>
 
@@ -39,28 +42,14 @@
                 "label":"Tutti"
             },
             {
-                "value":"ATTIVA",
-                "label":"Attiva"
-            },
-            {
                 "value":"IN_CORSO",
                 "label":"In Corso"
             },
             {
                 "value":"CHIUSA",
                 "label":"Chiusa"
-            },
-            {
-                "value":"IGNORATA",
-                "label":"Ignorata"
             }
         ]
-    },
-    {
-        "type":"email",
-        "name":"segnalante",
-        "placeholder":"Email",
-        "label":"Email"
     },
     {
         "type":"date",
@@ -75,13 +64,13 @@
 ]>
 
 <@filtertable
-    section="requests"
-    items=richieste![]
+    section="missions"
+    items=missioni![]
     columns=columns
     filters=filters
-    detailEndpoint="/api/admin/requests"
-    modalId="requestsDetailModal"
-    modalTitle="Dettagli richiesta"
+    detailEndpoint="/api/operator/missions"
+    modalId="missionsDetailModal"
+    modalTitle="Dettagli missione"
     page=page!1
     totalPages=totalPages!1
 />

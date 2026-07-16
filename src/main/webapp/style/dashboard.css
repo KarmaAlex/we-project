@@ -155,14 +155,14 @@
 
 /* Tables */
 .table-container {
-  overflow-x: auto;
+  /*overflow-x: auto;*/
   background: #fff;
   border-radius: var(--radius);
   border: 1px solid var(--card-border);
 }
 
 table {
-  width: 100%;
+  min-width: 100%;
   border-collapse: collapse;
   margin: 0;
   table-layout: fixed;
@@ -371,6 +371,10 @@ table .badge.in-progress {
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
+}
+
+.modal-trigger {
+  margin-right: 1rem;
 }
 
 /* Timeline in modal */

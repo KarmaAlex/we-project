@@ -11,7 +11,7 @@
       <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">☰</button>
       <nav>
         <ul class="sidebar-menu">
-          <#if user.ruolo == "ADMIN">
+          <#if user.ruolo == "ADMIN"> <#-- TODO: update with actual values from User class -->
             <li><a href="${ctx}/admin-dashboard?section=requests" class="menu-link ${(section == 'requests')?string('active', '')}" data-section="requests">Richieste</a></li>
             <li><a href="${ctx}/admin-dashboard?section=missions" class="menu-link ${(section == 'missions')?string('active', '')}" data-section="missions">Missioni</a></li>
             <li><a href="${ctx}/admin-dashboard?section=operators" class="menu-link ${(section == 'operators')?string('active', '')}" data-section="operators">Operatori</a></li>
@@ -32,12 +32,11 @@
     <main class="dashboard-main">
       <div class="dashboard-header">
         <h2>${title}</h2>
-        <div class="dashboard-controls">
-          <span style="color: var(--muted); font-size: 0.9rem;">Utente: <strong>${user.nome!''}</strong></span>
-        </div>
       </div>
       
-      <#nested />
+      <div id="main-content">
+        <#nested />
+      </div>
     </main>
   </div>
 

@@ -1,4 +1,4 @@
-<#include "/dataTable.ftl">
+<#include "/filter-table.ftl">
 
 <#assign columns = [
     {
@@ -28,11 +28,6 @@
         "field": "data_inizio",
         "label": "Data Inizio",
         "sortable": true
-    },
-    {
-        "field":"actions",
-        "label":"Azioni",
-        "type":"actions"
     }
 ]>
 
@@ -68,7 +63,7 @@
     }
 ]>
 
-<@dataTable
+<@filtertable
     section="missions"
     items=missioni![]
     columns=columns

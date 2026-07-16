@@ -1,4 +1,4 @@
-<#include "/dataTable.ftl">
+<#include "/filter-table.ftl">
 
 <#assign columns = [
     {
@@ -28,11 +28,6 @@
     {
         "field":"missione_corrente",
         "label":"Missione"
-    },
-    {
-        "field":"actions",
-        "label":"Azioni",
-        "type":"actions"
     }
 ]>
 
@@ -46,7 +41,7 @@
     {
         "type":"select",
         "name":"stato",
-        "label":"Email"
+        "label":"Email",
         "options":[
             {
                 "value":"",
@@ -64,7 +59,7 @@
     }
 ]>
 
-<@dataTable
+<@filtertable
     section="operators"
     items=operatori![]
     columns=columns

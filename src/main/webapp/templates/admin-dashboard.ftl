@@ -10,46 +10,21 @@
 
 <@layout title="Admin Dashboard" section=section user=user>
 
-<#-- Breadcrumb -->
-<div class="breadcrumb">
-    <a href="/admin-dashboard">Dashboard</a>
-    <span>›</span>
-    <#switch section>
-        <#case "requests">
-            Richieste
-        <#break>
-        <#case "missions">
-            Missioni
-        <#break>
-        <#case "operators">
-            Operatori
-        <#break>
-        <#case "vehicles">
-            Mezzi
-        <#break>
-        <#case "materials">
-            Materiali
-        <#break>
-        <#default>
-            Dashboard
-    </#switch>
-</div>
-
 <#switch section>
     <#case "requests">
         <#include "admin/requests-table.ftl">
     <#break>
     <#case "missions">
-        <#include "admin/missions-list.ftl">
+        <#include "admin/missions-table.ftl">
     <#break>
     <#case "operators">
-        <#include "admin/operators-list.ftl">
+        <#include "admin/operators-table.ftl">
     <#break>
     <#case "vehicles">
         <#include "admin/vehicles-table.ftl">
     <#break>
     <#case "materials">
-        <#include "admin/materials-list.ftl">
+        <#include "admin/materials-table.ftl">
     <#break>
     <#default>
         <div class="empty-state">

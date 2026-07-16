@@ -1,35 +1,16 @@
-<#include "/dataTable.ftl">
+<#include "/filter-table.ftl">
 
 <#assign columns = [
     {
         "field":"id",
         "label":"ID",
         "sortable":true
-    },
-    {
-        "field":"segnalante",
-        "label":"Segnalante",
-        "sortable":true
-    },
-    {
-        "field":"indirizzo",
-        "label":"Indirizzo"
-    },
+    }
     {
         "field":"stato",
         "label":"Stato",
         "sortable": true,
         "type": "badge"
-    },
-    {
-        "field":"data_creazione",
-        "label":"Data",
-        "sortable":true
-    },
-    {
-        "field":"actions",
-        "label":"Azioni",
-        "type":"actions"
     }
 ]>
 
@@ -61,7 +42,7 @@
     }
 ]>
 
-<@dataTable
+<@filtertable
     section="materials"
     items=materiali![]
     columns=columns

@@ -24,6 +24,7 @@ public class MockDataProvider {
         r1.put("descrizione", "Incidente stradale con 2 feriti");
         r1.put("coordinate", "45.4642, 9.1900");
         r1.put("foto_url", null);
+        r1.put("editable", "ATTIVA".equals(r1.get("stato")));
         richieste.add(r1);
 
         Map<String, Object> r2 = new HashMap<>();
@@ -36,6 +37,7 @@ public class MockDataProvider {
         r2.put("descrizione", "Persona svenuta in strada");
         r2.put("coordinate", "41.9028, 12.4964");
         r2.put("foto_url", null);
+        r2.put("editable", "ATTIVA".equals(r2.get("stato")));
         richieste.add(r2);
 
         Map<String, Object> r3 = new HashMap<>();
@@ -48,6 +50,7 @@ public class MockDataProvider {
         r3.put("descrizione", "Allarme falso");
         r3.put("coordinate", "45.4642, 9.1900");
         r3.put("foto_url", null);
+        r3.put("editable", "ATTIVA".equals(r3.get("stato")));
         richieste.add(r3);
 
         return richieste;
@@ -66,6 +69,7 @@ public class MockDataProvider {
         m1.put("data_fine", "");
         m1.put("mezzi", Arrays.asList("Ambulanza A1", "Auto Soccorso"));
         m1.put("materiali", Arrays.asList("Kit medico base", "Barella"));
+        m1.put("editable", "IN_CORSO".equals(m1.get("stato")));
         missioni.add(m1);
 
         Map<String, Object> m2 = new HashMap<>();
@@ -78,6 +82,7 @@ public class MockDataProvider {
         m2.put("data_fine", "2026-07-03 11:15");
         m2.put("mezzi", Arrays.asList("Ambulanza B2"));
         m2.put("materiali", Arrays.asList("Kit medico base"));
+        m2.put("editable", "IN_CORSO".equals(m2.get("stato")));
         missioni.add(m2);
 
         return missioni;
