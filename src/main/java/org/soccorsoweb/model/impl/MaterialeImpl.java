@@ -8,6 +8,7 @@ public class MaterialeImpl extends DataItemImpl<Integer> implements Materiale {
     private String nome;
     private String desc;
     private String codMat;
+    private Integer missioneKey; // null se non assegnato a nessuna missione
     private long version;
 
     public MaterialeImpl() {
@@ -15,6 +16,7 @@ public class MaterialeImpl extends DataItemImpl<Integer> implements Materiale {
         this.nome = "";
         this.desc = "";
         this.codMat = "";
+        this.missioneKey = null;
         this.version = 0L;
     }
 
@@ -46,6 +48,21 @@ public class MaterialeImpl extends DataItemImpl<Integer> implements Materiale {
     @Override
     public void setCodMat(String codMat) {
         this.codMat = codMat;
+    }
+
+    @Override
+    public Integer getMissioneKey() {
+        return missioneKey;
+    }
+
+    @Override
+    public void setMissioneKey(Integer missioneKey) {
+        this.missioneKey = missioneKey;
+    }
+
+    @Override
+    public boolean isAssegnato() {
+        return this.missioneKey != null;
     }
 
     @Override

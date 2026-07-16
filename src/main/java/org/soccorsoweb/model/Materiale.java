@@ -10,5 +10,11 @@ public interface Materiale extends DataItem<Integer>{
     void setDesc(String desc);
 
     String getCodMat();
-    void setCodMat(String codMat); //codMat stands for code material
+    void setCodMat(String codMat);
+    
+    Integer getMissioneKey();
+    
+    void setMissioneKey(Integer missioneKey);
+    
+    boolean isAssegnato();
 }

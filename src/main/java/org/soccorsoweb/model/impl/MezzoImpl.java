@@ -8,6 +8,7 @@ public class MezzoImpl extends DataItemImpl<Integer> implements Mezzo {
     private String nome;
     private String desc;
     private String targa;
+    private Integer missioneKey; // null se non assegnato a nessuna missione
     private long version;
 
     public MezzoImpl() {
@@ -15,6 +16,7 @@ public class MezzoImpl extends DataItemImpl<Integer> implements Mezzo {
         this.nome = "";
         this.desc = "";
         this.targa = "";
+        this.missioneKey = null;
         this.version = 0L;
     }
 
@@ -46,6 +48,21 @@ public class MezzoImpl extends DataItemImpl<Integer> implements Mezzo {
     @Override
     public void setTarga(String targa) {
         this.targa = targa;
+    }
+
+    @Override
+    public Integer getMissioneKey() {
+        return missioneKey;
+    }
+
+    @Override
+    public void setMissioneKey(Integer missioneKey) {
+        this.missioneKey = missioneKey;
+    }
+
+    @Override
+    public boolean isAssegnato() {
+        return this.missioneKey != null;
     }
 
     @Override

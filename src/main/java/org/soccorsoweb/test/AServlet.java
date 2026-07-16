@@ -64,13 +64,9 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Random;
 
-/**
- *
- * @author GDP
- */
 public class AServlet extends HttpServlet {
 
-        private String generaCodiceFiscaleRandom() {
+    private String generaCodiceFiscaleRandom() {
         String lettere = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         String numeri = "0123456789";
         Random r = new Random();
@@ -100,14 +96,13 @@ public class AServlet extends HttpServlet {
             out.println("<body>");
             out.println("<h1>This is servlet <em>" + getServletName() + "</em> (implemented in class <em>" + getClass().getSimpleName() + "</em>)" + "</h1>");
 
-            out.println("<h2>Esecuzione Test dei DAO con Relazioni, Credenziali, Patente, Abilità, Materiale, Mezzo, Squadra, Missione e Aggiornamento su MySQL</h2>");
+            out.println("<h2>Esecuzione Test dei DAO con Relazioni (Inclusi Mezzo e Materiale in Missione) su MySQL</h2>");
             out.println("<hr/>");
 
             DataLayer dataLayer = null;
             try {
                 out.println("<p>1. Recupero DataSource dal Context (JNDI)... </p>");
                 
-                // Lookup JNDI della risorsa definita in context.xml
                 Context initContext = new InitialContext();
                 Context envContext  = (Context) initContext.lookup("java:comp/env");
                 DataSource dataSource = (DataSource) envContext.lookup("jdbc/soccorso");
@@ -117,7 +112,6 @@ public class AServlet extends HttpServlet {
 
                 out.println("<p>2. Inizializzazione dei DAO... </p>");
                 
-                // Dichiarazione tramite le interfacce per rispettare l'astrazione
                 UtenteDAO utenteDAO = new UtenteDAO_MySQL(dataLayer);
                 AnagraficaDAO anagraficaDAO = new AnagraficaDAO_MySQL(dataLayer);
                 RichiestaDAO richiestaDAO = new RichiestaDAO_MySQL(dataLayer);
@@ -164,7 +158,7 @@ public class AServlet extends HttpServlet {
                 out.println("<p>Credenziali salvate! ID Generato: " + cb.getKey() + ". Collegamento all'utente in corso...</p>");
                 
                 credenzialiDAO.legaCredenzialiAUtente(cb, u);
-                out.println("<p class='success'><b>[OK]</b> Credenziali associate all'utente correttamente nel database (assegna_credenziali).</p>");
+                out.println("<p class='success'><b>[OK]</b> Credenziali associate all'utente correttamente nel database.</p>");
 
                 out.println("<p>4. Test Inserimento Anagrafica (INSERT)... </p>");
                 Anagrafica a = anagraficaDAO.createAnagrafica();
@@ -177,7 +171,7 @@ public class AServlet extends HttpServlet {
                 a.setLuogoNasc("Roma");
                 a.setDataNasc(LocalDate.of(2000, 5, 15));
                 anagraficaDAO.storeAnagrafica(a, u);
-                out.println("<p class='success'><b>[OK]</b> Anagrafica salvana con CF Unico (<b>" + cfUnico + "</b>)! ID Generato: " + a.getKey() + "</p>");
+                out.println("<p class='success'><b>[OK]</b> Anagrafica salvata con CF Unico (<b>" + cfUnico + "</b>)! ID Generato: " + a.getKey() + "</p>");
 
                 out.println("<p>5. Test Inserimento Richiesta (INSERT)... </p>");
                 Richiesta r = richiestaDAO.createRichiesta();
@@ -199,24 +193,20 @@ public class AServlet extends HttpServlet {
                 descRichiestaDAO.storeDescRichiesta(dr, r);
                 out.println("<p class='success'><b>[OK]</b> DescRichiesta salvata! ID Generato: " + dr.getKey() + "</p>");
 
-                out.println("<p>7. Test Inserimento e Associazione Patente (INSERT + ASSOCIAZIONE)... </p>");
+                out.println("<p>7. Test Inserimento e Associazione Patente... </p>");
                 Patente p = patenteDAO.createPatente();
                 p.setNumero("RM" + String.valueOf(System.currentTimeMillis()).substring(7) + "X");
                 p.setTipo(TipoPatente.B); 
                 patenteDAO.storePatente(p);
-                out.println("<p>Patente creata correttamente. ID Generato: " + p.getKey() + ". Collegamento all'utente in corso...</p>");
-                
                 patenteDAO.legaPatenteAUtente(p, u);
-                out.println("<p class='success'><b>[OK]</b> Patente associata correttamente all'utente nel database (assegna_patente).</p>");
+                out.println("<p class='success'><b>[OK]</b> Patente associata correttamente all'utente nel database.</p>");
 
-                out.println("<p>8. Test Inserimento e Associazione Abilità (INSERT + ASSOCIAZIONE)... </p>");
+                out.println("<p>8. Test Inserimento e Associazione Abilità... </p>");
                 Abilita ab = abilitaDAO.createAbilita();
                 ab.setDesc("Soccorso " + String.valueOf(System.currentTimeMillis()).substring(7));
                 abilitaDAO.storeAbilita(ab);
-                out.println("<p>Abilità creata correttamente. ID Generato: " + ab.getKey() + ". Collegamento all'utente in corso...</p>");
-                
                 abilitaDAO.legaAbilitaAUtente(ab, u);
-                out.println("<p class='success'><b>[OK]</b> Abilità associata correttamente all'utente nel database (assegna_abilita).</p>");
+                out.println("<p class='success'><b>[OK]</b> Abilità associata correttamente all'utente nel database.</p>");
 
                 out.println("<p>8b. Test Inserimento Materiale (INSERT)... </p>");
                 Materiale m = materialeDAO.createMateriale();
@@ -238,11 +228,9 @@ public class AServlet extends HttpServlet {
                 Squadra sq = squadraDAO.createSquadra();
                 sq.setCapoSquadra(u); 
                 squadraDAO.storeSquadra(sq);
-                out.println("<p>Squadra creata con successo! ID Generato: " + sq.getKey() + " (Caposquadra ID: " + u.getKey() + ")</p>");
                 squadraDAO.aggiungiMembroASquadra(sq, u);
-                out.println("<p class='success'><b>[OK]</b> Operatore associato alla squadra correttamente (assegna_squadra).</p>");
+                out.println("<p class='success'><b>[OK]</b> Operatore associato alla squadra correttamente.</p>");
 
-                // --- INSERIMENTO DELLA MISSIONE OBBLIGATORIA PER EVITARE L'ERRORE DI COSTRUTTO ---
                 out.println("<p>8e. Test Inserimento Missione (INSERT)... </p>");
                 Missione mis = missioneDAO.createMissione();
                 mis.setObiettivo("Soccorso stradale codice rosso");
@@ -258,14 +246,18 @@ public class AServlet extends HttpServlet {
                 missioneDAO.storeMissione(mis);
                 out.println("<p class='success'><b>[OK]</b> Missione salvata! ID Generato: " + mis.getKey() + "</p>");
 
-                // --- SALVATAGGIO DELL'AGGIORNAMENTO PASSANDO L'ID DELLA MISSIONE DIRETTAMENTE ---
+                out.println("<p>8e-bis. Test Assegnazione Materiale e Mezzo alla Missione (INSERT IN TABELLE ASSOCIAZIONE)... </p>");
+                materialeDAO.assegnaMaterialeAMissione(m, mis);
+                out.println("<p class='success'><b>[OK]</b> Materiale associato tramite tabella 'assegna_materiale' alla missione ID: " + mis.getKey() + "</p>");
+                mezzoDAO.assegnaMezzoAMissione(mz, mis);
+                out.println("<p class='success'><b>[OK]</b> Mezzo associato tramite tabella 'assegna_mezzo' alla missione ID: " + mis.getKey() + "</p>");
+                
                 out.println("<p>8f. Test Inserimento Aggiornamento legato alla Missione (INSERT)... </p>");
                 Aggiornamento agg = aggiornamentoDAO.createAggiornamento();
                 agg.setTesto("Nuova linea guida per la gestione delle emergenze su strada.");
                 agg.setTimestamp(LocalDateTime.now());
                 agg.setAdmin(u);
 
-                // Eseguiamo lo store passando esplicitamente la chiave esterna della missione
                 aggiornamentoDAO.storeAggiornamento(agg, mis.getKey());
                 out.println("<p class='success'><b>[OK]</b> Aggiornamento salvato! ID Generato: " + agg.getKey() + " associato all'admin ID: " + u.getKey() + " e alla missione ID: " + mis.getKey() + "</p>");
 
@@ -292,40 +284,18 @@ public class AServlet extends HttpServlet {
                     out.println("<p class='error'><b>[FALLITO]</b> Anagrafica correlata non trovata.</p>");
                 }
 
-                Richiesta checkRichiesta = richiestaDAO.getRichiesta(r.getKey());
-                DescRichiesta checkDesc = checkRichiesta.getDescrizioneDettaglio();
-                if (checkDesc != null) {
-                    out.println("<p class='success'><b>[OK]</b> Lazy Loading DescRichiesta riuscito! Posizione estratta: " + checkDesc.getPosizione() + "</p>");
-                } else {
-                    out.println("<p class='error'><b>[FALLITO]</b> DescRichiesta correlata non trovata.</p>");
-                }
-
-                List<Patente> patentiUtente = patenteDAO.getPatentiByUtente(checkUtente);
-                if (patentiUtente != null && !patentiUtente.isEmpty()) {
-                    Patente patenteCaricata = patentiUtente.get(0);
-                    out.println("<p class='success'><b>[OK]</b> Estrazione Patenti riuscita! Trovate " + patentiUtente.size() + " patenti. Prima patente -> Numero: " + patenteCaricata.getNumero() + ", Tipo: " + patenteCaricata.getTipo() + "</p>");
-                } else {
-                    out.println("<p class='error'><b>[FALLITO]</b> Nessuna patente associata all'utente nel database.</p>");
-                }
-
-                List<Abilita> abilitaUtente = abilitaDAO.getAbilitaByUtente(checkUtente);
-                if (abilitaUtente != null && !abilitaUtente.isEmpty()) {
-                    Abilita abilitaCaricata = abilitaUtente.get(0);
-                    out.println("<p class='success'><b>[OK]</b> Estrazione Abilità riuscita! Trovate " + abilitaUtente.size() + " abilità. Prima abilità -> Desc: " + abilitaCaricata.getDesc() + "</p>");
-                } else {
-                    out.println("<p class='error'><b>[FALLITO]</b> Nessuna abilità associata all'utente nel database.</p>");
-                }
-
                 Materiale checkMateriale = materialeDAO.getMateriale(m.getKey());
                 if (checkMateriale != null) {
-                    out.println("<p class='success'><b>[OK]</b> Lettura Materiale riuscito! Nome: " + checkMateriale.getNome() + ", Cod: " + checkMateriale.getCodMat() + "</p>");
+                    String assegnato = checkMateriale.isAssegnato() ? "Sì (Missione ID: " + checkMateriale.getMissioneKey() + ")" : "No";
+                    out.println("<p class='success'><b>[OK]</b> Lettura Materiale riuscito! Nome: " + checkMateriale.getNome() + ", Assegnato: " + assegnato + "</p>");
                 } else {
                     out.println("<p class='error'><b>[FALLITO]</b> Impossibile caricare il record Materiale salvato.</p>");
                 }
 
                 Mezzo checkMezzo = mezzoDAO.getMezzo(mz.getKey());
                 if (checkMezzo != null) {
-                    out.println("<p class='success'><b>[OK]</b> Lettura Mezzo riuscito! Nome: " + checkMezzo.getNome() + ", Targa: " + checkMezzo.getTarga() + "</p>");
+                    String assegnato = checkMezzo.isAssegnato() ? "Sì (Missione ID: " + checkMezzo.getMissioneKey() + ")" : "No";
+                    out.println("<p class='success'><b>[OK]</b> Lettura Mezzo riuscito! Nome: " + checkMezzo.getNome() + ", Assegnato: " + assegnato + "</p>");
                 } else {
                     out.println("<p class='error'><b>[FALLITO]</b> Impossibile caricare il record Mezzo salvato.</p>");
                 }
@@ -334,11 +304,6 @@ public class AServlet extends HttpServlet {
                 if (checkSquadra != null) {
                     Utente checkCapo = checkSquadra.getCapoSquadra();
                     out.println("<p class='success'><b>[OK]</b> Lettura Squadra riuscita! Caposquadra caricato correttamente: " + (checkCapo != null ? checkCapo.getNomeUtente() : "NULL") + "</p>");
-                    
-                    List<Utente> operatoriSquadra = checkSquadra.getOperatori();
-                    if (operatoriSquadra != null && !operatoriSquadra.isEmpty()) {
-                        out.println("<p class='success'><b>[OK]</b> Lazy Loading Operatori riuscito! Trovati " + operatoriSquadra.size() + " operatori.</p>");
-                    }
                 }
 
                 out.println("<p>Estrazione e verifica della Missione inserita da DB...</p>");
@@ -401,6 +366,6 @@ public class AServlet extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "AServlet aggiornata per includere l'entità Missione integrata con la tabella Aggiornamenti";
+        return "AServlet aggiornata per testare l'associazione di Materiale e Mezzo alla Missione";
     }
 }

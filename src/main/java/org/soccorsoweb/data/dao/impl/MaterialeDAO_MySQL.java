@@ -2,6 +2,7 @@ package org.soccorsoweb.data.dao.impl;
 
 import org.soccorsoweb.data.dao.MaterialeDAO;
 import org.soccorsoweb.model.Materiale;
+import org.soccorsoweb.model.Missione;
 import org.soccorsoweb.model.impl.proxy.MaterialeProxy;
 import org.soccorsoweb.data.Dao;
 import org.soccorsoweb.data.DataException;
@@ -20,6 +21,7 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
     private PreparedStatement sMateriali;
     private PreparedStatement iMateriale;
     private PreparedStatement uMateriale;
+    private PreparedStatement iAssegnaMateriale; 
 
     public MaterialeDAO_MySQL(DataLayer d) {
         super(d);
@@ -29,19 +31,12 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
     public void init() throws DataException {
         try {
             super.init();
-
             sMaterialeByID = connection.prepareStatement("SELECT * FROM Materiale WHERE ID=?");
             sMateriali = connection.prepareStatement("SELECT * FROM Materiale");
-
-            iMateriale = connection.prepareStatement(
-                "INSERT INTO Materiale (nome, `desc`, cod_mat) VALUES(?,?,?)",
-                Statement.RETURN_GENERATED_KEYS
-            );
-
-            uMateriale = connection.prepareStatement(
-                "UPDATE Materiale SET nome=?, `desc`=?, cod_mat=? WHERE ID=?"
-            );
-
+            iMateriale = connection.prepareStatement("INSERT INTO Materiale (nome, `desc`, cod_mat) VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS);
+            uMateriale = connection.prepareStatement("UPDATE Materiale SET nome=?, `desc`=?, cod_mat=? WHERE ID=?");
+            
+            iAssegnaMateriale = connection.prepareStatement("INSERT INTO assegna_materiale (ID_MATERIALE, ID_MISSIONE) VALUES (?, ?)");
         } catch (SQLException ex) {
             throw new DataException("Error initializing materiale data layer", ex);
         }
@@ -54,16 +49,24 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
             if (sMateriali != null) sMateriali.close();
             if (iMateriale != null) iMateriale.close();
             if (uMateriale != null) uMateriale.close();
-        } catch (SQLException ex) {
-            // chiusura silente
-        }
+            if (iAssegnaMateriale != null) iAssegnaMateriale.close(); // Chiusura
+        } catch (SQLException ex) { }
         super.destroy();
     }
 
     @Override
-    public Materiale createMateriale() {
-        return new MaterialeProxy(getDataLayer());
+    public void assegnaMaterialeAMissione(Materiale mat, Missione mis) throws DataException {
+        try {
+            iAssegnaMateriale.setInt(1, mat.getKey());
+            iAssegnaMateriale.setInt(2, mis.getKey());
+            iAssegnaMateriale.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataException("Errore nell'assegnazione materiale alla missione", ex);
+        }
     }
+
+  @Override
+    public Materiale createMateriale() { return new MaterialeProxy(getDataLayer()); }
 
     private MaterialeProxy createMateriale(ResultSet rs) throws DataException {
         MaterialeProxy m = (MaterialeProxy) createMateriale();
@@ -73,31 +76,24 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
             m.setDesc(rs.getString("desc"));
             m.setCodMat(rs.getString("cod_mat"));
             m.setVersion(0);
-        } catch (SQLException ex) {
-            throw new DataException("Unable to create materiale object from ResultSet", ex);
-        }
+        } catch (SQLException ex) { throw new DataException("Unable to create materiale object", ex); }
         return m;
     }
 
     @Override
     public Materiale getMateriale(int materiale_key) throws DataException {
-        Materiale m = null;
-        if (getDataLayer().getCache().has(Materiale.class, materiale_key)) {
-            m = getDataLayer().getCache().get(Materiale.class, materiale_key);
-        } else {
-            try {
-                sMaterialeByID.setInt(1, materiale_key);
-                try (ResultSet rs = sMaterialeByID.executeQuery()) {
-                    if (rs.next()) {
-                        m = createMateriale(rs);
-                        getDataLayer().getCache().add(Materiale.class, m);
-                    }
+        if (getDataLayer().getCache().has(Materiale.class, materiale_key)) return getDataLayer().getCache().get(Materiale.class, materiale_key);
+        try {
+            sMaterialeByID.setInt(1, materiale_key);
+            try (ResultSet rs = sMaterialeByID.executeQuery()) {
+                if (rs.next()) {
+                    Materiale m = createMateriale(rs);
+                    getDataLayer().getCache().add(Materiale.class, m);
+                    return m;
                 }
-            } catch (SQLException ex) {
-                throw new DataException("Unable to load materiale by ID", ex);
             }
-        }
-        return m;
+        } catch (SQLException ex) { throw new DataException("Unable to load materiale", ex); }
+        return null;
     }
 
     @Override
@@ -109,49 +105,34 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
                 getDataLayer().getCache().add(Materiale.class, m);
                 result.add(m);
             }
-        } catch (SQLException ex) {
-            throw new DataException("Unable to load materiale list", ex);
-        }
+        } catch (SQLException ex) { throw new DataException("Unable to load materiale list", ex); }
         return result;
     }
 
     @Override
     public void storeMateriale(Materiale materiale) throws DataException {
         try {
-            if (materiale.getKey() != null && materiale.getKey() > 0) { // UPDATE
-                if (materiale instanceof DataItemProxy && !((DataItemProxy) materiale).isModified()) {
-                    return;
-                }
-
+            if (materiale.getKey() != null && materiale.getKey() > 0) {
+                if (materiale instanceof DataItemProxy && !((DataItemProxy) materiale).isModified()) return;
                 uMateriale.setString(1, materiale.getNome());
                 uMateriale.setString(2, materiale.getDesc());
                 uMateriale.setString(3, materiale.getCodMat());
                 uMateriale.setInt(4, materiale.getKey());
-
-                if (uMateriale.executeUpdate() == 0) {
-                    throw new DataException("Unable to update materiale: record not found");
-                }
-            } else { // INSERT
+                uMateriale.executeUpdate();
+            } else {
                 iMateriale.setString(1, materiale.getNome());
                 iMateriale.setString(2, materiale.getDesc());
                 iMateriale.setString(3, materiale.getCodMat());
-
                 if (iMateriale.executeUpdate() == 1) {
                     try (ResultSet keys = iMateriale.getGeneratedKeys()) {
                         if (keys.next()) {
-                            int key = keys.getInt(1);
-                            materiale.setKey(key);
+                            materiale.setKey(keys.getInt(1));
                             getDataLayer().getCache().add(Materiale.class, materiale);
                         }
                     }
                 }
             }
-
-            if (materiale instanceof DataItemProxy) {
-                ((DataItemProxy) materiale).setModified(false);
-            }
-        } catch (SQLException ex) {
-            throw new DataException("Unable to store materiale", ex);
-        }
+            if (materiale instanceof DataItemProxy) ((DataItemProxy) materiale).setModified(false);
+        } catch (SQLException ex) { throw new DataException("Unable to store materiale", ex); }
     }
 }

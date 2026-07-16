@@ -42,4 +42,10 @@ public class MaterialeProxy extends MaterialeImpl implements DataItemProxy {
         super.setCodMat(codMat);
         this.modified = true;
     }
+
+    @Override
+    public void setMissioneKey(Integer missioneKey) {
+        super.setMissioneKey(missioneKey);
+        this.modified = true;
+    }
 }

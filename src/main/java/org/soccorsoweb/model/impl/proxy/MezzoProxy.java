@@ -42,4 +42,10 @@ public class MezzoProxy extends MezzoImpl implements DataItemProxy {
         super.setTarga(targa);
         this.modified = true;
     }
+
+    @Override
+    public void setMissioneKey(Integer missioneKey) {
+        super.setMissioneKey(missioneKey);
+        this.modified = true;
+    }
 }

@@ -13,4 +13,9 @@ public interface Mezzo extends DataItem<Integer>{
     String getTarga();
     void setTarga(String targa);
     
+   Integer getMissioneKey();
+   
+    void setMissioneKey(Integer missioneKey);
+    
+    boolean isAssegnato();
 }
