@@ -64,9 +64,9 @@
     items=operatori![]
     columns=columns
     filters=filters
-    detailEndpoint="/api/admin/operators"
-    modalId="operatorsDetailModal"
-    modalTitle="Dettagli operatore"
+    hasDetails=true
+    detailModalTitle="Dettagli operatore"
+    editModalTitle="Modifica operatore"
     page=page!1
     totalPages=totalPages!1
 />

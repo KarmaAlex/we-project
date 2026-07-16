@@ -63,7 +63,17 @@
     
     <servlet-mapping>
         <servlet-name>DetailApi</servlet-name>
-        <url-pattern>/api/*</url-pattern>
+        <url-pattern>/api/detail/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>EditApi</servlet-name>
+        <servlet-class>org.soccorsoweb.test.EditApiServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>EditApi</servlet-name>
+        <url-pattern>/api/edit/*</url-pattern>
     </servlet-mapping>
 
     <servlet>

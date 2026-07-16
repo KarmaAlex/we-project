@@ -1,5 +1,5 @@
 <#-- Table macro for paginated data lists -->
-<#macro table items columns currentPage totalPages section="list" filters={} path="" detailEndpoint="">
+<#macro table items columns currentPage totalPages section="list" filters={} path="" hasDetails=false>
 <div class="table-container">
   <table class="data-table" data-section="${section}" data-path="${path}">
     <thead>
@@ -12,7 +12,7 @@
             </#if>
           </th>
         </#list>
-        <#if detailEndpoint != "">
+        <#if hasDetails>
         <th>Azioni</th>
         </#if>
       </tr>
@@ -30,11 +30,11 @@
                 </#if>
               </td>
             </#list>
-            <#if detailEndpoint != "">
+            <#if hasDetails>
               <td>
                 <div class="action-buttons">
-                  <a class="btn modal-trigger" href="${ctx}${detailEndpoint}/${item.id}/detail" data-modal="${section}DetailModal" data-toggle="modal">Dettagli</a>
-                  <#if item.editable?? && item.editable><a class="btn modal-trigger" href="${ctx}${detailEndpoint}/${item.id}/edit" data-modal="${section}EditModal" data-toggle="modal">🖉</a></#if>
+                  <a class="btn modal-trigger" href="${ctx}/api/detail/${section}/${item.id}" data-modal="${section}DetailModal" data-toggle="modal">Dettagli</a>
+                  <#if item.editable?? && item.editable><a class="btn modal-trigger" href="${ctx}/api/edit/${section}/${item.id}" data-modal="${section}EditModal" data-toggle="modal">🖉</a></#if>
                 </div>
               </td>
             </#if>

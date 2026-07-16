@@ -68,9 +68,9 @@
     items=missioni![]
     columns=columns
     filters=filters
-    detailEndpoint="/api/operator/missions"
-    modalId="missionsDetailModal"
-    modalTitle="Dettagli missione"
+    hasDetails=true
+    detailModalTitle="Dettagli missione"
+    editModalTitle="Modifica missione"
     page=page!1
     totalPages=totalPages!1
 />

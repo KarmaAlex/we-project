@@ -64,9 +64,9 @@
     items=mezzi![]
     columns=columns
     filters=filters
-    detailEndpoint="/api/admin/vehicles"
-    modalId="vehicleDetailModal"
-    modalTitle="Dettagli mezzo"
+    hasDetails=true
+    detailModalTitle="Dettagli operatore"
+    editModalTitle="Modifica operatore"
     page=page!1
     totalPages=totalPages!1
 />

@@ -3,11 +3,11 @@
     items
     columns
     filters=[]
-    detailEndpoint=""
+    hasDetails=false
     page=1
     totalPages=1
-    modalId="detailModal"
-    modalTitle="Dettagli"
+    detailModalTitle="Dettagli"
+    editModalTitle="Modifica"
 >
 
     <#if filters?has_content>
@@ -64,16 +64,17 @@
         currentPage=page
         totalPages=totalPages
         section=section
-        detailEndpoint=detailEndpoint
+        hasDetails=hasDetails
     />
+    <#if hasDetails>
+        <@modal id=section+"DetailModal" title=detailModalTitle >
+            <p id="detailModalContent">Caricamento...</p>
+        </@modal>
+    </#if>
+    
 
-    <@modal
-        id=modalId
-        title=modalTitle
-    >
-        <p id="modalContent">
-            Caricamento...
-        </p>
+    <@modal id=section+"EditModal" title=editModalTitle >
+        <p id="editModalContent">Caricamento...</p>
     </@modal>
 
 </#macro>

@@ -1,9 +1,62 @@
-<#-- Use the shared base layout -->
 <#include "base.ftl">
+<#include "form.ftl">
 <@basePage title="SoccorsoWeb - Home" css=["/style/home.css"]>
   <section class="hero" id="main-content" aria-labelledby="request-heading">
     <div class="container">
       <h2 id="request-heading">Invia una richiesta di soccorso</h2>
+      <#assign emergencyFields = [
+      {
+          "type":"text",
+          "name":"nome",
+          "label":"Nome",
+          "required":true,
+          "autocomplete":"name"
+      },
+      {
+          "type":"email",
+          "name":"email",
+          "label":"Email",
+          "required":true,
+          "autocomplete":"email"
+      },
+      {
+          "type":"text",
+          "name":"posizione",
+          "label":"Posizione",
+          "placeholder":"Indirizzo o coordinate",
+          "required":true,
+          "autocomplete":"street-address",
+          "help":"Inserisci un indirizzo oppure coordinate GPS."
+      },
+      {
+          "type":"textarea",
+          "name":"descrizione",
+          "label":"Descrizione",
+          "rows":5,
+          "required":true
+      },
+      {
+          "type":"file",
+          "name":"foto",
+          "label":"Foto (opzionale)",
+          "accept":"image/*",
+          "help":"È possibile allegare una foto dell'emergenza."
+      },
+      {
+          "type":"text",
+          "name":"captcha",
+          "label":"Solve: 3 + 1 =",
+          "required":true,
+          "help":"Usato per ridurre lo spam (mockup)"
+      }
+      ]>
+
+      <@form
+          id="main_form"
+          fields=emergencyFields
+          submitLabel="Invia richiesta"
+          resetLabel="Annulla"
+      />
       <p id="form-description">Compila i campi sottostanti per inviare una richiesta di soccorso.</p>
       <form class="request-form" id="main_form" method="post" enctype="multipart/form-data" aria-labelledby="request-heading" aria-describedby="form-description" tabindex="0">
         <label for="nome">Nome

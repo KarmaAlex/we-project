@@ -1,5 +1,12 @@
 package org.soccorsoweb.test;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -7,24 +14,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-/**
- * DetailApiServlet: Fornisce dettagli per i modali
- * Routes:
- * /api/admin/requests/{id}/detail
- * /api/admin/missions/{id}/detail
- * /api/admin/operators/{id}/detail
- * /api/admin/vehicles/{id}/detail
- * /api/admin/materials/{id}/detail
- * /api/operator/missions/{id}/detail
- */
-public class DetailApiServlet extends HttpServlet {
-
+public class EditApiServlet extends HttpServlet{
     private Configuration cfg;
 
     @Override
@@ -40,12 +31,12 @@ public class DetailApiServlet extends HttpServlet {
         String ctx = req.getContextPath();
         String path = req.getRequestURI().substring(ctx.length());
 
-        // Parse path: /api/detail/{resource}/{id}
-        Pattern pattern = Pattern.compile("/api/detail/([^/]+)/([^/]+)");
+        // Parse path: /api/edit/{resource}/{id}
+        Pattern pattern = Pattern.compile("/api/edit/([^/]+)/([^/]+)");
         Matcher matcher = pattern.matcher(path);
 
         if (matcher.matches()) {
-            String role = "admin"; // admin or operator
+            String role = "admin"; // TODO: replace with role from current session
             String resource = matcher.group(1); // requests, missions, etc
             String id = matcher.group(2); // ID
 
@@ -60,23 +51,31 @@ public class DetailApiServlet extends HttpServlet {
                     switch (resource) {
                         case "requests":
                             model.put("dettaglio", MockDataProvider.getRichiestaDetail(id));
-                            renderDetailTemplate(resp, "details/richiesta-detail.ftl", model);
+                            renderDetailTemplate(resp, "edit/richiesta-edit.ftl", model);
                             break;
                         case "missions":
                             model.put("dettaglio", MockDataProvider.getMissioneDetail(id));
-                            renderDetailTemplate(resp, "details/missione-detail.ftl", model);
+                            model.put("squadreDisponibili", MockDataProvider.getMockSquadre());
+                            model.put("materialiDisponibili", MockDataProvider.getMockMateriali());
+                            model.put("mezziDisponibili", MockDataProvider.getMockMezzi());
+                            model.put("operatoriDisponibili", MockDataProvider.getMockOperatori());
+                            renderDetailTemplate(resp, "edit/missione-edit.ftl", model);
                             break;
                         case "operators":
                             model.put("dettaglio", MockDataProvider.getOperatoreDetail(id));
-                            renderDetailTemplate(resp, "details/operatore-detail.ftl", model);
+                            model.put("patentiDisponibili", List.of("A", "B", "C"));
+                            model.put("abilitaDisponibili", List.of("Medico", "Paramedico", "Bagnino"));
+                            renderDetailTemplate(resp, "edit/operatore-edit.ftl", model);
                             break;
                         case "vehicles":
                             model.put("dettaglio", MockDataProvider.getMezzoDetail(id));
-                            renderDetailTemplate(resp, "details/mezzo-detail.ftl", model);
+                            model.put("missioniAperte", MockDataProvider.getMockMissioni());
+                            renderDetailTemplate(resp, "edit/mezzo-edit.ftl", model);
                             break;
                         case "materials":
                             model.put("dettaglio", MockDataProvider.getMaterialeDetail(id));
-                            renderDetailTemplate(resp, "details/materiale-detail.ftl", model);
+                            model.put("missioniAperte", MockDataProvider.getMockMissioni());
+                            renderDetailTemplate(resp, "edit/materiale-edit.ftl", model);
                             break;
                         default:
                             resp.setStatus(404);
@@ -97,7 +96,7 @@ public class DetailApiServlet extends HttpServlet {
 
             } catch (Exception ex) {
                 resp.setStatus(500);
-                resp.getWriter().write("<p>Errore nel caricamento dei dati</p>");
+                resp.getWriter().write("<p>"+ex.getMessage()+"</p>");
             }
             return;
         }

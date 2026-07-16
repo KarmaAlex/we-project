@@ -47,9 +47,9 @@
     items=materiali![]
     columns=columns
     filters=filters
-    detailEndpoint="/api/admin/materials"
-    modalId="materialsDetailModal"
-    modalTitle="Dettagli materiale"
+    hasDetails=true
+    detailModalTitle="Dettagli materiale"
+    editModalTitle="Modifica materiale"
     page=page!1
     totalPages=totalPages!1
 />

@@ -62,7 +62,7 @@ public class MockDataProvider {
         Map<String, Object> m1 = new HashMap<>();
         m1.put("id", "MISS-001");
         m1.put("richiesta_id", "REQ-001");
-        m1.put("squadra", "Squadra A (Capo: Marco Bianchi)");
+        m1.put("squadra", "SQU-001");
         m1.put("obiettivo", "Soccorso incidente stradale");
         m1.put("stato", "IN_CORSO");
         m1.put("data_inizio", "2026-07-04 14:45");
@@ -75,7 +75,7 @@ public class MockDataProvider {
         Map<String, Object> m2 = new HashMap<>();
         m2.put("id", "MISS-002");
         m2.put("richiesta_id", "REQ-002");
-        m2.put("squadra", "Squadra B (Capo: Paolo Neri)");
+        m2.put("squadra", "SQU-003");
         m2.put("obiettivo", "Persona svenuta");
         m2.put("stato", "CHIUSA");
         m2.put("data_inizio", "2026-07-03 10:30");
@@ -100,6 +100,7 @@ public class MockDataProvider {
         o1.put("missione_corrente", "MISS-001");
         o1.put("patenti", Arrays.asList("A", "B", "C"));
         o1.put("abilita", Arrays.asList("Soccorritore", "Autista"));
+        o1.put("editable", true);
         operatori.add(o1);
 
         Map<String, Object> o2 = new HashMap<>();
@@ -137,6 +138,7 @@ public class MockDataProvider {
         v1.put("targa", "AA123BB");
         v1.put("stato", "OCCUPATO");
         v1.put("missione_corrente", "MISS-001");
+        v1.put("editable", true);
         mezzi.add(v1);
 
         Map<String, Object> v2 = new HashMap<>();
@@ -146,6 +148,7 @@ public class MockDataProvider {
         v2.put("targa", "BB456CC");
         v2.put("stato", "DISPONIBILE");
         v2.put("missione_corrente", "");
+        v2.put("editable", true);
         mezzi.add(v2);
 
         Map<String, Object> v3 = new HashMap<>();
@@ -169,7 +172,8 @@ public class MockDataProvider {
         m1.put("descrizione", "Kit di primo soccorso completo");
         m1.put("quantita", 5);
         m1.put("stato", "OCCUPATO");
-        m1.put("missione_corrente", "MISS-001");
+        m1.put("idMissione", "MISS-001");
+        m1.put("editable", true);
         materiali.add(m1);
 
         Map<String, Object> m2 = new HashMap<>();
@@ -178,7 +182,8 @@ public class MockDataProvider {
         m2.put("descrizione", "Barella portatile");
         m2.put("quantita", 10);
         m2.put("stato", "DISPONIBILE");
-        m2.put("missione_corrente", "");
+        m2.put("idMissione", "");
+        m2.put("editable", true);
         materiali.add(m2);
 
         Map<String, Object> m3 = new HashMap<>();
@@ -187,10 +192,40 @@ public class MockDataProvider {
         m3.put("descrizione", "Estintore polvere 6kg");
         m3.put("quantita", 8);
         m3.put("stato", "DISPONIBILE");
-        m3.put("missione_corrente", "");
+        m3.put("idMissione", "");
         materiali.add(m3);
 
         return materiali;
+    }
+
+    public static List<Map<String, Object>> getMockSquadre() {
+        List<Map<String, Object>> squadre = new ArrayList<>();
+
+        Map<String, Object> s1 = new HashMap<>();
+        s1.put("id", "SQU-001");
+        s1.put("caposquadra", "Tizio");
+        s1.put("membri", List.of("Tizio", "Caio", "Sempronio"));
+        s1.put("idMissione", "MISS-001");
+        s1.put("editable", true);
+        squadre.add(s1);
+
+        Map<String, Object> s2 = new HashMap<>();
+        s2.put("id", "SQU-002");
+        s2.put("caposquadra", "Caio");
+        s2.put("membri", List.of("Caio", "Sempronio"));
+        s2.put("idMissione", "MISS-002");
+        s2.put("editable", true);
+        squadre.add(s2);
+
+        Map<String, Object> s3 = new HashMap<>();
+        s3.put("id", "SQU-003");
+        s3.put("caposquadra", "Sempronio");
+        s3.put("membri", List.of("Tizio", "Caio"));
+        s3.put("idMissione", "MISS-001");
+        s3.put("editable", true);
+        squadre.add(s3);
+
+        return squadre;
     }
 
     public static Map<String, Object> getRichiestaDetail(String id) {
@@ -263,7 +298,7 @@ public class MockDataProvider {
         operatore.put("email", "marco@soccorsoweb.it");
         operatore.put("telefono", "+39 333 123 4567");
         operatore.put("stato", "OCCUPATO");
-        operatore.put("missione_corrente", "MISS-001");
+        operatore.put("idMissione", "MISS-001");
         operatore.put("patenti", Arrays.asList("A", "B", "C"));
         operatore.put("abilita", Arrays.asList("Soccorritore", "Autista", "Autista di ambulanza"));
 
@@ -292,7 +327,7 @@ public class MockDataProvider {
         mezzo.put("descrizione", "Ambulanza di tipo B attrezzata");
         mezzo.put("targa", "AA123BB");
         mezzo.put("stato", "OCCUPATO");
-        mezzo.put("missione_corrente", "MISS-001");
+        mezzo.put("idMissione", "MISS-001");
 
         List<Map<String, Object>> storici = new ArrayList<>();
         Map<String, Object> hist1 = new HashMap<>();
@@ -312,7 +347,7 @@ public class MockDataProvider {
         materiale.put("descrizione", "Kit di primo soccorso completo con medicinali e bende");
         materiale.put("quantita", 5);
         materiale.put("stato", "OCCUPATO");
-        materiale.put("missione_corrente", "MISS-001");
+        materiale.put("missioneId", "MISS-001");
 
         List<Map<String, Object>> storici = new ArrayList<>();
         Map<String, Object> hist1 = new HashMap<>();

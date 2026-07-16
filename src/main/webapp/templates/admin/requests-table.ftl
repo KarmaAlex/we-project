@@ -79,9 +79,9 @@
     items=richieste![]
     columns=columns
     filters=filters
-    detailEndpoint="/api/admin/requests"
-    modalId="requestsDetailModal"
-    modalTitle="Dettagli richiesta"
+    hasDetails=true
+    detailModalTitle="Dettagli operatore"
+    editModalTitle="Modifica operatore"
     page=page!1
     totalPages=totalPages!1
 />

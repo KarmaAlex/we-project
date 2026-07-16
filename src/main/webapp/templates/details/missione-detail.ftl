@@ -1,4 +1,3 @@
-<#-- Detail: Missione -->
 <#if dettaglio??>
   <div style="padding: 1rem;">
     
