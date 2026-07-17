@@ -68,4 +68,5 @@
     fields=materialeFields
     submitLabel="Salva"
     resetLabel="Annulla"
+    cssClass="edit-modal"
 />

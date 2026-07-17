@@ -94,4 +94,5 @@
     fields=operatoreFields
     submitLabel="Salva"
     resetLabel="Annulla"
+    cssClass="edit-modal"
 />

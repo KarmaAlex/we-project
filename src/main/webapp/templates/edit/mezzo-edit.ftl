@@ -65,4 +65,5 @@
     fields=mezzoFields
     submitLabel="Salva"
     resetLabel="Annulla"
+    cssClass="edit-modal"
 />

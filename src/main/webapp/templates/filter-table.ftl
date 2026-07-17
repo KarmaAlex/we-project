@@ -8,6 +8,9 @@
     totalPages=1
     detailModalTitle="Dettagli"
     editModalTitle="Modifica"
+    hasAddBtn=false
+    addModalTitle="Aggiungi"
+    addModalClass="modal-dialog"
 >
 
     <#if filters?has_content>
@@ -66,6 +69,15 @@
         section=section
         hasDetails=hasDetails
     />
+    <#if hasAddBtn>
+        <div class="add-section">
+            <a class="btn primary modal-trigger" href=${ctx}/api/add/${section} data-modal="${section}AddModal" data-toggle="modal">Aggiungi</a>
+        </div>
+        <@modal id=section+"AddModal" title=addModalTitle cssClass=cssClass!"modal-dialog">
+            <p id="detailModalContent">Caricamento...</p>
+        </@modal>
+    </#if>
+
     <#if hasDetails>
         <@modal id=section+"DetailModal" title=detailModalTitle >
             <p id="detailModalContent">Caricamento...</p>

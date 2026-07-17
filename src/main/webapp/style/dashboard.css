@@ -566,3 +566,16 @@ table .badge.in-progress {
 .empty-state p {
   margin: 0.5rem 0;
 }
+
+.edit-modal {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.add-section {
+  margin-top: 1rem;
+}
+
+.add-modal {
+  max-width: 900px;
+}

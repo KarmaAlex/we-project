@@ -37,22 +37,17 @@
 
 <#assign missioneFields = [
 {
-    "type":"hidden",
-    "name":"id",
-    "value":dettaglio.id!''
-},
-{
     "type":"text",
     "name":"richiesta_id",
     "label":"Richiesta",
-    "value":dettaglio.richiesta_id!'',
+    "value":'',
     "readonly":true
 },
 {
     "type":"select",
     "name":"stato",
     "label":"Stato",
-    "value":dettaglio.stato!'PIANIFICATA',
+    "value":'PIANIFICATA',
     "required":true,
     "options":[
         {
@@ -77,20 +72,20 @@
     "type":"date",
     "name":"data_inizio",
     "label":"Data Inizio",
-    "value":dettaglio.data_inizio!'',
+    "value":'',
     "required":true
 },
 {
     "type":"date",
     "name":"data_fine",
     "label":"Data Fine",
-    "value":dettaglio.data_fine!''
+    "value":''
 },
 {
     "type":"textarea",
     "name":"obiettivo",
     "label":"Obiettivo",
-    "value":dettaglio.obiettivo!'',
+    "value":'',
     "rows":3,
     "required":true
 },
@@ -98,14 +93,14 @@
     "type":"text",
     "name":"indirizzo",
     "label":"Indirizzo",
-    "value":dettaglio.indirizzo!'',
+    "value":'',
     "required":true
 },
 {
     "type":"select",
     "name":"squadra",
     "label":"Squadra",
-    "value":dettaglio.idSquadra!'',
+    "value":'',
     "required":true,
     "options":squadraOptions
 },
@@ -113,32 +108,25 @@
     "type":"multiselect",
     "name":"mezzi",
     "label":"Mezzi",
-    "values": dettaglio.mezzi,
+    "values": [],
     "options": mezzoOptions
 },
 {
     "type":"multiselect",
     "name":"materiali",
     "label":"Materiali",
-    "values": dettaglio.materiali,
+    "values": [],
     "options": materialeOptions
-},
-{
-    "type":"textarea",
-    "name":"nuovo_aggiornamento",
-    "label":"Nuovo aggiornamento",
-    "rows":5,
-    "placeholder":"Inserisci un aggiornamento..."
 }
 
 ]>
 
 <@form
     id="missioneForm"
-    action="${ctx}/api/edit/missioni/${dettaglio.id}"
+    action="${ctx}/api/add/missioni"
     method="post"
     fields=missioneFields
-    submitLabel="Salva"
+    submitLabel="Crea missione"
     resetLabel="Annulla"
     cssClass="edit-modal"
 />

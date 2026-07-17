@@ -43,9 +43,10 @@
 
 <@form
     id="richiestaForm"
-    action="="${ctx}/api/edit/richieste/${dettaglio.id}"
+    action="${ctx}/api/edit/richieste/${dettaglio.id}"
     method="post"
     fields=richiestaFields
     submitLabel="Salva"
     resetLabel="Annulla"
+    cssClass="edit-modal"
 />

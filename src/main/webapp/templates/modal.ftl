@@ -1,7 +1,7 @@
 <#-- Modal macro for popups -->
-<#macro modal id="detailModal" title="Dettagli">
+<#macro modal id="detailModal" title="Dettagli" cssClass="modal-dialog">
 <div class="modal-overlay" id="${id}">
-  <div class="modal-dialog">
+  <div class="${cssClass}">
     <div class="modal-header">
       <h3>${title}</h3>
       <button class="modal-close" data-dismiss="modal" aria-label="Chiudi">&times;</button>

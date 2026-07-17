@@ -77,6 +77,16 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>AddApi</servlet-name>
+        <servlet-class>org.soccorsoweb.test.AddApiServlet</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>AddApi</servlet-name>
+        <url-pattern>/api/add/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>HomeServlet</servlet-name>
         <servlet-class>org.soccorsoweb.business.controller.HomeServlet</servlet-class>
     </servlet>
