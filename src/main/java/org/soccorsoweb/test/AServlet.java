@@ -1,50 +1,30 @@
 package org.soccorsoweb.test;
 
 import org.soccorsoweb.data.dao.UtenteDAO;
-import org.soccorsoweb.data.dao.AnagraficaDAO;
 import org.soccorsoweb.data.dao.RichiestaDAO;
-import org.soccorsoweb.data.dao.DescRichiestaDAO;
-import org.soccorsoweb.data.dao.PatenteDAO;
-import org.soccorsoweb.data.dao.AbilitaDAO;
-import org.soccorsoweb.data.dao.CredenzialiDAO;
 import org.soccorsoweb.data.dao.MaterialeDAO;
 import org.soccorsoweb.data.dao.MezzoDAO;
 import org.soccorsoweb.data.dao.SquadraDAO;
 import org.soccorsoweb.data.dao.MissioneDAO;
-import org.soccorsoweb.data.dao.AggiornamentoDAO;
 
 import org.soccorsoweb.data.dao.impl.UtenteDAO_MySQL;
-import org.soccorsoweb.data.dao.impl.AnagraficaDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.RichiestaDAO_MySQL;
-import org.soccorsoweb.data.dao.impl.DescRichiestaDAO_MySQL;
-import org.soccorsoweb.data.dao.impl.PatenteDAO_MySQL;
-import org.soccorsoweb.data.dao.impl.AbilitaDAO_MySQL;
-import org.soccorsoweb.data.dao.impl.CredenzialiDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.MaterialeDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.MezzoDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.SquadraDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.MissioneDAO_MySQL;
-import org.soccorsoweb.data.dao.impl.AggiornamentoDAO_MySQL;
 
 import org.soccorsoweb.model.Squadra;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.model.Utente;
-import org.soccorsoweb.model.Anagrafica;
 import org.soccorsoweb.model.Richiesta;
-import org.soccorsoweb.model.DescRichiesta;
-import org.soccorsoweb.model.Patente;
-import org.soccorsoweb.model.Abilita;
-import org.soccorsoweb.model.Credenziali;
 import org.soccorsoweb.model.Materiale;
 import org.soccorsoweb.model.Mezzo;
 import org.soccorsoweb.model.Missione;
-import org.soccorsoweb.model.Aggiornamento;
 import org.soccorsoweb.model.enums.StatoRichiesta;
-import org.soccorsoweb.model.enums.TipoPatente;
 import org.soccorsoweb.model.enums.EsitoMissione;
 
-import com.mysql.cj.jdbc.MysqlDataSource;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -58,122 +38,56 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.LocalDate;
 import java.time.Duration;
 import java.util.List;
 import java.util.Random;
 
 public class AServlet extends HttpServlet {
 
-    private String generaCodiceFiscaleRandom() {
-        String lettere = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        String numeri = "0123456789";
-        Random r = new Random();
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < 6; i++) sb.append(lettere.charAt(r.nextInt(lettere.length())));
-        for (int i = 0; i < 2; i++) sb.append(numeri.charAt(r.nextInt(numeri.length())));
-        sb.append(lettere.charAt(r.nextInt(lettere.length())));
-        for (int i = 0; i < 2; i++) sb.append(numeri.charAt(r.nextInt(numeri.length())));
-        sb.append(lettere.charAt(r.nextInt(lettere.length())));
-        for (int i = 0; i < 3; i++) sb.append(numeri.charAt(r.nextInt(numeri.length())));
-        sb.append(lettere.charAt(r.nextInt(lettere.length())));
-
-        return sb.toString();
-    }
-
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
         try (PrintWriter out = response.getWriter()) {
             out.println("<!DOCTYPE html>");
-            out.println("<html>");
-            out.println("<head>");
-            out.println("<title>Servlet " + getServletName() + " - DAO Test Completo</title>");
+            out.println("<html><head><title>Test Query Disponibilita/Filtri</title>");
             out.println("<style>body { font-family: sans-serif; padding: 20px; } .success { color: green; } .error { color: red; }</style>");
-            out.println("</head>");
-            out.println("<body>");
-            out.println("<h1>This is servlet <em>" + getServletName() + "</em> (implemented in class <em>" + getClass().getSimpleName() + "</em>)" + "</h1>");
-
-            out.println("<h2>Esecuzione Test dei DAO con Relazioni su MySQL</h2>");
-            out.println("<hr/>");
+            out.println("</head><body>");
+            out.println("<h1>Test DAO — Disponibilità e Filtri Missioni</h1><hr/>");
 
             DataLayer dataLayer = null;
             try {
-                out.println("<p>1. Recupero DataSource dal Context (JNDI)... </p>");
-                
+                out.println("<p>1. Connessione JNDI e inizializzazione DAO...</p>");
                 Context initContext = new InitialContext();
                 Context envContext  = (Context) initContext.lookup("java:comp/env");
                 DataSource dataSource = (DataSource) envContext.lookup("jdbc/soccorso");
-
                 dataLayer = new DataLayer(dataSource);
-                out.println("<p class='success'><b>[OK]</b> DataLayer istanziato correttamente tramite JNDI.</p>");
 
-                out.println("<p>2. Inizializzazione dei DAO... </p>");
-                
                 UtenteDAO utenteDAO = new UtenteDAO_MySQL(dataLayer);
-                AnagraficaDAO anagraficaDAO = new AnagraficaDAO_MySQL(dataLayer);
                 RichiestaDAO richiestaDAO = new RichiestaDAO_MySQL(dataLayer);
-                DescRichiestaDAO descRichiestaDAO = new DescRichiestaDAO_MySQL(dataLayer);
-                PatenteDAO patenteDAO = new PatenteDAO_MySQL(dataLayer);
-                AbilitaDAO abilitaDAO = new AbilitaDAO_MySQL(dataLayer);
-                CredenzialiDAO credenzialiDAO = new CredenzialiDAO_MySQL(dataLayer);
                 MaterialeDAO materialeDAO = new MaterialeDAO_MySQL(dataLayer);
                 MezzoDAO mezzoDAO = new MezzoDAO_MySQL(dataLayer);
                 SquadraDAO squadraDAO = new SquadraDAO_MySQL(dataLayer);
                 MissioneDAO missioneDAO = new MissioneDAO_MySQL(dataLayer);
-                AggiornamentoDAO aggiornamentoDAO = new AggiornamentoDAO_MySQL(dataLayer);
-                
+
                 dataLayer.registerDAO(Utente.class, utenteDAO);
-                dataLayer.registerDAO(Anagrafica.class, anagraficaDAO);
                 dataLayer.registerDAO(Richiesta.class, richiestaDAO);
-                dataLayer.registerDAO(DescRichiesta.class, descRichiestaDAO);
-                dataLayer.registerDAO(Patente.class, patenteDAO);
-                dataLayer.registerDAO(Abilita.class, abilitaDAO);
-                dataLayer.registerDAO(Credenziali.class, credenzialiDAO);
                 dataLayer.registerDAO(Materiale.class, materialeDAO);
                 dataLayer.registerDAO(Mezzo.class, mezzoDAO);
                 dataLayer.registerDAO(Squadra.class, squadraDAO);
                 dataLayer.registerDAO(Missione.class, missioneDAO);
-                dataLayer.registerDAO(Aggiornamento.class, aggiornamentoDAO);
-                out.println("<p class='success'><b>[OK]</b> DAO inizializzati e registrati nel DataLayer.</p>");
+                out.println("<p class='success'><b>[OK]</b> DAO registrati.</p>");
 
-                out.println("<p>3. Test Inserimento Utente (INSERT)... </p>");
+                // --- Setup minimo dati di prova ---
+
+                out.println("<p>2. Creazione Utente operatore...</p>");
                 Utente u = utenteDAO.createUtente();
                 u.setNomeUtente("usr" + String.valueOf(System.currentTimeMillis()).substring(9));
-                u.setAdmin(true); 
-                u.setMonteOre(150);
-                
+                u.setAdmin(true);
+                u.setMonteOre(100);
                 utenteDAO.storeUtente(u);
-                out.println("<p class='success'><b>[OK]</b> Utente salvato! ID Generato: " + u.getKey() + "</p>");
+                out.println("<p class='success'><b>[OK]</b> Utente creato, ID: " + u.getKey() + "</p>");
 
-                out.println("<p>3b. Test Inserimento ed Associazione Credenziali (INSERT + ASSOCIAZIONE)... </p>");
-                Credenziali cb = credenzialiDAO.createCredenziali();
-                cb.setEmail("utente" + String.valueOf(System.currentTimeMillis()).substring(10) + "@test.it");
-                byte[] mockHash = new byte[64];
-                new Random().nextBytes(mockHash);
-                cb.setPasswordHash(mockHash);
-                credenzialiDAO.storeCredenziali(cb);
-                out.println("<p>Credenziali salvate! ID Generato: " + cb.getKey() + ". Collegamento all'utente in corso...</p>");
-                
-                credenzialiDAO.legaCredenzialiAUtente(cb, u);
-                out.println("<p class='success'><b>[OK]</b> Credenziali associate all'utente correttamente nel database.</p>");
-
-                out.println("<p>4. Test Inserimento Anagrafica (INSERT)... </p>");
-                Anagrafica a = anagraficaDAO.createAnagrafica();
-                a.setNome("TestNome");
-                a.setCognome("TestCognome");
-                
-                String cfUnico = generaCodiceFiscaleRandom();
-                a.setCf(cfUnico);
-                
-                a.setLuogoNasc("Roma");
-                a.setDataNasc(LocalDate.of(2000, 5, 15));
-                anagraficaDAO.storeAnagrafica(a, u);
-                out.println("<p class='success'><b>[OK]</b> Anagrafica salvata con CF Unico (<b>" + cfUnico + "</b>)! ID Generato: " + a.getKey() + "</p>");
-
-                out.println("<p>5. Test Inserimento Richiesta (INSERT)... </p>");
+                out.println("<p>3. Creazione Richiesta (necessaria per Missione)...</p>");
                 Richiesta r = richiestaDAO.createRichiesta();
                 r.setNome("Emergenza Test");
                 r.setEmail("test@email.com");
@@ -183,173 +97,113 @@ public class AServlet extends HttpServlet {
                 r.setVerificato(true);
                 r.setData(LocalDateTime.now());
                 richiestaDAO.storeRichiesta(r);
-                out.println("<p class='success'><b>[OK]</b> Richiesta salvata! ID Generato: " + r.getKey() + "</p>");
+                out.println("<p class='success'><b>[OK]</b> Richiesta creata, ID: " + r.getKey() + "</p>");
 
-                out.println("<p>6. Test Inserimento DescRichiesta (INSERT)... </p>");
-                DescRichiesta dr = descRichiestaDAO.createDescRichiesta();
-                dr.setPosizione("Via Roma 10");
-                dr.setFoto("foto_test.png");
-                dr.setDescrizione("Dettaglio della richiesta di soccorso per test");
-                descRichiestaDAO.storeDescRichiesta(dr, r);
-                out.println("<p class='success'><b>[OK]</b> DescRichiesta salvata! ID Generato: " + dr.getKey() + "</p>");
-
-                out.println("<p>7. Test Inserimento e Associazione Patente... </p>");
-                Patente p = patenteDAO.createPatente();
-                p.setNumero("RM" + String.valueOf(System.currentTimeMillis()).substring(7) + "X");
-                p.setTipo(TipoPatente.B); 
-                patenteDAO.storePatente(p);
-                patenteDAO.legaPatenteAUtente(p, u);
-                out.println("<p class='success'><b>[OK]</b> Patente associata correttamente all'utente nel database.</p>");
-
-                out.println("<p>8. Test Inserimento e Associazione Abilità... </p>");
-                Abilita ab = abilitaDAO.createAbilita();
-                ab.setDesc("Soccorso " + String.valueOf(System.currentTimeMillis()).substring(7));
-                abilitaDAO.storeAbilita(ab);
-                abilitaDAO.legaAbilitaAUtente(ab, u);
-                out.println("<p class='success'><b>[OK]</b> Abilità associata correttamente all'utente nel database.</p>");
-
-                out.println("<p>8b. Test Inserimento Materiale (INSERT)... </p>");
-                Materiale m = materialeDAO.createMateriale();
-                m.setNome("Defibrillatore");
-                m.setDesc("DAA semiautomatico esterno professionale");
-                m.setCodMat("DAE" + String.valueOf(System.currentTimeMillis()).substring(10));
-                materialeDAO.storeMateriale(m);
-                out.println("<p class='success'><b>[OK]</b> Materiale salvato con cod_mat unico (<b>" + m.getCodMat() + "</b>)! ID Generato: " + m.getKey() + "</p>");
-
-                out.println("<p>8c. Test Inserimento Mezzo (INSERT)... </p>");
-                Mezzo mz = mezzoDAO.createMezzo();
-                mz.setNome("Ambulanza Tipo A");
-                mz.setDesc("Unità mobile di rianimazione");
-                mz.setTarga("ZA" + String.valueOf(System.currentTimeMillis()).substring(11) + "AA");
-                mezzoDAO.storeMezzo(mz);
-                out.println("<p class='success'><b>[OK]</b> Mezzo salvato con targa unica (<b>" + mz.getTarga() + "</b>)! ID Generato: " + mz.getKey() + "</p>");
-
-                out.println("<p>8d. Test Inserimento Squadra e Associazione Operatori (INSERT + ASSOCIAZIONE)... </p>");
+                out.println("<p>4. Creazione Squadra con capo = Utente...</p>");
                 Squadra sq = squadraDAO.createSquadra();
-                sq.setCapoSquadra(u); 
+                sq.setCapoSquadra(u);
                 squadraDAO.storeSquadra(sq);
                 squadraDAO.aggiungiMembroASquadra(sq, u);
-                out.println("<p class='success'><b>[OK]</b> Operatore associato alla squadra correttamente.</p>");
+                out.println("<p class='success'><b>[OK]</b> Squadra creata, ID: " + sq.getKey() + "</p>");
 
-                out.println("<p>8e. Test Inserimento Missione (INSERT) ed Assegnazione Squadra (DIRETTA)... </p>");
+                out.println("<p>5. Creazione Materiale e Mezzo (per test disponibilità)...</p>");
+                Materiale m = materialeDAO.createMateriale();
+                m.setNome("Defibrillatore");
+                m.setDesc("DAE portatile");
+                m.setCodMat("DAE" + String.valueOf(System.currentTimeMillis()).substring(10));
+                materialeDAO.storeMateriale(m);
+
+                Mezzo mz = mezzoDAO.createMezzo();
+                mz.setNome("Ambulanza Test");
+                mz.setDesc("Unità mobile");
+                mz.setTarga("ZA" + String.valueOf(System.currentTimeMillis()).substring(11) + "BA");
+                mezzoDAO.storeMezzo(mz);
+                out.println("<p class='success'><b>[OK]</b> Materiale ID: " + m.getKey() + ", Mezzo ID: " + mz.getKey() + "</p>");
+
+                out.println("<p>6. Creazione Missione ATTIVA (completata=false) associata a Squadra/Materiale/Mezzo...</p>");
                 Missione mis = missioneDAO.createMissione();
-                mis.setObiettivo("Soccorso stradale codice rosso");
+                mis.setObiettivo("Soccorso stradale");
                 mis.setInizio(LocalDateTime.now());
                 mis.setFine(LocalDateTime.now().plusHours(2));
-                mis.setCompletata(true);
-                mis.setSuccesso(EsitoMissione.SUCCESSO);
+                mis.setCompletata(false); // volutamente attiva, per rendere u/mz/m "occupati"
                 mis.setDurata(Duration.ofHours(2));
                 mis.setRichiesta(r);
                 mis.setAdmin(u);
-                
-                // ASSEGNAZIONE DIRETTA DELLA SQUADRA ALLA MISSIONE
-                mis.setSquadra(sq); 
-                
+                mis.setSquadra(sq);
                 missioneDAO.storeMissione(mis);
-                out.println("<p class='success'><b>[OK]</b> Squadra (ID: " + sq.getKey() + ") associata alla missione ID: " + mis.getKey() + " tramite campo ID_SQUADRA.</p>");
-                out.println("<p class='success'><b>[OK]</b> Missione salvata con successo!</p>");
-
-                out.println("<p>8e-bis. Test Assegnazione Materiale e Mezzo alla Missione (INSERT IN TABELLE ASSOCIAZIONE)... </p>");
                 materialeDAO.assegnaMaterialeAMissione(m, mis);
-                out.println("<p class='success'><b>[OK]</b> Materiale associato tramite tabella 'assegna_materiale' alla missione ID: " + mis.getKey() + "</p>");
                 mezzoDAO.assegnaMezzoAMissione(mz, mis);
-                out.println("<p class='success'><b>[OK]</b> Mezzo associato tramite tabella 'assegna_mezzo' alla missione ID: " + mis.getKey() + "</p>");
-                
-                out.println("<p>8f. Test Inserimento Aggiornamento legato alla Missione (INSERT)... </p>");
-                Aggiornamento agg = aggiornamentoDAO.createAggiornamento();
-                agg.setTesto("Nuova linea guida per la gestione delle emergenze su strada.");
-                agg.setTimestamp(LocalDateTime.now());
-                agg.setAdmin(u);
+                out.println("<p class='success'><b>[OK]</b> Missione ID: " + mis.getKey() + " creata e collegata.</p>");
 
-                aggiornamentoDAO.storeAggiornamento(agg, mis.getKey());
-                out.println("<p class='success'><b>[OK]</b> Aggiornamento salvato! ID Generato: " + agg.getKey() + " associato all'admin ID: " + u.getKey() + " e alla missione ID: " + mis.getKey() + "</p>");
-
-                out.println("<p>9. Test Caricamento Relazioni e Cache Pulita (SELECT)... </p>");
                 dataLayer.getCache().clear();
-                out.println("<p>Cache del DataLayer ripulita con successo.</p>");
+                out.println("<hr/><h2>Test delle 5 query nuove</h2>");
 
-                Utente checkUtente = utenteDAO.getUtente(u.getKey());
-                out.println("<p>Utente ricaricato da DB: <b>" + checkUtente.getNomeUtente() + "</b></p>");
+                // --- 1. Operatori disponibili: l'utente u NON deve comparire, essendo in missione attiva ---
+                out.println("<p>Test getUtentiDisponibili()...</p>");
+                List<Utente> utentiDisp = utenteDAO.getUtentiDisponibili();
+                boolean uPresente = utentiDisp.stream().anyMatch(x -> x.getKey().equals(u.getKey()));
+                out.println("<p class='" + (!uPresente ? "success" : "error") + "'>" +
+                    (!uPresente ? "[OK] " : "[FALLITO] ") +
+                    "Utenti disponibili trovati: " + utentiDisp.size() +
+                    " — utente di test " + (uPresente ? "ERRONEAMENTE presente" : "correttamente escluso") + "</p>");
 
-                CheckCredenziali: {
-                    Credenziali checkCred = credenzialiDAO.getCredenzialiByUtente(checkUtente);
-                    if (checkCred != null) {
-                        out.println("<p class='success'><b>[OK]</b> Lazy Loading Credenziali riuscito! Email estratta: " + checkCred.getEmail() + "</p>");
-                    } else {
-                        out.println("<p class='error'><b>[FALLITO]</b> Credenziali correlate non trovate.</p>");
-                    }
-                }
+                // --- 2. Mezzi disponibili: mz NON deve comparire ---
+                out.println("<p>Test getMezziDisponibili()...</p>");
+                List<Mezzo> mezziDisp = mezzoDAO.getMezziDisponibili();
+                boolean mzPresente = mezziDisp.stream().anyMatch(x -> x.getKey().equals(mz.getKey()));
+                out.println("<p class='" + (!mzPresente ? "success" : "error") + "'>" +
+                    (!mzPresente ? "[OK] " : "[FALLITO] ") +
+                    "Mezzi disponibili trovati: " + mezziDisp.size() +
+                    " — mezzo di test " + (mzPresente ? "ERRONEAMENTE presente" : "correttamente escluso") + "</p>");
 
-                Anagrafica checkAnagrafica = checkUtente.getAnagrafica();
-                if (checkAnagrafica != null) {
-                    out.println("<p class='success'><b>[OK]</b> Lazy Loading Anagrafica riuscito! Nome completo: " + checkAnagrafica.getNome() + " " + checkAnagrafica.getCognome() + " [CF caricato: " + checkAnagrafica.getCf() + "]</p>");
-                } else {
-                    out.println("<p class='error'><b>[FALLITO]</b> Anagrafica correlata non trovata.</p>");
-                }
+                // --- 3. Materiali disponibili: m NON deve comparire ---
+                out.println("<p>Test getMaterialiDisponibili()...</p>");
+                List<Materiale> materialiDisp = materialeDAO.getMaterialiDisponibili();
+                boolean mPresente = materialiDisp.stream().anyMatch(x -> x.getKey().equals(m.getKey()));
+                out.println("<p class='" + (!mPresente ? "success" : "error") + "'>" +
+                    (!mPresente ? "[OK] " : "[FALLITO] ") +
+                    "Materiali disponibili trovati: " + materialiDisp.size() +
+                    " — materiale di test " + (mPresente ? "ERRONEAMENTE presente" : "correttamente escluso") + "</p>");
 
-                Materiale checkMateriale = materialeDAO.getMateriale(m.getKey());
-                if (checkMateriale != null) {
-                    String assegnato = checkMateriale.isAssegnato() ? "Sì (Missione ID: " + checkMateriale.getMissioneKey() + ")" : "No";
-                    out.println("<p class='success'><b>[OK]</b> Lettura Materiale riuscito! Nome: " + checkMateriale.getNome() + ", Assegnato: " + assegnato + "</p>");
-                } else {
-                    out.println("<p class='error'><b>[FALLITO]</b> Impossibile caricare il record Materiale salvato.</p>");
-                }
+                // --- 4. Missioni per operatore: deve trovare mis, sia come membro sia come capo ---
+                out.println("<p>Test getMissioniByUtente(u)...</p>");
+                List<Missione> missioniUtente = missioneDAO.getMissioniByUtente(u);
+                boolean misTrovata = missioniUtente.stream().anyMatch(x -> x.getKey().equals(mis.getKey()));
+                out.println("<p class='" + (misTrovata ? "success" : "error") + "'>" +
+                    (misTrovata ? "[OK] " : "[FALLITO] ") +
+                    "Missioni trovate per l'utente: " + missioniUtente.size() +
+                    " — missione di test " + (misTrovata ? "trovata correttamente" : "NON trovata") + "</p>");
 
-                Mezzo checkMezzo = mezzoDAO.getMezzo(mz.getKey());
-                if (checkMezzo != null) {
-                    String assegnato = checkMezzo.isAssegnato() ? "Sì (Missione ID: " + checkMezzo.getMissioneKey() + ")" : "No";
-                    out.println("<p class='success'><b>[OK]</b> Lettura Mezzo riuscito! Nome: " + checkMezzo.getNome() + ", Assegnato: " + assegnato + "</p>");
-                } else {
-                    out.println("<p class='error'><b>[FALLITO]</b> Impossibile caricare il record Mezzo salvato.</p>");
-                }
+                // --- 5. Filtro missioni per data/esito ---
+                out.println("<p>Test getMissioniFiltrate() per intervallo data odierno...</p>");
+                LocalDateTime oggiInizio = LocalDateTime.now().minusDays(1);
+                LocalDateTime oggiFine = LocalDateTime.now().plusDays(1);
+                List<Missione> missioniData = missioneDAO.getMissioniFiltrate(oggiInizio, oggiFine, null);
+                boolean misInFiltro = missioniData.stream().anyMatch(x -> x.getKey().equals(mis.getKey()));
+                out.println("<p class='" + (misInFiltro ? "success" : "error") + "'>" +
+                    (misInFiltro ? "[OK] " : "[FALLITO] ") +
+                    "Missioni nell'intervallo: " + missioniData.size() +
+                    " — missione di test " + (misInFiltro ? "trovata" : "NON trovata") + "</p>");
 
-                Squadra checkSquadra = squadraDAO.getSquadra(sq.getKey());
-                if (checkSquadra != null) {
-                    Utente checkCapo = checkSquadra.getCapoSquadra();
-                    out.println("<p class='success'><b>[OK]</b> Lettura Squadra riuscita! Caposquadra caricato correttamente: " + (checkCapo != null ? checkCapo.getNomeUtente() : "NULL") + "</p>");
-                }
-
-                out.println("<p>Estrazione e verifica della Missione inserita da DB...</p>");
-                Missione checkMis = missioneDAO.getMissione(mis.getKey());
-                if (checkMis != null) {
-                    out.println("<p class='success'><b>[OK]</b> Lettura Missione riuscita! Obiettivo: \"" + checkMis.getObiettivo() + "\" Esito: " + checkMis.getEsito() + "</p>");
-                    
-                    // VERIFICA DEL CARICAMENTO DELLA SQUADRA TRAMITE LA MISSIONE
-                    Squadra checkSquadraMissione = checkMis.getSquadra();
-                    if (checkSquadraMissione != null) {
-                        out.println("<p class='success'><b>[OK]</b> Lazy Loading Squadra da Missione riuscito! ID Squadra associata: " + checkSquadraMissione.getKey() + "</p>");
-                    } else {
-                        out.println("<p class='error'><b>[FALLITO]</b> Impossibile caricare la Squadra associata alla Missione.</p>");
-                    }
-                }
-
-                out.println("<p>Estrazione e verifica dell'Aggiornamento inserito da DB...</p>");
-                Aggiornamento checkAggiornamento = aggiornamentoDAO.getAggiornamento(agg.getKey());
-                if (checkAggiornamento != null) {
-                    out.println("<p class='success'><b>[OK]</b> Lettura Aggiornamento riuscita! Testo: \"" + checkAggiornamento.getTesto() + "\"</p>");
-                }
+                out.println("<p>Test getMissioniFiltrate() per esito SUCCESSO (nessun match atteso, missione è ancora attiva)...</p>");
+                List<Missione> missioniEsito = missioneDAO.getMissioniFiltrate(null, null, EsitoMissione.SUCCESSO);
+                out.println("<p>Missioni con esito SUCCESSO trovate: " + missioniEsito.size() + "</p>");
 
                 utenteDAO.destroy();
-                anagraficaDAO.destroy();
                 richiestaDAO.destroy();
-                descRichiestaDAO.destroy();
-                patenteDAO.destroy();
-                abilitaDAO.destroy();
-                credenzialiDAO.destroy();
                 materialeDAO.destroy();
                 mezzoDAO.destroy();
                 squadraDAO.destroy();
                 missioneDAO.destroy();
-                aggiornamentoDAO.destroy();
 
             } catch (NamingException ex) {
-                out.println("<p class='error'><b>[ERRORE JNDI]</b> Impossibile trovare la risorsa nel Context: " + ex.getMessage() + "</p>");
+                out.println("<p class='error'><b>[ERRORE JNDI]</b> " + ex.getMessage() + "</p>");
                 ex.printStackTrace(out);
             } catch (SQLException ex) {
-                out.println("<p class='error'><b>[ERRORE SQL]</b> Errore di connettività o vincolo del DB: " + ex.getMessage() + "</p>");
+                out.println("<p class='error'><b>[ERRORE SQL]</b> " + ex.getMessage() + "</p>");
                 ex.printStackTrace(out);
             } catch (DataException ex) {
-                out.println("<p class='error'><b>[ERRORE DATALAYER]</b> Eccezione sollevata dal framework dei DAO: " + ex.getMessage() + "</p>");
+                out.println("<p class='error'><b>[ERRORE DATALAYER]</b> " + ex.getMessage() + "</p>");
                 ex.printStackTrace(out);
             } finally {
                 if (dataLayer != null) {
@@ -357,9 +211,7 @@ public class AServlet extends HttpServlet {
                 }
             }
 
-            out.println("<hr/>");
-            out.println("</body>");
-            out.println("</html>");
+            out.println("<hr/></body></html>");
         }
     }
 
@@ -377,6 +229,6 @@ public class AServlet extends HttpServlet {
 
     @Override
     public String getServletInfo() {
-        return "AServlet aggiornata per testare l'associazione di Squadra, Materiale e Mezzo alla Missione";
+        return "AServlet — test delle query di disponibilità e filtro missioni";
     }
 }

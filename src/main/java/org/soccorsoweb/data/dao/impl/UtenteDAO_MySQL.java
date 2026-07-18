@@ -23,9 +23,10 @@ public class UtenteDAO_MySQL extends Dao implements UtenteDAO {
     private PreparedStatement uUtente;
     private PreparedStatement sAnagraficaByUtente;
     private PreparedStatement sCredenzialiByUtente;
+    private PreparedStatement sUtentiDisponibili;
 
     public UtenteDAO_MySQL(DataLayer d) {
-        super(d); // Inizializza dataLayer e connection definiti in Dao
+        super(d);
     }
 
     @Override
@@ -52,6 +53,18 @@ public class UtenteDAO_MySQL extends Dao implements UtenteDAO {
                 "UPDATE Utente SET nome_utente=?, admin=?, monte_ore=? WHERE ID=?"
             );
 
+            sUtentiDisponibili = connection.prepareStatement(
+                "SELECT * FROM Utente u WHERE NOT EXISTS (" +
+                "  SELECT 1 FROM assegna_squadra asq " +
+                "  JOIN Missione mi ON mi.ID_SQUADRA = asq.ID_SQUADRA " +
+                "  WHERE asq.ID_UTENTE = u.ID AND mi.completata = false" +
+                ") AND NOT EXISTS (" +
+                "  SELECT 1 FROM Squadra s " +
+                "  JOIN Missione mi ON mi.ID_SQUADRA = s.ID " +
+                "  WHERE s.ID_CAPO = u.ID AND mi.completata = false" +
+                ")"
+            );
+
         } catch (SQLException ex) {
             throw new DataException("Error initializing utente data layer", ex);
         }
@@ -67,6 +80,7 @@ public class UtenteDAO_MySQL extends Dao implements UtenteDAO {
             if (sCredenzialiByUtente != null) sCredenzialiByUtente.close();
             if (iUtente != null) iUtente.close();
             if (uUtente != null) uUtente.close();
+            if (sUtentiDisponibili != null) sUtentiDisponibili.close();
         } catch (SQLException ex) {
             // chiusura silente
         }
@@ -79,26 +93,24 @@ public class UtenteDAO_MySQL extends Dao implements UtenteDAO {
     }
 
     private UtenteProxy createUtente(ResultSet rs) throws DataException {
-    UtenteProxy u = (UtenteProxy) createUtente();
-    try {
-        int utenteId = rs.getInt("ID");
-        u.setKey(utenteId);
-        u.setNomeUtente(rs.getString("nome_utente"));
-        u.setAdmin(rs.getBoolean("admin"));
-        u.setMonteOre(rs.getInt("monte_ore"));
-        u.setVersion(0); // Neutralizzato
+        UtenteProxy u = (UtenteProxy) createUtente();
+        try {
+            int utenteId = rs.getInt("ID");
+            u.setKey(utenteId);
+            u.setNomeUtente(rs.getString("nome_utente"));
+            u.setAdmin(rs.getBoolean("admin"));
+            u.setMonteOre(rs.getInt("monte_ore"));
+            u.setVersion(0);
 
-        sAnagraficaByUtente.setInt(1, utenteId);
-        try (ResultSet rsAnag = sAnagraficaByUtente.executeQuery()) {
-            if (rsAnag.next()) {
-                u.setAnagraficaKey(rsAnag.getInt("ID")); 
+            sAnagraficaByUtente.setInt(1, utenteId);
+            try (ResultSet rsAnag = sAnagraficaByUtente.executeQuery()) {
+                if (rsAnag.next()) {
+                    u.setAnagraficaKey(rsAnag.getInt("ID")); 
+                }
             }
-        }
 
-        // AGGIORNAMENTO: Rimosso il blocco di sCredenzialiByUtente 
-        // per evitare l'errore sulla tabella mancante 'assegna_credenziali'
-        u.setEmail("");
-        u.setHashedPassword(""); 
+            u.setEmail("");
+            u.setHashedPassword(""); 
 
         } catch (SQLException ex) {
             throw new DataException("Unable to create utente object from ResultSet", ex);
@@ -127,6 +139,20 @@ public class UtenteDAO_MySQL extends Dao implements UtenteDAO {
         return u;
     }
 
+    @Override
+    public List<Utente> getUtentiDisponibili() throws DataException {
+        List<Utente> result = new ArrayList<>();
+        try (ResultSet rs = sUtentiDisponibili.executeQuery()) {
+            while (rs.next()) {
+                Utente u = createUtente(rs);
+                getDataLayer().getCache().add(Utente.class, u);
+                result.add(u);
+            }
+        } catch (SQLException ex) {
+            throw new DataException("Unable to load utenti disponibili", ex);
+        }
+        return result;
+    }
 
     public Utente getUtenteByUsername(String username) throws DataException {
         try {
@@ -162,11 +188,10 @@ public class UtenteDAO_MySQL extends Dao implements UtenteDAO {
     @Override
     public void storeUtente(Utente utente) throws DataException {
         try {
-            if (utente.getKey() != null && utente.getKey() > 0) { // UPDATE
+            if (utente.getKey() != null && utente.getKey() > 0) {
                 if (utente instanceof DataItemProxy && !((DataItemProxy) utente).isModified()) {
                     return;
                 }
-                
                 uUtente.setString(1, utente.getNomeUtente());
                 uUtente.setBoolean(2, utente.isAdmin());
                 uUtente.setInt(3, utente.getMonteOre());
@@ -175,8 +200,7 @@ public class UtenteDAO_MySQL extends Dao implements UtenteDAO {
                 if (uUtente.executeUpdate() == 0) {
                     throw new DataException("Unable to update utente: record not found");
                 }
-                
-            } else { // INSERT
+            } else {
                 iUtente.setString(1, utente.getNomeUtente());
                 iUtente.setBoolean(2, utente.isAdmin());
                 iUtente.setInt(3, utente.getMonteOre());
@@ -199,7 +223,4 @@ public class UtenteDAO_MySQL extends Dao implements UtenteDAO {
             throw new DataException("Unable to store utente", ex);
         }
     }    
-    
-  
-    
 }

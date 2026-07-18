@@ -211,3 +211,4 @@ public class AbilitaDAO_MySQL extends Dao implements AbilitaDAO {
         }
     }
 }
+

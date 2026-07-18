@@ -22,6 +22,7 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
     private PreparedStatement iMateriale;
     private PreparedStatement uMateriale;
     private PreparedStatement iAssegnaMateriale; 
+    private PreparedStatement sMaterialiDisponibili;
 
     public MaterialeDAO_MySQL(DataLayer d) {
         super(d);
@@ -35,7 +36,7 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
             sMateriali = connection.prepareStatement("SELECT * FROM Materiale");
             iMateriale = connection.prepareStatement("INSERT INTO Materiale (nome, `desc`, cod_mat) VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS);
             uMateriale = connection.prepareStatement("UPDATE Materiale SET nome=?, `desc`=?, cod_mat=? WHERE ID=?");
-            
+            sMaterialiDisponibili = connection.prepareStatement("SELECT * FROM Materiale m WHERE NOT EXISTS (" + "  SELECT 1 FROM assegna_materiale am " + "  JOIN Missione mi ON am.ID_MISSIONE = mi.ID " +"WHERE am.ID_MATERIALE = m.ID AND mi.completata = false" +")");
             iAssegnaMateriale = connection.prepareStatement("INSERT INTO assegna_materiale (ID_MATERIALE, ID_MISSIONE) VALUES (?, ?)");
         } catch (SQLException ex) {
             throw new DataException("Error initializing materiale data layer", ex);
@@ -49,7 +50,8 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
             if (sMateriali != null) sMateriali.close();
             if (iMateriale != null) iMateriale.close();
             if (uMateriale != null) uMateriale.close();
-            if (iAssegnaMateriale != null) iAssegnaMateriale.close(); // Chiusura
+            if (iAssegnaMateriale != null) iAssegnaMateriale.close();
+            if (sMaterialiDisponibili != null) sMaterialiDisponibili.close();
         } catch (SQLException ex) { }
         super.destroy();
     }
@@ -108,6 +110,21 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
         } catch (SQLException ex) { throw new DataException("Unable to load materiale list", ex); }
         return result;
     }
+    
+        @Override
+        public List<Materiale> getMaterialiDisponibili() throws DataException {
+            List<Materiale> result = new ArrayList<>();
+            try (ResultSet rs = sMaterialiDisponibili.executeQuery()) {
+                while (rs.next()) {
+                    Materiale m = createMateriale(rs);
+                    getDataLayer().getCache().add(Materiale.class, m);
+                    result.add(m);
+                }
+            } catch (SQLException ex) {
+                throw new DataException("Unable to load materiali disponibili", ex);
+            }
+            return result;
+        }
 
     @Override
     public void storeMateriale(Materiale materiale) throws DataException {

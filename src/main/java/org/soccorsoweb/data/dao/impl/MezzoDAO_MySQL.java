@@ -9,23 +9,19 @@ import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataItemProxy;
 import org.soccorsoweb.data.DataLayer;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
     private PreparedStatement sMezzoByID;
     private PreparedStatement sMezzi;
+    private PreparedStatement sMezziDisponibili;
     private PreparedStatement iMezzo;
     private PreparedStatement uMezzo;
-    private PreparedStatement iAssegnaMezzo; // Nuova query
+    private PreparedStatement iAssegnaMezzo;
 
-    public MezzoDAO_MySQL(DataLayer d) {
-        super(d);
-    }
+    public MezzoDAO_MySQL(DataLayer d) { super(d); }
 
     @Override
     public void init() throws DataException {
@@ -33,11 +29,20 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
             super.init();
             sMezzoByID = connection.prepareStatement("SELECT * FROM Mezzo WHERE ID=?");
             sMezzi = connection.prepareStatement("SELECT * FROM Mezzo");
-            iMezzo = connection.prepareStatement("INSERT INTO Mezzo (nome, `desc`, targa) VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS);
-            uMezzo = connection.prepareStatement("UPDATE Mezzo SET nome=?, `desc`=?, targa=? WHERE ID=?");
-            
-            // Inizializzazione query per tabella associazione[cite: 24]
-            iAssegnaMezzo = connection.prepareStatement("INSERT INTO assegna_mezzo (ID_MEZZO, ID_MISSIONE) VALUES (?, ?)");
+            sMezziDisponibili = connection.prepareStatement(
+                "SELECT * FROM Mezzo m WHERE NOT EXISTS (" +
+                "  SELECT 1 FROM assegna_mezzo am " +
+                "  JOIN Missione mi ON am.ID_MISSIONE = mi.ID " +
+                "  WHERE am.ID_MEZZO = m.ID AND mi.completata = false" +
+                ")"
+            );
+            iMezzo = connection.prepareStatement(
+                "INSERT INTO Mezzo (nome, `desc`, targa) VALUES(?,?,?)",
+                Statement.RETURN_GENERATED_KEYS);
+            uMezzo = connection.prepareStatement(
+                "UPDATE Mezzo SET nome=?, `desc`=?, targa=? WHERE ID=?");
+            iAssegnaMezzo = connection.prepareStatement(
+                "INSERT INTO assegna_mezzo (ID_MEZZO, ID_MISSIONE) VALUES (?,?)");
         } catch (SQLException ex) {
             throw new DataException("Error initializing mezzo data layer", ex);
         }
@@ -48,25 +53,14 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
         try {
             if (sMezzoByID != null) sMezzoByID.close();
             if (sMezzi != null) sMezzi.close();
+            if (sMezziDisponibili != null) sMezziDisponibili.close();
             if (iMezzo != null) iMezzo.close();
             if (uMezzo != null) uMezzo.close();
-            if (iAssegnaMezzo != null) iAssegnaMezzo.close(); // Chiusura
+            if (iAssegnaMezzo != null) iAssegnaMezzo.close();
         } catch (SQLException ex) { }
         super.destroy();
     }
 
-    @Override
-    public void assegnaMezzoAMissione(Mezzo m, Missione mis) throws DataException {
-        try {
-            iAssegnaMezzo.setInt(1, m.getKey());
-            iAssegnaMezzo.setInt(2, mis.getKey());
-            iAssegnaMezzo.executeUpdate();
-        } catch (SQLException ex) {
-            throw new DataException("Errore nell'assegnazione mezzo alla missione", ex);
-        }
-    }
-
-    // ... (metodi createMezzo, getMezzo, getMezzi, storeMezzo invariati rispetto all'originale)
     @Override
     public Mezzo createMezzo() { return new MezzoProxy(getDataLayer()); }
 
@@ -78,13 +72,16 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
             m.setDesc(rs.getString("desc"));
             m.setTarga(rs.getString("targa"));
             m.setVersion(0);
-        } catch (SQLException ex) { throw new DataException("Unable to create mezzo object", ex); }
+        } catch (SQLException ex) {
+            throw new DataException("Unable to create mezzo object", ex);
+        }
         return m;
     }
 
     @Override
     public Mezzo getMezzo(int mezzo_key) throws DataException {
-        if (getDataLayer().getCache().has(Mezzo.class, mezzo_key)) return getDataLayer().getCache().get(Mezzo.class, mezzo_key);
+        if (getDataLayer().getCache().has(Mezzo.class, mezzo_key))
+            return getDataLayer().getCache().get(Mezzo.class, mezzo_key);
         try {
             sMezzoByID.setInt(1, mezzo_key);
             try (ResultSet rs = sMezzoByID.executeQuery()) {
@@ -94,7 +91,9 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
                     return m;
                 }
             }
-        } catch (SQLException ex) { throw new DataException("Unable to load mezzo", ex); }
+        } catch (SQLException ex) {
+            throw new DataException("Unable to load mezzo", ex);
+        }
         return null;
     }
 
@@ -107,7 +106,24 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
                 getDataLayer().getCache().add(Mezzo.class, m);
                 result.add(m);
             }
-        } catch (SQLException ex) { throw new DataException("Unable to load mezzo list", ex); }
+        } catch (SQLException ex) {
+            throw new DataException("Unable to load mezzi list", ex);
+        }
+        return result;
+    }
+
+    @Override
+    public List<Mezzo> getMezziDisponibili() throws DataException {
+        List<Mezzo> result = new ArrayList<>();
+        try (ResultSet rs = sMezziDisponibili.executeQuery()) {
+            while (rs.next()) {
+                Mezzo m = createMezzo(rs);
+                getDataLayer().getCache().add(Mezzo.class, m);
+                result.add(m);
+            }
+        } catch (SQLException ex) {
+            throw new DataException("Unable to load mezzi disponibili", ex);
+        }
         return result;
     }
 
@@ -135,6 +151,19 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
                 }
             }
             if (mezzo instanceof DataItemProxy) ((DataItemProxy) mezzo).setModified(false);
-        } catch (SQLException ex) { throw new DataException("Unable to store mezzo", ex); }
+        } catch (SQLException ex) {
+            throw new DataException("Unable to store mezzo", ex);
+        }
+    }
+
+    @Override
+    public void assegnaMezzoAMissione(Mezzo m, Missione mis) throws DataException {
+        try {
+            iAssegnaMezzo.setInt(1, m.getKey());
+            iAssegnaMezzo.setInt(2, mis.getKey());
+            iAssegnaMezzo.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataException("Errore nell'assegnazione mezzo alla missione", ex);
+        }
     }
 }

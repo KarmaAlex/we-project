@@ -7,6 +7,7 @@ import org.soccorsoweb.data.dao.MissioneDAO;
 import org.soccorsoweb.model.impl.proxy.MissioneProxy;
 import org.soccorsoweb.model.Missione;
 import org.soccorsoweb.model.Squadra;
+import org.soccorsoweb.model.Utente;
 import org.soccorsoweb.model.enums.EsitoMissione;
 
 import java.sql.PreparedStatement;
@@ -15,6 +16,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Time;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +24,7 @@ public class MissioneDAO_MySQL extends Dao implements MissioneDAO {
 
     private PreparedStatement sMissioneByID;
     private PreparedStatement sMissioniBySquadra;
+    private PreparedStatement sMissioniByUtente;
     private PreparedStatement iMissione;
     private PreparedStatement uMissione;
 
@@ -35,8 +38,25 @@ public class MissioneDAO_MySQL extends Dao implements MissioneDAO {
             super.init();
             sMissioneByID = connection.prepareStatement("SELECT * FROM Missione WHERE ID=?");
             sMissioniBySquadra = connection.prepareStatement("SELECT * FROM Missione WHERE ID_SQUADRA=?");
-            iMissione = connection.prepareStatement("INSERT INTO Missione (ID_RICHIESTA, ID_SQUADRA, ID_ADMIN, obiettivo, inizio, fine, completata, successo, durata) VALUES (?,?,?,?,?,?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
-            uMissione = connection.prepareStatement("UPDATE Missione SET ID_RICHIESTA=?, ID_SQUADRA=?, ID_ADMIN=?, obiettivo=?, inizio=?, fine=?, completata=?, successo=?, durata=? WHERE ID=?");
+
+            // Copre sia il caso "utente membro della squadra" sia "utente caposquadra"
+            sMissioniByUtente = connection.prepareStatement(
+                "SELECT DISTINCT mi.* FROM Missione mi " +
+                "JOIN assegna_squadra asq ON asq.ID_SQUADRA = mi.ID_SQUADRA " +
+                "WHERE asq.ID_UTENTE = ? " +
+                "UNION " +
+                "SELECT DISTINCT mi.* FROM Missione mi " +
+                "JOIN Squadra s ON s.ID = mi.ID_SQUADRA " +
+                "WHERE s.ID_CAPO = ?"
+            );
+
+            iMissione = connection.prepareStatement(
+                "INSERT INTO Missione (ID_RICHIESTA, ID_SQUADRA, ID_ADMIN, obiettivo, inizio, fine, completata, successo, durata) VALUES (?,?,?,?,?,?,?,?,?)",
+                Statement.RETURN_GENERATED_KEYS
+            );
+            uMissione = connection.prepareStatement(
+                "UPDATE Missione SET ID_RICHIESTA=?, ID_SQUADRA=?, ID_ADMIN=?, obiettivo=?, inizio=?, fine=?, completata=?, successo=?, durata=? WHERE ID=?"
+            );
         } catch (SQLException ex) {
             throw new DataException("Errore nell'inizializzazione dei prepared statements di Missione", ex);
         }
@@ -47,6 +67,7 @@ public class MissioneDAO_MySQL extends Dao implements MissioneDAO {
         try {
             if (sMissioneByID != null) sMissioneByID.close();
             if (sMissioniBySquadra != null) sMissioniBySquadra.close();
+            if (sMissioniByUtente != null) sMissioniByUtente.close();
             if (iMissione != null) iMissione.close();
             if (uMissione != null) uMissione.close();
         } catch (SQLException ex) {
@@ -65,29 +86,29 @@ public class MissioneDAO_MySQL extends Dao implements MissioneDAO {
             MissioneProxy p = (MissioneProxy) createMissione();
             p.setKey(rs.getInt("ID"));
             p.setObiettivo(rs.getString("obiettivo"));
-            
+
             Timestamp inizio = rs.getTimestamp("inizio");
             if (inizio != null) p.setInizio(inizio.toLocalDateTime());
-            
+
             Timestamp fine = rs.getTimestamp("fine");
             if (fine != null) p.setFine(fine.toLocalDateTime());
-            
+
             p.setCompletata(rs.getBoolean("completata"));
-            
+
             int successoInt = rs.getInt("successo");
             if (!rs.wasNull() && successoInt >= 0 && successoInt < EsitoMissione.values().length) {
                 p.setSuccesso(EsitoMissione.values()[successoInt]);
             }
-            
+
             Time durata = rs.getTime("durata");
             if (durata != null) {
                 p.setDurata(java.time.Duration.ofMillis(durata.getTime()));
             }
-            
+
             p.setRichiestaKey(rs.getInt("ID_RICHIESTA"));
             p.setSquadraKey(rs.getInt("ID_SQUADRA"));
             p.setAdminKey(rs.getInt("ID_ADMIN"));
-            
+
             return p;
         } catch (SQLException ex) {
             throw new DataException("Errore nel recupero della missione dal ResultSet", ex);
@@ -131,33 +152,95 @@ public class MissioneDAO_MySQL extends Dao implements MissioneDAO {
     }
 
     @Override
+    public List<Missione> getMissioniByUtente(Utente utente) throws DataException {
+        List<Missione> res = new ArrayList<>();
+        try {
+            sMissioniByUtente.setInt(1, utente.getKey());
+            sMissioniByUtente.setInt(2, utente.getKey());
+            try (ResultSet rs = sMissioniByUtente.executeQuery()) {
+                while (rs.next()) {
+                    res.add(getMissione(rs.getInt("ID")));
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataException("Errore nel recupero delle missioni per utente", ex);
+        }
+        return res;
+    }
+
+    @Override
+    public List<Missione> getMissioniFiltrate(LocalDateTime inizio, LocalDateTime fine, EsitoMissione esito) throws DataException {
+        StringBuilder sql = new StringBuilder("SELECT ID FROM Missione WHERE 1=1");
+        List<Object> params = new ArrayList<>();
+
+        if (inizio != null) {
+            sql.append(" AND inizio >= ?");
+            params.add(Timestamp.valueOf(inizio));
+        }
+        if (fine != null) {
+            sql.append(" AND fine <= ?");
+            params.add(Timestamp.valueOf(fine));
+        }
+        if (esito != null) {
+            sql.append(" AND successo = ?");
+            params.add(esito.ordinal());
+        }
+
+        List<Missione> res = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    res.add(getMissione(rs.getInt("ID")));
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataException("Errore nel recupero delle missioni filtrate", ex);
+        }
+        return res;
+    }
+
+    @Override
     public void storeMissione(Missione missione) throws DataException {
         try {
-            if (missione.getKey() != null && RichmondKey(missione.getKey()) > 0) {
+            int squadraKey = getSquadraKey(missione);
+            int adminKey = getAdminKey(missione);
+            int richiestaKey = getRichiestaKey(missione);
+            int esitoOrdinale = missione.getEsito() != null ? missione.getEsito().ordinal() : 0;
+            Timestamp inizioTs = missione.getInizio() != null ? Timestamp.valueOf(missione.getInizio()) : null;
+            Timestamp fineTs = missione.getFine() != null ? Timestamp.valueOf(missione.getFine()) : null;
+            Time durataTime = missione.getDurata() != null ? new Time(missione.getDurata().toMillis()) : null;
+
+            if (missione.getKey() != null && missione.getKey() > 0) {
                 // UPDATE
-                uMissione.setInt(1, missione.getRichiesta() != null ? missione.getRichiesta().getKey() : 0);
-                uMissione.setInt(2, RichmondSquadraKey(missione));
-                uMissione.setInt(3, RichmondAdminKey(missione));
+                uMissione.setInt(1, richiestaKey);
+                uMissione.setInt(2, squadraKey);
+                uMissione.setInt(3, adminKey);
                 uMissione.setString(4, missione.getObiettivo());
-                uMissione.setTimestamp(5, missione.getInizio() != null ? Timestamp.valueOf(missione.getInizio()) : null);
-                uMissione.setTimestamp(6, missione.getFine() != null ? Timestamp.valueOf(missione.getFine()) : null);
-                uMissione.setBoolean(7, RichmondCompletata(missione));
-                uMissione.setInt(8, missione.getEsito() != null ? missione.getEsito().ordinal() : 0);
-                uMissione.setTime(9, missione.getDurata() != null ? new Time(missione.getDurata().toMillis()) : null);
+                uMissione.setTimestamp(5, inizioTs);
+                uMissione.setTimestamp(6, fineTs);
+                uMissione.setBoolean(7, missione.isCompletata());
+                uMissione.setInt(8, esitoOrdinale);
+                uMissione.setTime(9, durataTime);
                 uMissione.setInt(10, missione.getKey());
-                uMissione.executeUpdate();
+
+                if (uMissione.executeUpdate() == 0) {
+                    throw new DataException("Unable to update missione: record not found");
+                }
             } else {
                 // INSERT
-                iMissione.setInt(1, missione.getRichiesta() != null ? RichmondRichiestaKey(missione) : 0);
-                iMissione.setInt(2, RichmondSquadraKey(missione));
-                iMissione.setInt(3, RichmondAdminKey(missione));
+                iMissione.setInt(1, richiestaKey);
+                iMissione.setInt(2, squadraKey);
+                iMissione.setInt(3, adminKey);
                 iMissione.setString(4, missione.getObiettivo());
-                iMissione.setTimestamp(5, missione.getInizio() != null ? Timestamp.valueOf(missione.getInizio()) : null);
-                iMissione.setTimestamp(6, missione.getFine() != null ? Timestamp.valueOf(missione.getFine()) : null);
-                iMissione.setBoolean(7, RichmondCompletata(missione));
-                iMissione.setInt(8, missione.getEsito() != null ? missione.getEsito().ordinal() : 0);
-                iMissione.setTime(9, missione.getDurata() != null ? new Time(missione.getDurata().toMillis()) : null);
-                
+                iMissione.setTimestamp(5, inizioTs);
+                iMissione.setTimestamp(6, fineTs);
+                iMissione.setBoolean(7, missione.isCompletata());
+                iMissione.setInt(8, esitoOrdinale);
+                iMissione.setTime(9, durataTime);
+
                 if (iMissione.executeUpdate() == 1) {
                     try (ResultSet keys = iMissione.getGeneratedKeys()) {
                         if (keys.next()) {
@@ -173,36 +256,29 @@ public class MissioneDAO_MySQL extends Dao implements MissioneDAO {
         }
     }
 
-    private int RichmondKey(Integer key) {
-        return key != null ? key : 0;
-    }
+    // --- helper privati per estrarre le chiavi delle FK, sia da proxy (lazy) che da oggetto pieno ---
 
-    private int RichmondSquadraKey(Missione m) {
+    private int getSquadraKey(Missione m) {
         if (m instanceof MissioneProxy) {
-            return ((MissioneProxy) m).getSquadraKey() > 0 ? ((MissioneProxy) m).getSquadraKey() : (m.getSquadra() != null ? m.getSquadra().getKey() : 0);
+            int k = ((MissioneProxy) m).getSquadraKey();
+            if (k > 0) return k;
         }
         return m.getSquadra() != null ? m.getSquadra().getKey() : 0;
     }
 
-    private int RichmondAdminKey(Missione m) {
+    private int getAdminKey(Missione m) {
         if (m instanceof MissioneProxy) {
-            return ((MissioneProxy) m).getAdminKey() > 0 ? ((MissioneProxy) m).getAdminKey() : (m.getAdmin() != null ? m.getAdmin().getKey() : 0);
+            int k = ((MissioneProxy) m).getAdminKey();
+            if (k > 0) return k;
         }
         return m.getAdmin() != null ? m.getAdmin().getKey() : 0;
     }
 
-    private int RichmondRichiestaKey(Missione m) {
+    private int getRichiestaKey(Missione m) {
         if (m instanceof MissioneProxy) {
-            return ((MissioneProxy) m).getRichiestaKey() > 0 ? ((MissioneProxy) m).getRichiestaKey() : (m.getRichiesta() != null ? m.getRichiesta().getKey() : 0);
+            int k = ((MissioneProxy) m).getRichiestaKey();
+            if (k > 0) return k;
         }
         return m.getRichiesta() != null ? m.getRichiesta().getKey() : 0;
-    }
-
-    private boolean RichmondCompletata(Missione m) {
-        try {
-            return m.isCompletata();
-        } catch (Exception e) {
-            return false;
-        }
     }
 }
