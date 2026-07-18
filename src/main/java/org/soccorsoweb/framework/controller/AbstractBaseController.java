@@ -1,129 +1,97 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-package org.soccorsoweb.framework.controller;
 
-import freemarker.core.HTMLOutputFormat;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
+package org.soccorsoweb.framework.controller;
+import org.soccorsoweb.framework.results.FailureResult;
+import org.soccorsoweb.framework.security.SecurityHelpers;
+import org.soccorsoweb.data.DataLayer;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Map;
+import javax.sql.DataSource;
+
 
 public abstract class AbstractBaseController extends HttpServlet {
 
-    private Configuration cfg;
+    private DataSource ds;
+    private Pattern protect;
 
-    protected abstract void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws Exception;
+    protected abstract void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException;
 
-    @Override
-    public void init() throws ServletException {
-        super.init();
+    //creare la propria classe derivata da DataLayer
+    //create your own datalayer derived class
+    protected abstract DataLayer createDataLayer(DataSource ds) throws ServletException;
 
-        cfg = new Configuration(Configuration.VERSION_2_3_34);
-        cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-        cfg.setDefaultEncoding("UTF-8");
-        cfg.setOutputEncoding("UTF-8");
-        cfg.setOutputFormat(HTMLOutputFormat.INSTANCE);
-        cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-        cfg.setLogTemplateExceptions(false);
-        cfg.setWrapUncheckedExceptions(true);
+    //override per inizializzare altre informazioni da offrire a tutte le servlet
+    //override to init other information to offer to all the servlets
+      protected void initRequest(HttpServletRequest request, DataLayer dl) {
+        String completeRequestURL = request.getRequestURL() + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
+        request.setAttribute("thispageurl", completeRequestURL);
+        request.setAttribute("datalayer", dl);
+    }
+      protected void accessCheckFailed(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException, IOException {
+        String completeRequestURL = request.getRequestURL() + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
+        response.sendRedirect("login?referrer=" + URLEncoder.encode(completeRequestURL, "UTF-8"));
     }
 
-    protected void initRequest(HttpServletRequest request) {
-        String url = request.getRequestURL()
-                + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
-
-        request.setAttribute("thispageurl", url);
-        request.setAttribute("ctx", request.getContextPath());
-    }
-
-    protected boolean hasLoggedAccess(HttpServletRequest request) {
-        return false;
-    }
-
-    protected void accessCheckLoginFailed(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        String url = request.getRequestURL()
-                + (request.getQueryString() != null ? "?" + request.getQueryString() : "");
-
-        response.sendRedirect(request.getContextPath()
-                + "/login?referrer="
-                + URLEncoder.encode(url, "UTF-8"));
-    }
-
-    protected void accessCheckSuccessful(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-
-        if (session != null) {
-            Map<String, Object> loginInfo = new HashMap<>();
-            loginInfo.put("username", session.getAttribute("username"));
-            loginInfo.put("userid", session.getAttribute("userid"));
-            loginInfo.put("role", session.getAttribute("role"));
-
-            request.setAttribute("logininfo", loginInfo);
+    //override to provide your login information in the request
+    protected void accessCheckSuccessful(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException, IOException {
+        HttpSession s = request.getSession(false);
+        if (s != null) {
+            Map<String, Object> li = new HashMap<>();
+            request.setAttribute("logininfo", li);
+            li.put("session-start-ts", s.getAttribute("session-start-ts"));
+            li.put("username", s.getAttribute("username"));
+            li.put("userid", s.getAttribute("userid"));
+            li.put("ip", s.getAttribute("ip"));
         }
     }
-
-    private void processBaseRequest(HttpServletRequest request, HttpServletResponse response) {
-        try {
-            initRequest(request);
-
-            if (hasLoggedAccess(request) && request.getSession(false) == null) {
-                accessCheckLoginFailed(request, response);
-                return;
-            }
-
-            accessCheckSuccessful(request);
-            processRequest(request, response);
-
+      protected boolean checkAccess(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException, IOException {
+        HttpSession s = SecurityHelpers.checkSession(request);
+        String uri = request.getRequestURI();
+        //non ridirezioniamo verso la login se richiediamo risorse da non proteggere
+        //do not redirect to login if we are requesting unprotected resources
+        return !(s == null && protect != null && protect.matcher(uri).find());
+    }
+      
+        private void processBaseRequest(HttpServletRequest request, HttpServletResponse response) {
+        //WARNING: never declare DB-related objects including references to Connection and Statement (as our data layer)
+        //as class variables of a servlet. Since servlet instances are reused, concurrent requests may conflict on such
+        //variables leading to unexpected results. To always have different connections and statements on a per-request
+        //(i.e., per-thread) basis, declare them in the doGet, doPost etc. (or in methods called by them) and 
+        //(possibly) pass such variables through the request.        
+        try (DataLayer datalayer = createDataLayer(ds)) {
+            datalayer.init();
+            initRequest(request, datalayer);
+            
+           
         } catch (Exception ex) {
+            ex.printStackTrace(); //for debugging only
             handleError(ex, request, response);
         }
     }
 
-    protected Map<String, Object> createDataModel(HttpServletRequest request) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("ctx", request.getContextPath());
-        data.put("thispageurl", request.getAttribute("thispageurl"));
-        data.put("logininfo", request.getAttribute("logininfo"));
-        return data;
-    }
-
-    protected void render(String templateName, Map<String, Object> data, HttpServletResponse response)
-            throws ServletException, IOException {
-        response.setContentType("text/html;charset=UTF-8");
-
-        try {
-            Template template = cfg.getTemplate(templateName);
-            template.process(data, response.getWriter());
-        } catch (TemplateException ex) {
-            throw new ServletException("Errore nel template " + templateName, ex);
-        }
+    protected void handleError(String message, HttpServletRequest request, HttpServletResponse response) {
+        new FailureResult(getServletContext()).activate(message, request, response);
     }
 
     protected void handleError(Exception exception, HttpServletRequest request, HttpServletResponse response) {
-        try {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        new FailureResult(getServletContext()).activate(exception, request, response);
+    }
 
-            Map<String, Object> data = createDataModel(request);
-            data.put("title", "Errore");
-            data.put("message", exception.getMessage());
-
-            render("error.html.ftl", data, response);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
+    protected void handleError(HttpServletRequest request, HttpServletResponse response) {
+        new FailureResult(getServletContext()).activate(request, response);
     }
 
     @Override
@@ -137,4 +105,29 @@ public abstract class AbstractBaseController extends HttpServlet {
             throws ServletException, IOException {
         processBaseRequest(request, response);
     }
+
+    @Override
+    public void init(ServletConfig config) throws ServletException {
+
+        super.init(config);
+
+        //init protection pattern
+        String p = config.getServletContext().getInitParameter("security.protect.patterns");
+        if (p == null || p.isBlank()) {
+            protect = null;
+        } else {
+            String[] split = p.split("\\s*,\\s*");
+            protect = Pattern.compile(Arrays.stream(split).collect(Collectors.joining("$)|(?:", "(?:", "$)")));
+        }
+
+        //init data source
+        try {
+            InitialContext ctx = new InitialContext();
+            ds = (DataSource) ctx.lookup("java:comp/env/" + config.getServletContext().getInitParameter("data.source"));
+        } catch (NamingException ex) {
+            throw new ServletException(ex);
+        }
+    }
+      
 }
+    
