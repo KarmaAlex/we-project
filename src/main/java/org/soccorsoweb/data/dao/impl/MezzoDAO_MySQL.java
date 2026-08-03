@@ -20,29 +20,36 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
     private PreparedStatement iMezzo;
     private PreparedStatement uMezzo;
     private PreparedStatement iAssegnaMezzo;
+    private PreparedStatement sMezziConStato;
 
     public MezzoDAO_MySQL(DataLayer d) { super(d); }
 
     @Override
     public void init() throws DataException {
         try {
-            super.init();
-            sMezzoByID = connection.prepareStatement("SELECT * FROM Mezzo WHERE ID=?");
-            sMezzi = connection.prepareStatement("SELECT * FROM Mezzo");
-            sMezziDisponibili = connection.prepareStatement(
-                "SELECT * FROM Mezzo m WHERE NOT EXISTS (" +
-                "  SELECT 1 FROM assegna_mezzo am " +
-                "  JOIN Missione mi ON am.ID_MISSIONE = mi.ID " +
-                "  WHERE am.ID_MEZZO = m.ID AND mi.completata = false" +
-                ")"
-            );
-            iMezzo = connection.prepareStatement(
-                "INSERT INTO Mezzo (nome, `desc`, targa) VALUES(?,?,?)",
-                Statement.RETURN_GENERATED_KEYS);
-            uMezzo = connection.prepareStatement(
-                "UPDATE Mezzo SET nome=?, `desc`=?, targa=? WHERE ID=?");
-            iAssegnaMezzo = connection.prepareStatement(
-                "INSERT INTO assegna_mezzo (ID_MEZZO, ID_MISSIONE) VALUES (?,?)");
+                super.init();
+                sMezzoByID = connection.prepareStatement("SELECT * FROM Mezzo WHERE ID=?");
+                sMezzi = connection.prepareStatement("SELECT * FROM Mezzo");
+                sMezziDisponibili = connection.prepareStatement(
+                    "SELECT * FROM Mezzo m WHERE NOT EXISTS (" +
+                    "  SELECT 1 FROM assegna_mezzo am " +
+                    "  JOIN Missione mi ON am.ID_MISSIONE = mi.ID " +
+                    "  WHERE am.ID_MEZZO = m.ID AND mi.completata = false" +
+                    ")"
+                );
+                iMezzo = connection.prepareStatement(
+                    "INSERT INTO Mezzo (nome, `desc`, targa) VALUES(?,?,?)",
+                    Statement.RETURN_GENERATED_KEYS);
+                uMezzo = connection.prepareStatement(
+                    "UPDATE Mezzo SET nome=?, `desc`=?, targa=? WHERE ID=?");
+                iAssegnaMezzo = connection.prepareStatement(
+                    "INSERT INTO assegna_mezzo (ID_MEZZO, ID_MISSIONE) VALUES (?,?)");
+                sMezziConStato = connection.prepareStatement(
+                    "SELECT m.*, mi.ID AS missione_id " +
+                    "FROM Mezzo m " +
+                    "LEFT JOIN assegna_mezzo am ON am.ID_MEZZO = m.ID " +
+                    "LEFT JOIN Missione mi ON mi.ID = am.ID_MISSIONE AND mi.completata = false"
+                );
         } catch (SQLException ex) {
             throw new DataException("Error initializing mezzo data layer", ex);
         }
@@ -57,6 +64,7 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
             if (iMezzo != null) iMezzo.close();
             if (uMezzo != null) uMezzo.close();
             if (iAssegnaMezzo != null) iAssegnaMezzo.close();
+            if (sMezziConStato != null) sMezziConStato.close();
         } catch (SQLException ex) { }
         super.destroy();
     }
@@ -166,4 +174,28 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
             throw new DataException("Errore nell'assegnazione mezzo alla missione", ex);
         }
     }
+    
+    
+        @Override
+        public List<Mezzo> getMezziConStato() throws DataException {
+            List<Mezzo> result = new ArrayList<>();
+            try (ResultSet rs = sMezziConStato.executeQuery()) {
+                while (rs.next()) {
+                    MezzoProxy m = (MezzoProxy) createMezzo(); // solo istanzia l'oggetto Java vuoto
+                    m.setKey(rs.getInt("ID"));
+                    m.setNome(rs.getString("nome"));
+                    m.setDesc(rs.getString("desc"));
+                    m.setTarga(rs.getString("targa"));
+                    m.setVersion(0);
+
+                    int missioneId = rs.getInt("missione_id");
+                    m.setMissioneKey(rs.wasNull() ? null : missioneId);
+
+                    result.add(m);
+                }
+            } catch (SQLException ex) {
+                throw new DataException("Unable to load mezzi con stato", ex);
+            }
+            return result;
+        }
 }

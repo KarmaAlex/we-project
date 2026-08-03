@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -183,4 +184,42 @@ public class RichiestaDAO_MySQL extends Dao implements RichiestaDAO {
             throw new DataException("Unable to store richiesta", ex);
         }
     }
+    
+    @Override
+public List<Richiesta> getRichiesteFiltrate(LocalDateTime dataInizio, LocalDateTime dataFine, StatoRichiesta stato, String email) throws DataException {
+    StringBuilder sql = new StringBuilder("SELECT ID FROM Richiesta WHERE 1=1");
+    List<Object> params = new ArrayList<>();
+
+    if (dataInizio != null) {
+        sql.append(" AND data >= ?");
+        params.add(Timestamp.valueOf(dataInizio));
+    }
+    if (dataFine != null) {
+        sql.append(" AND data <= ?");
+        params.add(Timestamp.valueOf(dataFine));
+    }
+    if (stato != null) {
+        sql.append(" AND stato = ?");
+        params.add(stato.name().toLowerCase().replace("_", " ")); // permette alla query di cercare la stringa associata all'enum
+    }
+    if (email != null && !email.isBlank()) {
+        sql.append(" AND email LIKE ?");
+        params.add("%" + email + "%"); // ricerca parziale
+    }
+
+    List<Richiesta> res = new ArrayList<>();
+    try (PreparedStatement ps = connection.prepareStatement(sql.toString())) {
+        for (int i = 0; i < params.size(); i++) {
+            ps.setObject(i + 1, params.get(i));
+        }
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                res.add(getRichiesta(rs.getInt("ID")));
+            }
+        }
+    } catch (SQLException ex) {
+        throw new DataException("Errore nel recupero delle richieste filtrate", ex);
+    }
+    return res;
+}
 }

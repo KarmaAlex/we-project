@@ -15,4 +15,6 @@ public interface MezzoDAO extends GenericDao {
     
     // Metodo aggiunto per la gestione dell'associazione
     void assegnaMezzoAMissione(Mezzo m, Missione mis) throws DataException;
+    
+    List<Mezzo> getMezziConStato() throws DataException;
 }

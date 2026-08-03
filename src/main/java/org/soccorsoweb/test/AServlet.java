@@ -188,6 +188,81 @@ public class AServlet extends HttpServlet {
                 out.println("<p>Test getMissioniFiltrate() per esito SUCCESSO (nessun match atteso, missione è ancora attiva)...</p>");
                 List<Missione> missioniEsito = missioneDAO.getMissioniFiltrate(null, null, EsitoMissione.SUCCESSO);
                 out.println("<p>Missioni con esito SUCCESSO trovate: " + missioniEsito.size() + "</p>");
+                
+                
+                // --- 6. Filtro Richieste per data/stato/email ---
+                out.println("<hr/><h2>Test getRichiesteFiltrate()</h2>");
+
+                out.println("<p>Test filtro per intervallo data odierno (nessun filtro su stato/email)...</p>");
+                List<Richiesta> richiesteData = richiestaDAO.getRichiesteFiltrate(oggiInizio, oggiFine, null, null);
+                boolean rTrovataData = richiesteData.stream().anyMatch(x -> x.getKey().equals(r.getKey()));
+                out.println("<p class='" + (rTrovataData ? "success" : "error") + "'>" +
+                    (rTrovataData ? "[OK] " : "[FALLITO] ") +
+                    "Richieste nell'intervallo: " + richiesteData.size() +
+                    " — richiesta di test " + (rTrovataData ? "trovata" : "NON trovata") + "</p>");
+
+                out.println("<p>Test filtro per stato IN_ATTESA (deve trovare la richiesta di test)...</p>");
+                List<Richiesta> richiesteStato = richiestaDAO.getRichiesteFiltrate(null, null, StatoRichiesta.IN_ATTESA, null);
+                boolean rTrovataStato = richiesteStato.stream().anyMatch(x -> x.getKey().equals(r.getKey()));
+                out.println("<p class='" + (rTrovataStato ? "success" : "error") + "'>" +
+                    (rTrovataStato ? "[OK] " : "[FALLITO] ") +
+                    "Richieste con stato IN_ATTESA: " + richiesteStato.size() +
+                    " — richiesta di test " + (rTrovataStato ? "trovata" : "NON trovata") + "</p>");
+
+                out.println("<p>Test filtro per stato COMPLETATA (nessun match atteso)...</p>");
+                List<Richiesta> richiesteStatoErrato = richiestaDAO.getRichiesteFiltrate(null, null, StatoRichiesta.COMPLETATA, null);
+                out.println("<p>Richieste con stato COMPLETATA trovate: " + richiesteStatoErrato.size() + "</p>");
+
+                out.println("<p>Test filtro per email (ricerca parziale su 'test')...</p>");
+                List<Richiesta> richiesteEmail = richiestaDAO.getRichiesteFiltrate(null, null, null, "test");
+                boolean rTrovataEmail = richiesteEmail.stream().anyMatch(x -> x.getKey().equals(r.getKey()));
+                out.println("<p class='" + (rTrovataEmail ? "success" : "error") + "'>" +
+                    (rTrovataEmail ? "[OK] " : "[FALLITO] ") +
+                    "Richieste con email contenente 'test': " + richiesteEmail.size() +
+                    " — richiesta di test " + (rTrovataEmail ? "trovata" : "NON trovata") + "</p>");
+
+                out.println("<p>Test filtro per email inesistente (nessun match atteso)...</p>");
+                List<Richiesta> richiesteEmailVuoto = richiestaDAO.getRichiesteFiltrate(null, null, null, "xxxxxnonesiste");
+                out.println("<p>Richieste con email inesistente trovate: " + richiesteEmailVuoto.size() + "</p>");
+
+                out.println("<p>Test filtro combinato (data + stato + email)...</p>");
+                List<Richiesta> richiesteCombo = richiestaDAO.getRichiesteFiltrate(oggiInizio, oggiFine, StatoRichiesta.IN_ATTESA, "test");
+                boolean rTrovataCombo = richiesteCombo.stream().anyMatch(x -> x.getKey().equals(r.getKey()));
+                out.println("<p class='" + (rTrovataCombo ? "success" : "error") + "'>" +
+                    (rTrovataCombo ? "[OK] " : "[FALLITO] ") +
+                    "Richieste con filtro combinato: " + richiesteCombo.size() +
+                    " — richiesta di test " + (rTrovataCombo ? "trovata" : "NON trovata") + "</p>");
+                
+                
+                // --- 7. Mezzi con stato (occupati e disponibili insieme) ---
+                out.println("<hr/><h2>Test getMezziConStato()</h2>");
+
+                List<Mezzo> mezziConStato = mezzoDAO.getMezziConStato();
+                out.println("<p>Totale mezzi trovati (occupati + disponibili): " + mezziConStato.size() + "</p>");
+
+                out.println("<table border='1' cellpadding='5' style='border-collapse: collapse;'>");
+                out.println("<tr><th>ID</th><th>Nome</th><th>Targa</th><th>Stato</th><th>Missione</th></tr>");
+                for (Mezzo mConStato : mezziConStato) {
+                    String stato = mConStato.isAssegnato() ? "Occupato" : "Disponibile";
+                    String missioneInfo = mConStato.isAssegnato() ? String.valueOf(mConStato.getMissioneKey()) : "-";
+                    out.println("<tr><td>" + mConStato.getKey() + "</td><td>" + mConStato.getNome() + "</td><td>" +
+                        mConStato.getTarga() + "</td><td>" + stato + "</td><td>" + missioneInfo + "</td></tr>");
+                }
+                out.println("</table>");
+
+                // Verifica che il mezzo di test debba risultare OCCUPATO, essendo assegnato alla missione attiva creata sopra
+                Mezzo mzTrovato = mezziConStato.stream()
+                    .filter(x -> x.getKey().equals(mz.getKey()))
+                    .findFirst()
+                    .orElse(null);
+
+                if (mzTrovato != null && mzTrovato.isAssegnato() && mzTrovato.getMissioneKey().equals(mis.getKey())) {
+                    out.println("<p class='success'><b>[OK]</b> Il mezzo di test risulta correttamente OCCUPATO, missione ID: " + mzTrovato.getMissioneKey() + "</p>");
+                } else if (mzTrovato != null && !mzTrovato.isAssegnato()) {
+                    out.println("<p class='error'><b>[FALLITO]</b> Il mezzo di test risulta DISPONIBILE, ma dovrebbe essere occupato dalla missione attiva.</p>");
+                } else {
+                    out.println("<p class='error'><b>[FALLITO]</b> Mezzo di test non trovato nella lista.</p>");
+                }
 
                 utenteDAO.destroy();
                 richiestaDAO.destroy();
