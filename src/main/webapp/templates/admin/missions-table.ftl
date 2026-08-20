@@ -73,7 +73,4 @@
     editModalTitle="Modifica missione"
     page=page!1
     totalPages=totalPages!1
-    hasAddBtn=true
-    addModalTitle="Aggiungi missione"
-    addModalClass="add-modal"
 />

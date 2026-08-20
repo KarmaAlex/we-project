@@ -317,7 +317,8 @@ table .badge.in-progress {
   justify-content: center;
 }
 
-.modal-dialog {
+.modal-dialog,
+.add-modal {
   background: #fff;
   border-radius: var(--radius);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
@@ -371,10 +372,6 @@ table .badge.in-progress {
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
-}
-
-.modal-trigger {
-  margin-right: 1rem;
 }
 
 /* Timeline in modal */
@@ -577,5 +574,5 @@ table .badge.in-progress {
 }
 
 .add-modal {
-  max-width: 900px;
+  max-width: 600px;
 }

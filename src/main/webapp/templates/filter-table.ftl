@@ -71,10 +71,10 @@
     />
     <#if hasAddBtn>
         <div class="add-section">
-            <a class="btn primary modal-trigger" href=${ctx}/api/add/${section} data-modal="${section}AddModal" data-toggle="modal">Aggiungi</a>
+            <a class="btn primary modal-trigger" href="${ctx}/api/add/${section}" data-modal="${section}AddModal" data-toggle="modal">Aggiungi</a>
         </div>
-        <@modal id=section+"AddModal" title=addModalTitle cssClass=cssClass!"modal-dialog">
-            <p id="detailModalContent">Caricamento...</p>
+        <@modal id=section+"AddModal" title=addModalTitle cssClass=addModalClass>
+            <p id="addModalContent">Caricamento...</p>
         </@modal>
     </#if>
 

@@ -56,6 +56,8 @@ public class AdminDashboardServlet extends HttpServlet {
                 user.put("email", "admin@soccorsoweb.it");
                 user.put("ruolo", "ADMIN");
                 model.put("user", user);
+                user.put("authenticated", true);
+                model.put("currentUser", user);
 
                 model.put("section", section);
                 model.put("page", getIntParameter(req, "page", 1));

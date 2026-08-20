@@ -4,7 +4,6 @@
  */
 
 //TODO: fix filtering
-//TODO: hide button to submit form when ajax is available
 
 // Debounce to prevent spam filtering
 function debounce(func, delay) {

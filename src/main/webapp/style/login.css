@@ -1,14 +1,19 @@
 /* Page-specific styles for login page (extends base.css) */
-.login-card{max-width:480px;margin:3rem auto;padding:1.25rem}
-.login-card h2{margin:0 0 0.75rem 0;font-size:1.25rem}
-.login-form label{display:block;margin-bottom:0.75rem;font-size:0.95rem}
-.login-form input[type=text],.login-form input[type=password]{height:42px}
+.login-card{max-width:600px;margin:4rem auto;padding:2rem}
+.login-card h2{margin:0 0 1.5rem 0;font-size:1.35rem}
+.login-form{gap:1.25rem;padding:1.5rem}
+.login-form label{display:block;margin:0;font-size:0.95rem}
+.login-form label input{display:block;margin-top:0.45rem}
+.login-form input[type=text],.login-form input[type=password],.login-form input[type=date]{height:42px}
 .checkbox-row{display:flex;align-items:center;gap:0.5rem}
-.form-actions{display:flex;gap:0.5rem;margin-top:0.5rem}
-.note{margin-top:0.75rem}
+.checkbox-row input{margin:0}
+.login-form .form-actions{display:flex;gap:0.75rem;margin-top:0.25rem}
+.note{margin:0.25rem 0 0}
 
 @media(max-width:480px){
-  .login-card{margin:1.5rem 1rem;padding:1rem}
-  .form-actions{flex-direction:column;align-items:stretch}
-  .form-actions .btn{width:100%}
+  .login-card{margin:2rem 1rem;padding:1rem}
+  .login-card h2{margin-bottom:1.25rem}
+  .login-form{padding:1rem;gap:1rem}
+  .login-form .form-actions{flex-direction:column;align-items:stretch}
+  .login-form .form-actions .btn{width:100%}
 }

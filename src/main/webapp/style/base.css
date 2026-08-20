@@ -24,6 +24,16 @@ body{margin:0;font-family:Inter,Segoe UI,Arial,Helvetica,sans-serif;background:v
 .logo{font-size:1.25rem;margin:0;padding:0.75rem 0;color:var(--accent);font-weight:700}
 .top-nav{display:flex;align-items:center;gap:0.5rem}
 .logo a:link,.logo a:visited{color: var(--accent);text-decoration: none;}
+.user-menu{position:relative}
+.user-menu-toggle{display:flex;align-items:center;justify-content:center;gap:0.45rem;min-height:2.5rem;padding:0.25rem 0.5rem;border:1px solid transparent;border-radius:6px;cursor:pointer;list-style:none}
+.user-menu-toggle::-webkit-details-marker{display:none}
+.user-menu-toggle:hover{background:var(--btn-hover)}
+.user-menu-toggle img{width:1.75rem;height:1.75rem}
+.user-menu-toggle span{color:#222;font-weight:600;white-space:nowrap}
+.user-menu-dropdown{position:absolute;right:0;z-index:10;display:grid;min-width:10rem;margin-top:0.5rem;padding:0.35rem;background:#fff;border:1px solid var(--card-border);border-radius:var(--radius);box-shadow:0 6px 18px rgba(15,20,30,0.12)}
+.user-menu-dropdown a{padding:0.55rem 0.75rem;color:#222;text-decoration:none;white-space:nowrap}
+.user-menu-dropdown a:hover{background:var(--btn-hover)}
+.user-menu-dropdown .logout{color:#a11}
 
 /* Buttons */
 .btn{display:inline-block;padding:0.5rem 0.9rem;border-radius:6px;border:1px solid var(--accent);background:transparent;color:var(--accent);text-decoration:none;font-weight:600;cursor: pointer;}
@@ -36,7 +46,7 @@ body{margin:0;font-family:Inter,Segoe UI,Arial,Helvetica,sans-serif;background:v
 .card{background:#fff;padding:1rem;border-radius:var(--radius);border:1px solid var(--card-border);box-shadow:0 4px 10px rgba(15,20,30,0.04)}
 
 /* Form controls (sane defaults for site-wide use) */
-input[type=text],input[type=email],input[type=tel],input[type=password],input[type=number],textarea,select{width:100%;padding:0.5rem;border:1px solid #d8dbe2;border-radius:6px;background:#fff;color:#222}
+input[type=text],input[type=email],input[type=tel],input[type=password],input[type=number],input[type=date],textarea,select{width:100%;padding:0.5rem;border:1px solid #d8dbe2;border-radius:6px;background:#fff;color:#222}
 textarea{min-height:100px}
 
 /* Utilities */

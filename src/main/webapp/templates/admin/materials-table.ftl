@@ -5,7 +5,7 @@
         "field":"id",
         "label":"ID",
         "sortable":true
-    }
+    },
     {
         "field":"stato",
         "label":"Stato",
@@ -50,6 +50,9 @@
     hasDetails=true
     detailModalTitle="Dettagli materiale"
     editModalTitle="Modifica materiale"
+    hasAddBtn=true
+    addModalTitle="Aggiungi materiale"
+    addModalClass="add-modal"
     page=page!1
     totalPages=totalPages!1
 />

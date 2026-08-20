@@ -1,8 +1,8 @@
 package org.soccorsoweb.test;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,13 +32,12 @@ public class AddApiServlet extends HttpServlet{
         String path = req.getRequestURI().substring(ctx.length());
 
         // Parse path: /api/edit/{resource}/{id}
-        Pattern pattern = Pattern.compile("/api/add/([^/]+)");
+        Pattern pattern = Pattern.compile("/api/add/([^/]+)(/([^/]+))?");
         Matcher matcher = pattern.matcher(path);
 
         if (matcher.matches()) {
             String role = "admin"; // TODO: replace with role from current session
             String resource = matcher.group(1); // requests, missions, etc
-
             resp.setContentType("text/html;charset=UTF-8");
 
             try {
@@ -52,20 +51,23 @@ public class AddApiServlet extends HttpServlet{
                             renderDetailTemplate(resp, "edit/richiesta-edit.ftl", model);
                             break;
                         case "missions":
+                            String id = matcher.group(2).substring(1);
+                            model.put("item", MockDataProvider.getMissioneDetail(id));
                             model.put("squadreDisponibili", MockDataProvider.getMockSquadre());
                             model.put("materialiDisponibili", MockDataProvider.getMockMateriali());
                             model.put("mezziDisponibili", MockDataProvider.getMockMezzi());
                             model.put("operatoriDisponibili", MockDataProvider.getMockOperatori());
+                            model.put("currentTime", LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm")));
                             renderDetailTemplate(resp, "add/missione-add.ftl", model);
                             break;
                         case "operators":
-                            renderDetailTemplate(resp, "edit/operatore-edit.ftl", model);
+                            renderDetailTemplate(resp, "add/operatore-add.ftl", model);
                             break;
                         case "vehicles":
-                            renderDetailTemplate(resp, "edit/mezzo-edit.ftl", model);
+                            renderDetailTemplate(resp, "add/mezzo-add.ftl", model);
                             break;
                         case "materials":
-                            renderDetailTemplate(resp, "edit/materiale-edit.ftl", model);
+                            renderDetailTemplate(resp, "add/materiale-add.ftl", model);
                             break;
                         default:
                             resp.setStatus(404);

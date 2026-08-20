@@ -54,6 +54,8 @@ public class OperatorDashboardServlet extends HttpServlet {
                 user.put("email", "marco@soccorsoweb.it");
                 user.put("ruolo", "OPERATOR");
                 model.put("user", user);
+                user.put("authenticated", true);
+                model.put("currentUser", user);
 
                 model.put("section", section);
                 model.put("page", getIntParameter(req, "page", 1));

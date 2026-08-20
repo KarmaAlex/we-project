@@ -12,6 +12,10 @@
         "sortable":true
     },
     {
+        "field":"email",
+        "label":"Email"
+    },
+    {
         "field":"indirizzo",
         "label":"Indirizzo"
     },
@@ -65,12 +69,12 @@
     {
         "type":"date",
         "name":"data_from",
-        "label":"Data da"
+        "label":"Data inizio"
     },
     {
         "type":"date",
         "name":"data_to",
-        "label":"Data a"
+        "label":"Data fine"
     }
 ]>
 
@@ -85,3 +89,7 @@
     page=page!1
     totalPages=totalPages!1
 />
+
+<@modal id="createMissionModal" title="Crea missione" >
+        <p id="createMissionModalContent">Caricamento...</p>
+    </@modal>

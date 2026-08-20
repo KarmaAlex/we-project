@@ -48,7 +48,6 @@
       </div>
     </#if>
 
-    <#-- TODO: updates are misaligned, fix -->
     <#if dettaglio.aggiornamenti??>
       <div style="margin-bottom: 1rem;">
         <strong>Aggiornamenti:</strong>

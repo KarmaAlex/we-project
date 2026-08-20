@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LoginServlet extends HttpServlet {
+public class SignupServlet extends HttpServlet {
 
     private Configuration cfg;
 
@@ -25,31 +25,15 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String ctx = req.getContextPath();
-        String path = req.getRequestURI().substring(ctx.length());
-
-        // serve the login template for /login or /login.html
-        if ("/login".equals(path)) {
-            resp.setContentType("text/html;charset=UTF-8");
-            try {
-                Template tpl = cfg.getTemplate("login.ftl");
-                Map<String, Object> model = new HashMap<>();
-                model.put("ctx", ctx);
-                tpl.process(model, resp.getWriter());
-            } catch (TemplateException ex) {
-                throw new ServletException("Error while processing Freemarker template", ex);
-            }
-            return;
+        resp.setContentType("text/html;charset=UTF-8");
+        try {
+            Template tpl = cfg.getTemplate("signup.ftl");
+            Map<String, Object> model = new HashMap<>();
+            model.put("ctx", req.getContextPath());
+            tpl.process(model, resp.getWriter());
+        } catch (TemplateException ex) {
+            throw new ServletException("Error while processing Freemarker template", ex);
         }
-
-        // forward other requests (static assets) to default servlet
-        jakarta.servlet.RequestDispatcher rd = getServletContext().getNamedDispatcher("default");
-        if (rd != null) {
-            rd.forward(req, resp);
-            return;
-        }
-
-        resp.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
 
     @Override

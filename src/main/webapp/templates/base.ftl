@@ -28,7 +28,28 @@
       <h1 class="logo"><a href="${(ctx!"") + '/'}">SoccorsoWeb</a></h1>
       <a href="#main-content" class="skip-link">Skip to main content</a>
       <nav class="top-nav">
-        <a href="${(ctx!"") + '/login.html'}" class="btn login">Accedi</a>
+        <#if currentUser?? && currentUser.authenticated?? && currentUser.authenticated>
+          <details class="user-menu">
+            <summary class="user-menu-toggle" aria-label="Menu utente">
+              <img src="${(ctx!"") + '/assets/circle-user.svg'}" alt="" aria-hidden="true" />
+              <#if currentUser.nome??>
+                <span>${currentUser.nome}</span>
+              <#elseif currentUser.username??>
+                <span>${currentUser.username}</span>
+              </#if>
+            </summary>
+            <div class="user-menu-dropdown">
+              <#if currentUser.ruolo?? && currentUser.ruolo == "ADMIN">
+                <a href="${(ctx!"") + '/admin-dashboard'}">Dashboard</a>
+              <#elseif currentUser.ruolo?? && currentUser.ruolo == "OPERATOR">
+                <a href="${(ctx!"") + '/operator-dashboard'}">Dashboard</a>
+              </#if>
+              <a href="${(ctx!"") + '/logout'}" class="logout">Logout</a>
+            </div>
+          </details>
+        <#else>
+          <a href="${(ctx!"") + '/login'}" class="btn login">Accedi</a>
+        </#if>
       </nav>
     </div>
   </header>
@@ -42,6 +63,16 @@
       <p>© SoccorsoWeb - Progetto WE</p>
     </div>
   </footer>
+
+  <script>
+    document.addEventListener('click', (event) => {
+      document.querySelectorAll('.user-menu[open]').forEach((menu) => {
+        if (!menu.contains(event.target)) {
+          menu.removeAttribute('open');
+        }
+      });
+    });
+  </script>
 </body>
 </html>
 </#macro>

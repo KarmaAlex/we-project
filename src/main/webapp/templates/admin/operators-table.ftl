@@ -67,6 +67,9 @@
     hasDetails=true
     detailModalTitle="Dettagli operatore"
     editModalTitle="Modifica operatore"
+    hasAddBtn=true
+    addModalTitle="Aggiungi operatore"
+    addModalClass="add-modal"
     page=page!1
     totalPages=totalPages!1
 />

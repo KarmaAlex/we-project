@@ -40,46 +40,15 @@
     "type":"text",
     "name":"richiesta_id",
     "label":"Richiesta",
-    "value":'',
+    "value":item.id,
     "readonly":true
 },
 {
-    "type":"select",
-    "name":"stato",
-    "label":"Stato",
-    "value":'PIANIFICATA',
-    "required":true,
-    "options":[
-        {
-            "value":"PIANIFICATA",
-            "label":"Pianificata"
-        },
-        {
-            "value":"IN_CORSO",
-            "label":"In corso"
-        },
-        {
-            "value":"COMPLETATA",
-            "label":"Completata"
-        },
-        {
-            "value":"ANNULLATA",
-            "label":"Annullata"
-        }
-    ]
-},
-{
-    "type":"date",
+    "type":"datetime-local",
     "name":"data_inizio",
     "label":"Data Inizio",
-    "value":'',
+    "value":currentTime,
     "required":true
-},
-{
-    "type":"date",
-    "name":"data_fine",
-    "label":"Data Fine",
-    "value":''
 },
 {
     "type":"textarea",
@@ -93,7 +62,7 @@
     "type":"text",
     "name":"indirizzo",
     "label":"Indirizzo",
-    "value":'',
+    "value":item.indirizzo,
     "required":true
 },
 {

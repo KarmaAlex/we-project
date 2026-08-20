@@ -28,6 +28,7 @@
         <#case "password">
         <#case "number">
         <#case "date">
+        <#case "datetime-local">
         <#case "tel">
         <#case "url">
         <#case "file">
@@ -41,6 +42,7 @@
                 <#if field.accept??>accept="${field.accept}"</#if>
                 <#if field.autocomplete??>autocomplete="${field.autocomplete}"</#if>
                 <#if field.help??>aria-describedby="${field.name}-help"</#if>
+                <#if field.readonly?? && field.readonly>readonly</#if>
                 <#if field.attrs??>
                     <#list field.attrs?keys as key>
                         ${key}="${field.attrs[key]}"
