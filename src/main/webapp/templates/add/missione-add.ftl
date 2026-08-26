@@ -37,11 +37,9 @@
 
 <#assign missioneFields = [
 {
-    "type":"text",
+    "type":"hidden",
     "name":"richiesta_id",
-    "label":"Richiesta",
-    "value":item.id,
-    "readonly":true
+    "value":richiestaId!item.id
 },
 {
     "type":"datetime-local",

@@ -51,8 +51,14 @@ public class AddApiServlet extends HttpServlet{
                             renderDetailTemplate(resp, "edit/richiesta-edit.ftl", model);
                             break;
                         case "missions":
-                            String id = matcher.group(2).substring(1);
+                            String id = req.getParameter("richiesta_id");
+                            if (id == null || id.isBlank()) {
+                                resp.setStatus(400);
+                                resp.getWriter().write("<p>ID richiesta mancante</p>");
+                                return;
+                            }
                             model.put("item", MockDataProvider.getMissioneDetail(id));
+                            model.put("richiestaId", id);
                             model.put("squadreDisponibili", MockDataProvider.getMockSquadre());
                             model.put("materialiDisponibili", MockDataProvider.getMockMateriali());
                             model.put("mezziDisponibili", MockDataProvider.getMockMezzi());
