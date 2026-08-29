@@ -3,16 +3,17 @@ package org.soccorsoweb.business.controller;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import org.soccorsoweb.framework.security.SecurityHelpers;
 
-public class HomeServlet extends HttpServlet {
+public class HomeServlet extends SoccorsoBaseController {
 
     private Configuration cfg;
 
@@ -25,37 +26,71 @@ public class HomeServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // If the request targets a static resource (css, js, images, etc.),
-        // forward to the container's default servlet so static files are served
-        String ctx = req.getContextPath();
-        String path = req.getRequestURI().substring(ctx.length());
-        if (path == null || path.isEmpty() || "/".equals(path) || "/home".equals(path)) {
-            resp.setContentType("text/html;charset=UTF-8");
-            try {
-                Template tpl = cfg.getTemplate("home.ftl");
-                Map<String, Object> model = new HashMap<>();
-                model.put("ctx", req.getContextPath());
-                tpl.process(model, resp.getWriter());
-            } catch (TemplateException ex) {
-                throw new ServletException("Error while processing Freemarker template", ex);
-            }
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        if (hasFormSubmission(request)) {
+            CreaRichiestaServlet creaRichiestaServlet = new CreaRichiestaServlet();
+            creaRichiestaServlet.init(getServletConfig());
+            creaRichiestaServlet.processRequest(request, response);
             return;
         }
 
-        // forward other requests (static assets) to default servlet
-        RequestDispatcher rd = getServletContext().getNamedDispatcher("default");
-        if (rd != null) {
-            rd.forward(req, resp);
-            return;
-        }
-
-        // fallback: send 404
-        resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        processRequest(request, response);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        doGet(req, resp);
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException {
+        String ctx = request.getContextPath();
+        Map<String, Object> model = new HashMap<>();
+        model.put("ctx", ctx);
+        model.put("currentUser", buildCurrentUser(request));
+        model.put("isLoggedIn", isUserLoggedIn(request));
+        model.put("successMessage", request.getParameter("success"));
+
+        response.setContentType("text/html;charset=UTF-8");
+
+        try {
+            Template tpl = cfg.getTemplate("home.ftl");
+            tpl.process(model, response.getWriter());
+        } catch (TemplateException ex) {
+            throw new ServletException("Error while processing Freemarker template", ex);
+        } catch (IOException ex) {
+            throw new ServletException("Error while rendering home page", ex);
+        }
+    }
+
+    private boolean hasFormSubmission(HttpServletRequest request) {
+        String contentType = request.getContentType();
+        if (contentType != null && contentType.toLowerCase(Locale.ROOT).contains("multipart/form-data")) {
+            return true;
+        }
+
+        return request.getParameter("nome") != null
+                || request.getParameter("email") != null
+                || request.getParameter("posizione") != null
+                || request.getParameter("descrizione") != null;
+    }
+
+    private boolean isUserLoggedIn(HttpServletRequest request) {
+        return SecurityHelpers.checkSession(request) != null;
+    }
+
+    private Map<String, Object> buildCurrentUser(HttpServletRequest request) {
+        Map<String, Object> currentUser = new HashMap<>();
+        HttpSession session = request.getSession(false);
+
+        if (session == null) {
+            currentUser.put("authenticated", false);
+            return currentUser;
+        }
+
+        currentUser.put("authenticated", session.getAttribute("userid") != null);
+        currentUser.put("username", session.getAttribute("username"));
+        currentUser.put("nome", session.getAttribute("username"));
+        currentUser.put("userid", session.getAttribute("userid"));
+        currentUser.put("ruolo", session.getAttribute("ruolo"));
+
+        return currentUser;
     }
 }

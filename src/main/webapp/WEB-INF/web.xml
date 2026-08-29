@@ -87,6 +87,16 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>CreaRichiesta</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.CreaRichiestaServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>CreaRichiesta</servlet-name>
+        <url-pattern>/submit</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>HomeServlet</servlet-name>
         <servlet-class>org.soccorsoweb.business.controller.HomeServlet</servlet-class>
     </servlet>
