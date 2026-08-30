@@ -4,14 +4,24 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
+import javax.sql.DataSource;
+import org.soccorsoweb.data.DataException;
+import org.soccorsoweb.data.DataLayer;
+import org.soccorsoweb.data.dao.CredenzialiDAO;
+import org.soccorsoweb.data.dao.UtenteDAO;
+import org.soccorsoweb.framework.security.SecurityHelpers;
+import org.soccorsoweb.model.Credenziali;
+import org.soccorsoweb.model.Utente;
 
-public class LoginServlet extends HttpServlet {
+public class LoginServlet extends SoccorsoBaseController {
 
     private Configuration cfg;
 
@@ -24,36 +34,126 @@ public class LoginServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String ctx = req.getContextPath();
-        String path = req.getRequestURI().substring(ctx.length());
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException {
+        String ctx = request.getContextPath();
+        String path = request.getRequestURI().substring(ctx.length());
 
-        // serve the login template for /login or /login.html
-        if ("/login".equals(path)) {
-            resp.setContentType("text/html;charset=UTF-8");
-            try {
-                Template tpl = cfg.getTemplate("login.ftl");
-                Map<String, Object> model = new HashMap<>();
-                model.put("ctx", ctx);
-                tpl.process(model, resp.getWriter());
-            } catch (TemplateException ex) {
-                throw new ServletException("Error while processing Freemarker template", ex);
+        if ("/login".equals(path) || "/login.html".equals(path)) {
+            if ("POST".equalsIgnoreCase(request.getMethod())) {
+                handleLogin(request, response);
+            } else {
+                renderLoginPage(request, response, null);
             }
             return;
         }
 
-        // forward other requests (static assets) to default servlet
         jakarta.servlet.RequestDispatcher rd = getServletContext().getNamedDispatcher("default");
         if (rd != null) {
-            rd.forward(req, resp);
+            try {
+                rd.forward(request, response);
+            } catch (IOException ex) {
+                throw new ServletException("Errore nel forward delle risorse statiche", ex);
+            }
             return;
         }
 
-        resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        try {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        } catch (IOException ex) {
+            throw new ServletException("Errore 404 dal login servlet", ex);
+        }
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        doGet(req, resp);
+    protected DataLayer createDataLayer(DataSource ds) throws ServletException {
+        try {
+            return new DataLayer(ds) {
+                @Override
+                public void init() throws DataException {
+                    registerDAO(Utente.class, new org.soccorsoweb.data.dao.impl.UtenteDAO_MySQL(this));
+                    registerDAO(Credenziali.class, new org.soccorsoweb.data.dao.impl.CredenzialiDAO_MySQL(this));
+                }
+            };
+        } catch (Exception ex) {
+            throw new ServletException("Impossibile inizializzare il DataLayer per il login", ex);
+        }
+    }
+
+    private void handleLogin(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException {
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        if (username == null || username.isBlank() || password == null || password.isBlank()) {
+            renderLoginPage(request, response, "Inserisci username e password");
+            return;
+        }
+
+        DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
+        if (dataLayer == null) {
+            throw new ServletException("DataLayer non inizializzato");
+        }
+
+        try {
+            UtenteDAO utenteDAO = (UtenteDAO) dataLayer.getDAO(Utente.class);
+            CredenzialiDAO credenzialiDAO = (CredenzialiDAO) dataLayer.getDAO(Credenziali.class);
+
+            Utente utente = utenteDAO.getUtenteByUsername(username);
+            if (utente == null) {
+                renderLoginPage(request, response, "Credenziali non valide");
+                return;
+            }
+
+            Credenziali credenziali = credenzialiDAO.getCredenzialiByUtente(utente);
+            if (credenziali == null || credenziali.getPasswordHash() == null) {
+                renderLoginPage(request, response, "Credenziali non valide");
+                return;
+            }
+
+            String storedHash = toHexString(credenziali.getPasswordHash());
+            boolean passwordOk = SecurityHelpers.checkPasswordHashPBKDF2(password, storedHash);
+            if (!passwordOk) {
+                renderLoginPage(request, response, "Password errata");
+                return;
+            }
+
+            HttpSession session = SecurityHelpers.createSession(request, utente.getNomeUtente(), utente.getKey());
+            session.setAttribute("ruolo", utente.isAdmin() ? "ADMIN" : "OPERATOR");
+            session.setAttribute("admin", utente.isAdmin());
+
+            String redirectTarget = utente.isAdmin() ? request.getContextPath() + "/admin-dashboard" : request.getContextPath() + "/operator-dashboard";
+            response.sendRedirect(redirectTarget);
+        } catch (DataException ex) {
+            throw new ServletException("Errore durante il controllo delle credenziali", ex);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+            throw new ServletException("Errore nella verifica della password", ex);
+        } catch (IOException ex) {
+            throw new ServletException("Errore nel redirect dopo il login", ex);
+        }
+    }
+
+    private void renderLoginPage(HttpServletRequest request, HttpServletResponse response, String errorMessage)
+            throws ServletException {
+        try {
+            response.setContentType("text/html;charset=UTF-8");
+            Template tpl = cfg.getTemplate("login.ftl");
+            Map<String, Object> model = new HashMap<>();
+            model.put("ctx", request.getContextPath());
+            model.put("errorMessage", errorMessage);
+            tpl.process(model, response.getWriter());
+        } catch (TemplateException ex) {
+            throw new ServletException("Errore nel rendering del template login", ex);
+        } catch (IOException ex) {
+            throw new ServletException("Errore nel rendering del login", ex);
+        }
+    }
+
+    private String toHexString(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 }

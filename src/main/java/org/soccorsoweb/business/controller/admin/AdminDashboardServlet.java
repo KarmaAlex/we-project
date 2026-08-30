@@ -1,4 +1,4 @@
-package org.soccorsoweb.business.controller;
+package org.soccorsoweb.business.controller.admin;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;

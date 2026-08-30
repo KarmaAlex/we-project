@@ -126,6 +126,17 @@
         <servlet-name>SignupServlet</servlet-name>
         <url-pattern>/signup</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ProfileServlet</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.ProfileServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>ProfileServlet</servlet-name>
+        <url-pattern>/profile</url-pattern>
+        <url-pattern>/operator/profile</url-pattern>
+    </servlet-mapping>
     
     
     <session-config>
