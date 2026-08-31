@@ -26,19 +26,6 @@ public class HomeServlet extends SoccorsoBaseController {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        if (hasFormSubmission(request)) {
-            CreaRichiestaServlet creaRichiestaServlet = new CreaRichiestaServlet();
-            creaRichiestaServlet.init(getServletConfig());
-            creaRichiestaServlet.processRequest(request, response);
-            return;
-        }
-
-        processRequest(request, response);
-    }
-
-    @Override
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException {
         String ctx = request.getContextPath();
@@ -60,17 +47,6 @@ public class HomeServlet extends SoccorsoBaseController {
         }
     }
 
-    private boolean hasFormSubmission(HttpServletRequest request) {
-        String contentType = request.getContentType();
-        if (contentType != null && contentType.toLowerCase(Locale.ROOT).contains("multipart/form-data")) {
-            return true;
-        }
-
-        return request.getParameter("nome") != null
-                || request.getParameter("email") != null
-                || request.getParameter("posizione") != null
-                || request.getParameter("descrizione") != null;
-    }
 
     private boolean isUserLoggedIn(HttpServletRequest request) {
         return SecurityHelpers.checkSession(request) != null;

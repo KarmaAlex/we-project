@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 @MultipartConfig(
@@ -64,6 +65,18 @@ public class CreaRichiestaServlet extends SoccorsoBaseController {
         }
 
         return "";
+    }
+    
+    private boolean hasFormSubmission(HttpServletRequest request) {
+        String contentType = request.getContentType();
+        if (contentType != null && contentType.toLowerCase(Locale.ROOT).contains("multipart/form-data")) {
+            return true;
+        }
+
+        return request.getParameter("nome") != null
+                || request.getParameter("email") != null
+                || request.getParameter("posizione") != null
+                || request.getParameter("descrizione") != null;
     }
 
     private String saveUploadedFile(HttpServletRequest request) throws IOException, ServletException {
