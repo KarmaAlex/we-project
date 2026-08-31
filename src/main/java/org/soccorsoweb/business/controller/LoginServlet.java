@@ -21,6 +21,7 @@ import org.soccorsoweb.framework.security.SecurityHelpers;
 import org.soccorsoweb.model.Credenziali;
 import org.soccorsoweb.model.Utente;
 
+
 public class LoginServlet extends SoccorsoBaseController {
 
     private Configuration cfg;
@@ -111,7 +112,7 @@ public class LoginServlet extends SoccorsoBaseController {
                 return;
             }
 
-            String storedHash = toHexString(credenziali.getPasswordHash());
+            String storedHash = SecurityHelpers.toHexString(credenziali.getPasswordHash());
             boolean passwordOk = SecurityHelpers.checkPasswordHashPBKDF2(password, storedHash);
             if (!passwordOk) {
                 renderLoginPage(request, response, "Password errata");
@@ -149,11 +150,4 @@ public class LoginServlet extends SoccorsoBaseController {
         }
     }
 
-    private String toHexString(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    }
 }

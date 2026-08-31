@@ -33,6 +33,8 @@ public class HomeServlet extends SoccorsoBaseController {
         model.put("ctx", ctx);
         model.put("currentUser", buildCurrentUser(request));
         model.put("isLoggedIn", isUserLoggedIn(request));
+        model.put("isAdmin", SecurityHelpers.isAdmin(request));
+        model.put("isOperator", SecurityHelpers.isOperator(request));
         model.put("successMessage", request.getParameter("success"));
 
         response.setContentType("text/html;charset=UTF-8");

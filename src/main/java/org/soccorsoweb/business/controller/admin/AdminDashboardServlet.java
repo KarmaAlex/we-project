@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.soccorsoweb.framework.security.SecurityHelpers;
 import org.soccorsoweb.test.MockDataProvider;
 
 import java.util.List;
@@ -37,6 +38,11 @@ public class AdminDashboardServlet extends HttpServlet {
         String path = req.getRequestURI().substring(ctx.length());
 
         if ("/admin-dashboard".equals(path)) {
+            if (!SecurityHelpers.isAdmin(req)) {
+                resp.sendRedirect(ctx + "/login");
+                return;
+            }
+
             resp.setContentType("text/html;charset=UTF-8");
             
             String section = req.getParameter("section");

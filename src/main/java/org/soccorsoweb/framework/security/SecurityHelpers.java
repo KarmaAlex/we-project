@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package org.soccorsoweb.framework.security;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -177,13 +178,80 @@ public class SecurityHelpers {
     //all the "malicious" charcaters, usually exploited
     //to perform SQL injection through form parameters
     public static String addSlashes(String s) {
+        if (s == null) {
+            return "";
+        }
         return s.replaceAll("(['\"\\\\])", "\\\\$1");
+    }
+
+    public static String sanitizeTextInput(String value) {
+        return addSlashes(value == null ? "" : value.trim());
+    }
+
+    public static String sanitizeFileLink(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+        return sanitizeFilename(value).replace('\\', '/');
+    }
+
+    public static String buildRequestSignature(String... values) {
+        String raw = String.join("|", values);
+        return md5Hex(raw);
+    }
+
+    public static String md5Hex(String value) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("MD5");
+            byte[] hash = digest.digest(value.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException ex) {
+            return String.valueOf(value.hashCode());
+        }
     }
 
     //questa funzione rimuove gli slash aggiunti da addSlashes
     //this function removes the slashes added by addSlashes
     public static String stripSlashes(String s) {
         return s.replaceAll("\\\\(['\"\\\\])", "$1");
+    }
+
+    public static boolean isAdmin(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return false;
+        }
+
+        Object adminAttr = session.getAttribute("admin");
+        if (adminAttr instanceof Boolean) {
+            return Boolean.TRUE.equals(adminAttr);
+        }
+
+        Object role = session.getAttribute("ruolo");
+        return role != null && "ADMIN".equalsIgnoreCase(String.valueOf(role));
+    }
+
+    public static boolean isOperator(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if (session == null) {
+            return false;
+        }
+
+        if (isAdmin(request)) {
+            return false;
+        }
+
+        Object adminAttr = session.getAttribute("admin");
+        if (adminAttr instanceof Boolean) {
+            return !Boolean.TRUE.equals(adminAttr);
+        }
+
+        Object role = session.getAttribute("ruolo");
+        return role != null && "OPERATOR".equalsIgnoreCase(String.valueOf(role));
     }
 
     public static int checkNumeric(String s) throws NumberFormatException {
@@ -199,7 +267,13 @@ public class SecurityHelpers {
     }
 
     public static String sanitizeFilename(String name) {
-        return name.replaceAll("[^a-zA-Z0-9_.-]", "_");
+        if (name == null) {
+            return "";
+        }
+        String normalized = name.replace('\\', '/');
+        int lastSeparator = normalized.lastIndexOf('/');
+        String fileName = lastSeparator >= 0 ? normalized.substring(lastSeparator + 1) : normalized;
+        return fileName.replaceAll("[^a-zA-Z0-9_.-]", "_");
     }
 
     //--------- PASSWORD SECURITY ------------
@@ -213,6 +287,14 @@ public class SecurityHelpers {
             hexStringBuffer.append(new String(hexDigits));
         }
         return hexStringBuffer.toString();
+    }
+    
+    public static String toHexString(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 
     private static byte[] hexStringToBytes(String hexString) {
