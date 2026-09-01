@@ -51,7 +51,7 @@ public class AdminDashboardServlet extends HttpServlet {
             }
 
             try {
-                Template tpl = cfg.getTemplate("admin-dashboard.ftl");
+                // Preparare il modello comune
                 Map<String, Object> model = new HashMap<>();
                 model.put("ctx", ctx);
 
@@ -71,22 +71,25 @@ public class AdminDashboardServlet extends HttpServlet {
                 // Load data based on section
                 switch (section) {
                     case "requests":
-                        model.put("richieste", filterMockRichieste(req));
+                        loadRequestsSection(model, req);
                         break;
                     case "missions":
-                        model.put("missioni", filterMockMissioni(req));
+                        loadMissionsSection(model, req);
                         break;
                     case "operators":
-                        model.put("operatori", MockDataProvider.getMockOperatori());
+                        loadOperatorsSection(model, req);
                         break;
                     case "vehicles":
-                        model.put("mezzi", MockDataProvider.getMockMezzi());
+                        loadVehiclesSection(model, req);
                         break;
                     case "materials":
-                        model.put("materiali", MockDataProvider.getMockMateriali());
+                        loadMaterialsSection(model, req);
                         break;
                 }
 
+                // Renderizzare il template specifico della sezione
+                String templateName = getTemplateNameForSection(section);
+                Template tpl = cfg.getTemplate(templateName);
                 tpl.process(model, resp.getWriter());
 
             } catch (TemplateException ex) {
@@ -140,5 +143,96 @@ public class AdminDashboardServlet extends HttpServlet {
         return all.stream()
             .filter(m -> status == null || status.isEmpty() || status.equals(m.get("stato")))
             .toList();
+    }
+
+    /**
+     * Carica la sezione delle richieste
+     */
+    private void loadRequestsSection(Map<String, Object> model, HttpServletRequest req) {
+        model.put("richieste", filterMockRichieste(req));
+    }
+
+    /**
+     * Carica la sezione delle missioni
+     */
+    private void loadMissionsSection(Map<String, Object> model, HttpServletRequest req) {
+        model.put("missioni", filterMockMissioni(req));
+    }
+
+    /**
+     * Carica la sezione degli operatori
+     */
+    private void loadOperatorsSection(Map<String, Object> model, HttpServletRequest req) {
+        model.put("operatori", filterMockOperatori(req));
+    }
+
+    /**
+     * Carica la sezione dei mezzi
+     */
+    private void loadVehiclesSection(Map<String, Object> model, HttpServletRequest req) {
+        model.put("mezzi", filterMockMezzi(req));
+    }
+
+    /**
+     * Carica la sezione dei materiali
+     */
+    private void loadMaterialsSection(Map<String, Object> model, HttpServletRequest req) {
+        model.put("materiali", filterMockMateriali(req));
+    }
+
+    /**
+     * Filtra gli operatori in base ai parametri della richiesta
+     */
+    private List<Map<String, Object>> filterMockOperatori(HttpServletRequest req) {
+        List<Map<String, Object>> all = MockDataProvider.getMockOperatori();
+        String ruolo = req.getParameter("ruolo");
+        String stato = req.getParameter("stato");
+
+        return all.stream()
+            .filter(o -> ruolo == null || ruolo.isEmpty() || ruolo.equals(o.get("ruolo")))
+            .filter(o -> stato == null || stato.isEmpty() || stato.equals(o.get("stato")))
+            .toList();
+    }
+
+    /**
+     * Filtra i mezzi in base ai parametri della richiesta
+     */
+    private List<Map<String, Object>> filterMockMezzi(HttpServletRequest req) {
+        List<Map<String, Object>> all = MockDataProvider.getMockMezzi();
+        String tipo = req.getParameter("tipo");
+        String stato = req.getParameter("stato");
+
+        return all.stream()
+            .filter(m -> tipo == null || tipo.isEmpty() || tipo.equals(m.get("tipo")))
+            .filter(m -> stato == null || stato.isEmpty() || stato.equals(m.get("stato")))
+            .toList();
+    }
+
+    /**
+     * Filtra i materiali in base ai parametri della richiesta
+     */
+    private List<Map<String, Object>> filterMockMateriali(HttpServletRequest req) {
+        List<Map<String, Object>> all = MockDataProvider.getMockMateriali();
+        String tipo = req.getParameter("tipo");
+        String categoria = req.getParameter("categoria");
+
+        return all.stream()
+            .filter(m -> tipo == null || tipo.isEmpty() || tipo.equals(m.get("tipo")))
+            .filter(m -> categoria == null || categoria.isEmpty() || categoria.equals(m.get("categoria")))
+            .toList();
+    }
+
+    /**
+     * Restituisce il nome del template da renderizzare in base alla sezione
+     */
+    private String getTemplateNameForSection(String section) {
+        return switch (section) {
+            case "requests" -> "admin/requests-table.ftl";
+            case "missions" -> "admin/missions-table.ftl";
+            case "operators" -> "admin/operators-table.ftl";
+            case "vehicles" -> "admin/vehicles-table.ftl";
+            case "materials" -> "admin/materials-table.ftl";
+            default -> "admin-dashboard.ftl";
+        };
     }
 }
