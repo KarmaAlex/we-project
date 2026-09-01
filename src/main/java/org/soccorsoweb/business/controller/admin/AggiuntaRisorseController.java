@@ -9,8 +9,10 @@ import org.soccorsoweb.business.controller.SoccorsoBaseController;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.dao.MaterialeDAO;
+import org.soccorsoweb.data.dao.MezzoDAO;
 import org.soccorsoweb.framework.security.SecurityHelpers;
 import org.soccorsoweb.model.Materiale;
+import org.soccorsoweb.model.Mezzo;
 
 /**
  * AggiuntaRisorseController: Gestisce l'aggiunta di risorse
@@ -53,8 +55,7 @@ public class AggiuntaRisorseController extends SoccorsoBaseController {
                     response.getWriter().write("{\"error\":\"Non implementato\"}");
                     break;
                 case "vehicles":
-                    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-                    response.getWriter().write("{\"error\":\"Non implementato\"}");
+                    addMezzo(request, response, dataLayer);
                     break;
                 default:
                     response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -135,6 +136,55 @@ public class AggiuntaRisorseController extends SoccorsoBaseController {
         // Risposta di successo
         response.setStatus(HttpServletResponse.SC_CREATED);
         response.getWriter().write("{\"success\":true,\"message\":\"Materiale aggiunto con successo\",\"id\":" + materiale.getKey() + "}");
+    }
+
+    /**
+     * Aggiunge un nuovo mezzo
+     */
+    private void addMezzo(HttpServletRequest request, HttpServletResponse response, DataLayer dataLayer)
+            throws IOException, DataException {
+
+        response.setContentType("application/json;charset=UTF-8");
+
+        String nome = SecurityHelpers.sanitizeTextInput(request.getParameter("nome"));
+        String descrizione = SecurityHelpers.sanitizeTextInput(request.getParameter("descrizione"));
+        String targa = SecurityHelpers.sanitizeTextInput(request.getParameter("targa"));
+
+        if (nome == null || nome.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\":\"Nome mezzo obbligatorio\"}");
+            return;
+        }
+
+        if (descrizione == null || descrizione.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\":\"Descrizione obbligatoria\"}");
+            return;
+        }
+
+        if (targa == null || targa.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\":\"Targa obbligatoria\"}");
+            return;
+        }
+
+        MezzoDAO mezzoDAO = (MezzoDAO) dataLayer.getDAO(Mezzo.class);
+        Mezzo mezzo = mezzoDAO.createMezzo();
+
+        mezzo.setNome(nome);
+        mezzo.setDesc(descrizione);
+        mezzo.setTarga(targa);
+
+        mezzoDAO.storeMezzo(mezzo);
+
+        if (mezzo.getKey() == null) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"error\":\"Errore: mezzo non salvato correttamente\"}");
+            return;
+        }
+
+        response.setStatus(HttpServletResponse.SC_CREATED);
+        response.getWriter().write("{\"success\":true,\"message\":\"Mezzo aggiunto con successo\",\"id\":" + mezzo.getKey() + "}");
     }
 
     /**

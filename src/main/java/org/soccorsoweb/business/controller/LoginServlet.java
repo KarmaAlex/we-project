@@ -15,9 +15,11 @@ import java.util.Map;
 import javax.sql.DataSource;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
+import org.soccorsoweb.data.dao.AnagraficaDAO;
 import org.soccorsoweb.data.dao.CredenzialiDAO;
 import org.soccorsoweb.data.dao.UtenteDAO;
 import org.soccorsoweb.framework.security.SecurityHelpers;
+import org.soccorsoweb.model.Anagrafica;
 import org.soccorsoweb.model.Credenziali;
 import org.soccorsoweb.model.Utente;
 
@@ -74,6 +76,7 @@ public class LoginServlet extends SoccorsoBaseController {
                 public void init() throws DataException {
                     registerDAO(Utente.class, new org.soccorsoweb.data.dao.impl.UtenteDAO_MySQL(this));
                     registerDAO(Credenziali.class, new org.soccorsoweb.data.dao.impl.CredenzialiDAO_MySQL(this));
+                    registerDAO(Anagrafica.class, new org.soccorsoweb.data.dao.impl.AnagraficaDAO_MySQL(this));
                 }
             };
         } catch (Exception ex) {
@@ -122,6 +125,16 @@ public class LoginServlet extends SoccorsoBaseController {
             HttpSession session = SecurityHelpers.createSession(request, utente.getNomeUtente(), utente.getKey());
             session.setAttribute("ruolo", utente.isAdmin() ? "ADMIN" : "OPERATOR");
             session.setAttribute("admin", utente.isAdmin());
+
+            AnagraficaDAO anagraficaDAO = (AnagraficaDAO) dataLayer.getDAO(Anagrafica.class);
+            Anagrafica anagrafica = anagraficaDAO.getAnagraficaByUtente(utente);
+            boolean incompleteRegistration = SecurityHelpers.isIncompleteRegistration(anagrafica);
+            if (incompleteRegistration) {
+                session.setAttribute("needsCompleteProfile", true);
+                session.setAttribute("pendingUsername", utente.getNomeUtente());
+                response.sendRedirect(request.getContextPath() + "/signup");
+                return;
+            }
 
             String redirectTarget = utente.isAdmin() ? request.getContextPath() + "/admin-dashboard" : request.getContextPath() + "/operator-dashboard";
             response.sendRedirect(redirectTarget);

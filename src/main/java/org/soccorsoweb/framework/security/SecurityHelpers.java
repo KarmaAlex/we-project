@@ -18,6 +18,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import org.soccorsoweb.model.Anagrafica;
 /**
  *
  * @author Aurora
@@ -252,6 +253,22 @@ public class SecurityHelpers {
 
         Object role = session.getAttribute("ruolo");
         return role != null && "OPERATOR".equalsIgnoreCase(String.valueOf(role));
+    }
+
+    public static boolean isIncompleteRegistration(Anagrafica anagrafica) {
+        if (anagrafica == null) {
+            return true;
+        }
+
+        return isBlank(anagrafica.getNome())
+                || isBlank(anagrafica.getCognome())
+                || isBlank(anagrafica.getCf())
+                || isBlank(anagrafica.getLuogoNasc())
+                || anagrafica.getDataNasc() == null;
+    }
+
+    private static boolean isBlank(String value) {
+        return value == null || value.isBlank();
     }
 
     public static int checkNumeric(String s) throws NumberFormatException {

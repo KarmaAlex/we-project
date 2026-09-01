@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.soccorsoweb.framework.security.SecurityHelpers;
@@ -49,7 +50,6 @@ public class OperatorDashboardServlet extends HttpServlet {
             }
 
             try {
-                Template tpl = cfg.getTemplate("operator-dashboard.ftl");
                 Map<String, Object> model = new HashMap<>();
                 model.put("ctx", ctx);
 
@@ -69,14 +69,15 @@ public class OperatorDashboardServlet extends HttpServlet {
                 // Load data based on section
                 switch (section) {
                     case "missions":
-                        // For operator, filter missions where they are involved
-                        model.put("missioni", getMockOperatorMissioni());
+                        loadMissionsSection(model, req);
                         break;
                     case "profile":
-                        model.put("operatore", getMockOperatorProfile());
+                        loadProfileSection(model, req);
                         break;
                 }
 
+                String templateName = getTemplateNameForSection(section);
+                Template tpl = cfg.getTemplate(templateName);
                 tpl.process(model, resp.getWriter());
 
             } catch (TemplateException ex) {
@@ -92,11 +93,23 @@ public class OperatorDashboardServlet extends HttpServlet {
         }
     }
 
-    private java.util.List<Map<String, Object>> getMockOperatorMissioni() {
-        return MockDataProvider.getMockMissioni().stream()
+    private List<Map<String, Object>> filterMockMissioni(HttpServletRequest req) {
+        List<Map<String, Object>> all = MockDataProvider.getMockMissioni();
+        String status = req.getParameter("status");
+
+        return all.stream()
                 .filter(m -> "IN_CORSO".equals(m.get("stato")) || "CHIUSA".equals(m.get("stato")))
+                .filter(m -> status == null || status.isEmpty() || status.equals(m.get("stato")))
                 .limit(10)
                 .toList();
+    }
+
+    private void loadMissionsSection(Map<String, Object> model, HttpServletRequest req) {
+        model.put("missioni", filterMockMissioni(req));
+    }
+
+    private void loadProfileSection(Map<String, Object> model, HttpServletRequest req) {
+        model.put("operatore", getMockOperatorProfile());
     }
 
     private Map<String, Object> getMockOperatorProfile() {
@@ -113,5 +126,13 @@ public class OperatorDashboardServlet extends HttpServlet {
             }
         }
         return defaultValue;
+    }
+
+    private String getTemplateNameForSection(String section) {
+        return switch (section) {
+            case "missions" -> "operator-dashboard.ftl";
+            case "profile" -> "operator-dashboard.ftl";
+            default -> "operator-dashboard.ftl";
+        };
     }
 }
