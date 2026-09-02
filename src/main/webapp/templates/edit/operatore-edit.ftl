@@ -89,6 +89,7 @@
 
 <@form
     id="operatoreForm"
+    csrfToken=csrfToken
     action="${ctx}/api/edit/operatori/${dettaglio.id}"
     method="post"
     fields=operatoreFields

@@ -63,6 +63,7 @@
 
 <@form
     id="materialeForm"
+    csrfToken=csrfToken
     action="${ctx}/api/edit/materiali/${dettaglio.id}"
     method="post"
     fields=materialeFields

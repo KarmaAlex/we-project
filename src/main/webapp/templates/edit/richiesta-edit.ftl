@@ -43,6 +43,7 @@
 
 <@form
     id="richiestaForm"
+    csrfToken=csrfToken
     action="${ctx}/api/edit/richieste/${dettaglio.id}"
     method="post"
     fields=richiestaFields

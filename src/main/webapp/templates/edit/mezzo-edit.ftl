@@ -60,6 +60,7 @@
 
 <@form
     id="mezzoForm"
+    csrfToken=csrfToken
     action="${ctx}/api/edit/mezzi/${dettaglio.id}"
     method="post"
     fields=mezzoFields

@@ -1,6 +1,7 @@
 <#macro form
     id
     fields
+    csrfToken
     action=""
     method="post"
     cssClass="request-form"
@@ -25,7 +26,7 @@
         <#switch field.type>
         <#case "text">
         <#case "email">
-        <#case "password">
+        
         <#case "number">
         <#case "date">
         <#case "datetime-local">
@@ -126,6 +127,9 @@
                 </#list>
             </select>
         <#break>
+        <#case "password">
+            <input type="password" name="password" autocomplete="password" required />
+        <#break>
         </#switch>
         <#if field.help??>
             <small id="${field.name}-help">
@@ -145,6 +149,7 @@
     </#if>
 
 </#list>
+<input type="hidden" name="csrf" value="${csrfToken}" />
 
 <div class="form-actions">
     <button type="submit" class="btn primary">

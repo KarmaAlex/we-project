@@ -33,6 +33,7 @@
 
 <@form
     id="materialeForm"
+    csrfToken=csrfToken
     action="${ctx}/api/add/materials"
     method="post"
     fields=materialeFields

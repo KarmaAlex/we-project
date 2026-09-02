@@ -95,3 +95,7 @@ form textarea{resize:vertical}
   form{padding:0.75rem}
   .form-actions{justify-content:flex-start}
 }
+
+.error {
+  color: rgb(247, 70, 70);
+}

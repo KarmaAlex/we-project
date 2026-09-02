@@ -135,6 +135,7 @@
 
 <@form
     id="missioneForm"
+    csrfToken=csrfToken
     action="${ctx}/api/edit/missioni/${dettaglio.id}"
     method="post"
     fields=missioneFields

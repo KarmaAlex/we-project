@@ -34,6 +34,7 @@
 
 <@form
     id="operatoreForm"
+    csrfToken=csrfToken
     action="${ctx}/api/add/operators"
     method="post"
     fields=operatoreFields

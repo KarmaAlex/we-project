@@ -1,23 +1,32 @@
 <#-- Use the shared base layout -->
 <#include "base.ftl">
+<#include "form.ftl">
 <@basePage title="SoccorsoWeb - Login" css=["/style/login.css"]>
   <section class="container">
     <div class="card login-card">
       <h2>Accedi al pannello</h2>
-      <form action="#" method="post" class="login-form">
-        <label>Nome utente
-          <input type="text" name="username" autocomplete="username" required />
-        </label>
-        <label>Password
-          <input type="password" name="password" autocomplete="current-password" required />
-        </label>
-        <label class="checkbox-row"><input type="checkbox" name="remember"/> Ricordami</label>
-        <div class="form-actions">
-          <button type="submit" class="btn primary">Accedi</button>
-          <a href="index.html" class="btn">Annulla</a>
-        </div>
-        <p class="muted note">Se non hai accesso contatta un amministratore.</p>
-      </form>
+      <#assign loginFields = [
+      {
+          "type":"text",
+          "name":"username",
+          "label":"Username",
+          "required":true
+      },
+      {
+          "type":"password",
+          "name":"password"
+      }
+      ]>
+
+      <@form
+          id="login-form"
+          cssClass="login-form"
+          fields=loginFields
+          csrfToken=csrfToken
+          submitLabel="Accedi"
+          resetLabel="Annulla"
+      />
+      <p class="error" id="error_msg" <#if (!errorMessage??) && errorMessage != "">hidden</#if>><#if errorMessage?? && errorMessage!="">${errorMessage}</#if></p>
     </div>
   </section>
 </@basePage>

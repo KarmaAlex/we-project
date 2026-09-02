@@ -90,6 +90,7 @@
 
 <@form
     id="missioneForm"
+    csrfToken=csrfToken
     action="${ctx}/api/add/missioni"
     method="post"
     fields=missioneFields

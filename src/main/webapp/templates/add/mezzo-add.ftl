@@ -30,6 +30,7 @@
 
 <@form
     id="mezzoForm"
+    csrfToken=csrfToken
     action="${ctx}/api/add/vehicles"
     method="post"
     fields=mezzoFields
