@@ -7,7 +7,6 @@
     <div style="margin-bottom: 1.5rem; background: #f9fafb; padding: 1rem; border-radius: 4px;">
       <strong>Nome:</strong> ${dettaglio.nome!''}<br>
       <strong>Descrizione:</strong> ${dettaglio.descrizione!''}<br>
-      <strong>Quantità:</strong> ${dettaglio.quantita!0}<br>
       <strong>Stato:</strong> <span class="badge ${(dettaglio.stato!'')?lower_case}">${dettaglio.stato!''}</span><br>
       <#if dettaglio.missione_corrente?has_content>
         <strong>Missione Corrente:</strong> <a href="#" style="color: var(--accent);">${dettaglio.missione_corrente}</a>

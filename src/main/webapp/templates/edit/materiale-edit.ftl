@@ -36,17 +36,6 @@
     "placeholder":"Descrizione del materiale"
 },
 {
-    "type":"number",
-    "name":"quantita",
-    "label":"Quantità",
-    "value":dettaglio.quantita!0,
-    "required":true,
-    "attrs":{
-        "min":"0",
-        "step":"1"
-    }
-},
-{
     "type":"select",
     "name":"missione_corrente",
     "label":"Missione Corrente",

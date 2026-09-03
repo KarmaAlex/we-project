@@ -17,17 +17,6 @@
     "rows":4,
     "required":true,
     "placeholder":"Descrizione del materiale"
-},
-{
-    "type":"number",
-    "name":"quantita",
-    "label":"Quantità",
-    "value":0,
-    "required":true,
-    "attrs":{
-        "min":"0",
-        "step":"1"
-    }
 }
 ]>
 
