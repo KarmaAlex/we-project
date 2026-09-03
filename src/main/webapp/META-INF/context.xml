@@ -5,9 +5,14 @@
               type="javax.sql.DataSource"
               driverClassName="com.mysql.cj.jdbc.Driver"
               url="jdbc:mysql://localhost:3306/soccorso?serverTimezone=UTC"
-              username="root"
-              password="root"
+              username="soccorso_app"
+              password="soccorsoapp"
               maxTotal="100" 
               maxIdle="30" 
               maxWaitMillis="10000"/>
+    <Parameter
+        name="data.source"
+        value="jdbc/soccorso"
+        override="false"
+    />
 </Context>

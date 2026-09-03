@@ -216,3 +216,6 @@ drop user if exists "admin"@"localhost";
 create user "admin"@"localhost" identified by
 "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"; -- Hash SHA256 di'admin', usato nel login dall'interfaccia
 grant all on * to "admin"@"localhost";
+CREATE USER IF NOT EXISTS 'soccorso_app'@'localhost' IDENTIFIED BY 'soccorsoapp';
+GRANT ALL PRIVILEGES ON `soccorso`.* TO "soccorso_app"@"localhost";
+FLUSH PRIVILEGES;
