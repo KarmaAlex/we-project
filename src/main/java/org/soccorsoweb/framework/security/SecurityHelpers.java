@@ -374,4 +374,26 @@ public class SecurityHelpers {
         return (getPasswordHashPBKDF2(password, salt)).equals(passwordhash);
     }
 
+private static final String CSRF_SESSION_ATTR = "csrfToken";
+
+public static String getOrCreateCsrfToken(HttpServletRequest request) {
+    HttpSession session = request.getSession(true);
+    String token = (String) session.getAttribute(CSRF_SESSION_ATTR);
+    if (token == null) {
+        byte[] bytes = new byte[32];
+        new SecureRandom().nextBytes(bytes);
+        token = toHexString(bytes);
+        session.setAttribute(CSRF_SESSION_ATTR, token);
+    }
+    return token;
+}
+
+public static boolean isValidCsrfToken(HttpServletRequest request, String submittedToken) {
+    HttpSession session = request.getSession(false);
+    if (session == null || submittedToken == null || submittedToken.isBlank()) {
+        return false;
+    }
+    String sessionToken = (String) session.getAttribute(CSRF_SESSION_ATTR);
+    return sessionToken != null && sessionToken.equals(submittedToken);
+}
 }

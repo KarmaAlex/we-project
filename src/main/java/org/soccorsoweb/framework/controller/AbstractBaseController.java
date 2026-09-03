@@ -27,7 +27,7 @@ public abstract class AbstractBaseController extends HttpServlet {
     private DataSource ds;
     private Pattern protect;
 
-    protected abstract void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException;
+    protected abstract void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
 
     //creare la propria classe derivata da DataLayer
     //create your own datalayer derived class
@@ -74,7 +74,7 @@ public abstract class AbstractBaseController extends HttpServlet {
         try (DataLayer datalayer = createDataLayer(ds)) {
             datalayer.init();
             initRequest(request, datalayer);
-            
+            processRequest(request, response);
            
         } catch (Exception ex) {
             ex.printStackTrace(); //for debugging only

@@ -12,7 +12,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
-import javax.sql.DataSource;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.AnagraficaDAO;
@@ -68,21 +67,6 @@ public class LoginServlet extends SoccorsoBaseController {
         }
     }
 
-    @Override
-    protected DataLayer createDataLayer(DataSource ds) throws ServletException {
-        try {
-            return new DataLayer(ds) {
-                @Override
-                public void init() throws DataException {
-                    registerDAO(Utente.class, new org.soccorsoweb.data.dao.impl.UtenteDAO_MySQL(this));
-                    registerDAO(Credenziali.class, new org.soccorsoweb.data.dao.impl.CredenzialiDAO_MySQL(this));
-                    registerDAO(Anagrafica.class, new org.soccorsoweb.data.dao.impl.AnagraficaDAO_MySQL(this));
-                }
-            };
-        } catch (Exception ex) {
-            throw new ServletException("Impossibile inizializzare il DataLayer per il login", ex);
-        }
-    }
 
     private void handleLogin(HttpServletRequest request, HttpServletResponse response)
             throws ServletException {

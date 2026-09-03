@@ -67,6 +67,16 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>MaterialDetailsController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.details.MaterialDetailsController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>MaterialDetailsController</servlet-name>
+        <url-pattern>/api/detail/materials/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>EditApi</servlet-name>
         <servlet-class>org.soccorsoweb.test.EditApiServlet</servlet-class>
     </servlet>

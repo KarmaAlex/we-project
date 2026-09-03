@@ -28,6 +28,15 @@ public class HomeServlet extends SoccorsoBaseController {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException {
         String ctx = request.getContextPath();
+        String path = request.getRequestURI().substring(ctx.length());
+        if((!"/".equals(path)) && (!"/home".equals(path))){
+            try {
+                getServletContext().getNamedDispatcher("default").forward(request, response);
+            } catch (IOException e) {
+                throw new ServletException(e);
+            }
+            
+        }
         Map<String, Object> model = new HashMap<>();
         model.put("ctx", ctx);
         model.put("currentUser", buildCurrentUser(request));

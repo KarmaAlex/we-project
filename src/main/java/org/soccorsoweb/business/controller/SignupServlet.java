@@ -4,7 +4,6 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -13,10 +12,6 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.AnagraficaDAO;
@@ -27,7 +22,7 @@ import org.soccorsoweb.model.Anagrafica;
 import org.soccorsoweb.model.Credenziali;
 import org.soccorsoweb.model.Utente;
 
-public class SignupServlet extends HttpServlet {
+public class SignupServlet extends SoccorsoBaseController {
 
     private Configuration cfg;
 
@@ -45,7 +40,7 @@ public class SignupServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void processRequest(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String username = resolvePendingUsername(req);
         if (username == null || username.isBlank()) {
             resp.sendRedirect(req.getContextPath() + "/login");
@@ -53,8 +48,10 @@ public class SignupServlet extends HttpServlet {
         }
 
         try {
-            DataLayer dataLayer = createDataLayer();
-            dataLayer.init();
+            DataLayer dataLayer = (DataLayer) req.getAttribute("datalayer");
+            if (dataLayer == null) {
+                throw new ServletException("DataLayer non inizializzato");
+            }
 
             Map<String, Object> payload = new LinkedHashMap<>();
             payload.put("nome", SecurityHelpers.sanitizeTextInput(req.getParameter("nome")));
@@ -187,23 +184,5 @@ public class SignupServlet extends HttpServlet {
         return text.isEmpty() ? null : text;
     }
 
-    private DataLayer createDataLayer() throws ServletException {
-        try {
-            Context initContext = new InitialContext();
-            Context envContext = (Context) initContext.lookup("java:comp/env");
-            DataSource dataSource = (DataSource) envContext.lookup("jdbc/soccorso");
-            DataLayer dataLayer = new DataLayer(dataSource);
 
-            dataLayer.registerDAO(Utente.class, new org.soccorsoweb.data.dao.impl.UtenteDAO_MySQL(dataLayer));
-            dataLayer.registerDAO(Anagrafica.class, new org.soccorsoweb.data.dao.impl.AnagraficaDAO_MySQL(dataLayer));
-            dataLayer.registerDAO(Credenziali.class, new org.soccorsoweb.data.dao.impl.CredenzialiDAO_MySQL(dataLayer));
-            return dataLayer;
-        } catch (NamingException ex) {
-            throw new ServletException("Impossibile trovare il DataSource", ex);
-        } catch (DataException ex) {
-            throw new ServletException("Impossibile inizializzare il DataLayer del signup", ex);
-        } catch (Exception ex) {
-            throw new ServletException("Errore nella inizializzazione del signup", ex);
-        }
-    }
 }

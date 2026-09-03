@@ -10,7 +10,6 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import javax.sql.DataSource;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.UtenteDAO;
@@ -84,19 +83,6 @@ public class ProfileServlet extends SoccorsoBaseController {
         }
     }
 
-    @Override
-    protected DataLayer createDataLayer(DataSource ds) throws ServletException {
-        try {
-            return new DataLayer(ds) {
-                @Override
-                public void init() throws DataException {
-                    registerDAO(Utente.class, new org.soccorsoweb.data.dao.impl.UtenteDAO_MySQL(this));
-                }
-            };
-        } catch (Exception ex) {
-            throw new ServletException("Impossibile creare il DataLayer per il profilo", ex);
-        }
-    }
 
     private Integer parseUserId(Object value) {
         if (value == null) {
