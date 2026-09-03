@@ -44,6 +44,7 @@ public class HomeServlet extends SoccorsoBaseController {
         model.put("isAdmin", SecurityHelpers.isAdmin(request));
         model.put("isOperator", SecurityHelpers.isOperator(request));
         model.put("successMessage", request.getParameter("success"));
+        model.put("csrfToken", SecurityHelpers.getOrCreateCsrfToken(request));
 
         response.setContentType("text/html;charset=UTF-8");
 

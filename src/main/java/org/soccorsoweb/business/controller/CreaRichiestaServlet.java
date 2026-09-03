@@ -40,6 +40,11 @@ public class CreaRichiestaServlet extends SoccorsoBaseController {
             return;
         }
 
+        if (!SecurityHelpers.isValidCsrfToken(request, request.getParameter("csrf"))) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+
         try {
             DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
             RichiestaDAO richiestaDAO = (RichiestaDAO) dataLayer.getDAO(Richiesta.class);
