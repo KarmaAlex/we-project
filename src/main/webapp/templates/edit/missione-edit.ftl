@@ -74,6 +74,18 @@
     ]
 },
 {
+    "type":"select",
+    "name":"esito",
+    "label":"Esito",
+    "value":dettaglio.esito!'NON_DEFINITO',
+    "options":[
+        {"value":"NON_DEFINITO", "label":"Non definito"},
+        {"value":"SUCCESSO", "label":"Successo"},
+        {"value":"PARZIALE", "label":"Parziale"},
+        {"value":"FALLIMENTO", "label":"Fallimento"}
+    ]
+},
+{
     "type":"date",
     "name":"data_inizio",
     "label":"Data Inizio",

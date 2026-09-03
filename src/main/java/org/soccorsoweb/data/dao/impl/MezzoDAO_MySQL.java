@@ -19,6 +19,7 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
     private PreparedStatement sMezziDisponibili;
     private PreparedStatement iMezzo;
     private PreparedStatement uMezzo;
+    private PreparedStatement dMezzo;
     private PreparedStatement iAssegnaMezzo;
     private PreparedStatement sMezziConStato;
 
@@ -42,6 +43,7 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
                     Statement.RETURN_GENERATED_KEYS);
                 uMezzo = connection.prepareStatement(
                     "UPDATE Mezzo SET nome=?, `desc`=?, targa=? WHERE ID=?");
+                dMezzo = connection.prepareStatement("DELETE FROM Mezzo WHERE ID=?");
                 iAssegnaMezzo = connection.prepareStatement(
                     "INSERT INTO assegna_mezzo (ID_MEZZO, ID_MISSIONE) VALUES (?,?)");
                 sMezziConStato = connection.prepareStatement(
@@ -63,6 +65,7 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
             if (sMezziDisponibili != null) sMezziDisponibili.close();
             if (iMezzo != null) iMezzo.close();
             if (uMezzo != null) uMezzo.close();
+            if (dMezzo != null) dMezzo.close();
             if (iAssegnaMezzo != null) iAssegnaMezzo.close();
             if (sMezziConStato != null) sMezziConStato.close();
         } catch (SQLException ex) { }
@@ -161,6 +164,19 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
             if (mezzo instanceof DataItemProxy) ((DataItemProxy) mezzo).setModified(false);
         } catch (SQLException ex) {
             throw new DataException("Unable to store mezzo", ex);
+        }
+    }
+
+    @Override
+    public void deleteMezzo(int mezzo_key) throws DataException {
+        try {
+            dMezzo.setInt(1, mezzo_key);
+            if (dMezzo.executeUpdate() == 0) {
+                throw new DataException("Mezzo non trovato");
+            }
+            getDataLayer().getCache().delete(Mezzo.class, mezzo_key);
+        } catch (SQLException ex) {
+            throw new DataException("Impossibile eliminare il mezzo: potrebbe essere associato a una missione", ex);
         }
     }
 

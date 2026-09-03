@@ -376,15 +376,12 @@ public class SecurityHelpers {
 
 private static final String CSRF_SESSION_ATTR = "csrfToken";
 
-public static String getOrCreateCsrfToken(HttpServletRequest request) {
+public static String createCsrfToken(HttpServletRequest request) {
     HttpSession session = request.getSession(true);
-    String token = (String) session.getAttribute(CSRF_SESSION_ATTR);
-    if (token == null) {
-        byte[] bytes = new byte[32];
-        new SecureRandom().nextBytes(bytes);
-        token = toHexString(bytes);
-        session.setAttribute(CSRF_SESSION_ATTR, token);
-    }
+    byte[] bytes = new byte[32];
+    new SecureRandom().nextBytes(bytes);
+    String token = toHexString(bytes);
+    session.setAttribute(CSRF_SESSION_ATTR, token);   // sovrascrive sempre il precedente
     return token;
 }
 
@@ -394,6 +391,11 @@ public static boolean isValidCsrfToken(HttpServletRequest request, String submit
         return false;
     }
     String sessionToken = (String) session.getAttribute(CSRF_SESSION_ATTR);
-    return sessionToken != null && sessionToken.equals(submittedToken);
+    boolean valid = sessionToken != null && MessageDigest.isEqual(
+            sessionToken.getBytes(StandardCharsets.UTF_8),
+            submittedToken.getBytes(StandardCharsets.UTF_8)
+    );
+    session.removeAttribute(CSRF_SESSION_ATTR);   // monouso: valido o no, va scartato dopo il controllo
+    return valid;
 }
 }

@@ -21,6 +21,7 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
     private PreparedStatement sMateriali;
     private PreparedStatement iMateriale;
     private PreparedStatement uMateriale;
+    private PreparedStatement dMateriale;
     private PreparedStatement iAssegnaMateriale; 
     private PreparedStatement sMaterialiDisponibili;
 
@@ -36,6 +37,7 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
             sMateriali = connection.prepareStatement("SELECT * FROM Materiale");
             iMateriale = connection.prepareStatement("INSERT INTO Materiale (nome, `desc`, cod_mat) VALUES(?,?,?)", Statement.RETURN_GENERATED_KEYS);
             uMateriale = connection.prepareStatement("UPDATE Materiale SET nome=?, `desc`=?, cod_mat=? WHERE ID=?");
+            dMateriale = connection.prepareStatement("DELETE FROM Materiale WHERE ID=?");
             sMaterialiDisponibili = connection.prepareStatement("SELECT * FROM Materiale m WHERE NOT EXISTS (" + "  SELECT 1 FROM assegna_materiale am " + "  JOIN Missione mi ON am.ID_MISSIONE = mi.ID " +"WHERE am.ID_MATERIALE = m.ID AND mi.completata = false" +")");
             iAssegnaMateriale = connection.prepareStatement("INSERT INTO assegna_materiale (ID_MATERIALE, ID_MISSIONE) VALUES (?, ?)");
         } catch (SQLException ex) {
@@ -50,6 +52,7 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
             if (sMateriali != null) sMateriali.close();
             if (iMateriale != null) iMateriale.close();
             if (uMateriale != null) uMateriale.close();
+            if (dMateriale != null) dMateriale.close();
             if (iAssegnaMateriale != null) iAssegnaMateriale.close();
             if (sMaterialiDisponibili != null) sMaterialiDisponibili.close();
         } catch (SQLException ex) { }
@@ -151,5 +154,18 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
             }
             if (materiale instanceof DataItemProxy) ((DataItemProxy) materiale).setModified(false);
         } catch (SQLException ex) { throw new DataException("Unable to store materiale", ex); }
+    }
+
+    @Override
+    public void deleteMateriale(int materiale_key) throws DataException {
+        try {
+            dMateriale.setInt(1, materiale_key);
+            if (dMateriale.executeUpdate() == 0) {
+                throw new DataException("Materiale non trovato");
+            }
+            getDataLayer().getCache().delete(Materiale.class, materiale_key);
+        } catch (SQLException ex) {
+            throw new DataException("Impossibile eliminare il materiale: potrebbe essere associato a una missione", ex);
+        }
     }
 }

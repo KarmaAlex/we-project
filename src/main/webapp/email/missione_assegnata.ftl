@@ -15,6 +15,15 @@
     Ti è stata assegnata una nuova missione.
 </p>
 
+<#if destinatari?? && destinatari?has_content>
+<p><strong>Email simulate:</strong></p>
+<ul>
+    <#list destinatari as destinatario>
+        <li>${destinatario}</li>
+    </#list>
+</ul>
+</#if>
+
 <h3>Dettagli della missione</h3>
 
 <table>

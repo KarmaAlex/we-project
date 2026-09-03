@@ -67,7 +67,7 @@ public class AddMaterialController extends SoccorsoBaseController {
         response.setContentType("text/html;charset=UTF-8");
         Map<String, Object> model = new HashMap<>();
         model.put("ctx", request.getContextPath());
-        model.put("csrfToken", SecurityHelpers.getOrCreateCsrfToken(request));
+        model.put("csrfToken", SecurityHelpers.createCsrfToken(request));
 
         try {
             Template template = cfg.getTemplate("add/materiale-add.ftl");

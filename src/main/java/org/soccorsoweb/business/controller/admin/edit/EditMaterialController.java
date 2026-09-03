@@ -87,7 +87,7 @@ public class EditMaterialController extends SoccorsoBaseController {
 
 		Map<String, Object> model = new HashMap<>();
 		model.put("ctx", request.getContextPath());
-		model.put("csrfToken", SecurityHelpers.getOrCreateCsrfToken(request));
+		model.put("csrfToken", SecurityHelpers.createCsrfToken(request));
 		model.put("dettaglio", dettaglio);
 		model.put("missioniAperte", java.util.List.of());
 

@@ -77,6 +77,17 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>VehicleDetailController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.details.VehicleDetailController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>VehicleDetailController</servlet-name>
+        <url-pattern>/api/detail/vehicles/*</url-pattern>
+        <url-pattern>/api/detail/mezzi/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>EditApi</servlet-name>
         <servlet-class>org.soccorsoweb.test.EditApiServlet</servlet-class>
     </servlet>
@@ -87,6 +98,72 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>EditVehicleController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.edit.EditVehicleController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>EditVehicleController</servlet-name>
+        <url-pattern>/api/edit/mezzi/*</url-pattern>
+        <url-pattern>/api/edit/vehicles/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>EditOperatorController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.edit.EditOperatorController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>EditOperatorController</servlet-name>
+        <url-pattern>/api/edit/operatori/*</url-pattern>
+        <url-pattern>/api/edit/operators/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>EditMissionController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.edit.EditMissionController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>EditMissionController</servlet-name>
+        <url-pattern>/api/edit/missioni/*</url-pattern>
+        <url-pattern>/api/edit/missions/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>EditRequestController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.edit.EditRequestController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>EditRequestController</servlet-name>
+        <url-pattern>/api/edit/richieste/*</url-pattern>
+        <url-pattern>/api/edit/requests/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>DeleteMaterialController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.delete.DeleteMaterialController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>DeleteMaterialController</servlet-name>
+        <url-pattern>/api/delete/materiali/*</url-pattern>
+        <url-pattern>/api/delete/materials/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>DeleteVehicleController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.delete.DeleteVehicleController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>DeleteVehicleController</servlet-name>
+        <url-pattern>/api/delete/mezzi/*</url-pattern>
+        <url-pattern>/api/delete/vehicles/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>AddApi</servlet-name>
         <servlet-class>org.soccorsoweb.test.AddApiServlet</servlet-class>
     </servlet>
@@ -94,6 +171,27 @@
     <servlet-mapping>
         <servlet-name>AddApi</servlet-name>
         <url-pattern>/api/add/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AddMissionController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.add.AddMissionController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>AddMissionController</servlet-name>
+        <url-pattern>/api/add/missioni/*</url-pattern>
+        <url-pattern>/api/add/missions/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AddOperatorController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.add.AddOperatorController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>AddOperatorController</servlet-name>
+        <url-pattern>/api/add/operators/*</url-pattern>
     </servlet-mapping>
 
     <servlet>
