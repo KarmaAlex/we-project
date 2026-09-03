@@ -10,6 +10,7 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -186,7 +187,17 @@ public class SecurityHelpers {
     }
 
     public static String sanitizeTextInput(String value) {
-        return addSlashes(value == null ? "" : value.trim());
+        return value == null ? "" : value.trim();
+    }
+
+    public static boolean isValidBirthDate(LocalDate birthDate) {
+        if (birthDate == null) {
+            return false;
+        }
+
+        LocalDate today = LocalDate.now();
+        return !birthDate.isAfter(today.minusYears(4))
+                && !birthDate.isBefore(today.minusYears(105));
     }
 
     public static String sanitizeFileLink(String value) {

@@ -84,7 +84,11 @@ public class CreaRichiestaServlet extends SoccorsoBaseController {
             descRichiestaDAO.storeDescRichiesta(dettaglio, richiesta);
 
             request.getSession(true).setAttribute("ultima_richiesta", payload);
-            response.sendRedirect(request.getContextPath() + "/home?success=richiesta-sent");
+                request.getSession().setAttribute("verification.email", richiesta.getEmail());
+                request.getSession().setAttribute("verification.link",
+                    org.soccorsoweb.business.VerifyRequestController.buildVerificationLink(
+                        request, richiesta.getString()));
+                response.sendRedirect(request.getContextPath() + "/verify-request");
         } catch (IOException | DataException ex) {
             handleError(ex, request, response);
         }

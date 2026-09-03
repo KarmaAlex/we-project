@@ -86,6 +86,19 @@ public class SignupServlet extends SoccorsoBaseController {
                 return;
             }
 
+            LocalDate birthDate;
+            try {
+                birthDate = LocalDate.parse(dataNascParam);
+            } catch (RuntimeException ex) {
+                renderSignupPage(req, resp, "La data di nascita non è valida.", username);
+                return;
+            }
+            if (!SecurityHelpers.isValidBirthDate(birthDate)) {
+                renderSignupPage(req, resp,
+                        "La data di nascita deve indicare un'età compresa tra 4 e 105 anni.", username);
+                return;
+            }
+
             String signature = SecurityHelpers.buildRequestSignature(
                     nome,
                     cognome,
@@ -112,7 +125,7 @@ public class SignupServlet extends SoccorsoBaseController {
             anagrafica.setCognome(cognome);
             anagrafica.setCf(cf);
             anagrafica.setLuogoNasc(luogoNasc);
-            anagrafica.setDataNasc(LocalDate.parse(dataNascParam));
+            anagrafica.setDataNasc(birthDate);
             anagraficaDAO.storeAnagrafica(anagrafica, utente);
 
             CredenzialiDAO credenzialiDAO = (CredenzialiDAO) dataLayer.getDAO(Credenziali.class);

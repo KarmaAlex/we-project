@@ -205,6 +205,16 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>VerifyRequestController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.VerifyRequestController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>VerifyRequestController</servlet-name>
+        <url-pattern>/verify-request</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>HomeServlet</servlet-name>
         <servlet-class>org.soccorsoweb.business.controller.HomeServlet</servlet-class>
     </servlet>
