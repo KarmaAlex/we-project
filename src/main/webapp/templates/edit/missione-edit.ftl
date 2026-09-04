@@ -148,7 +148,7 @@
 <@form
     id="missioneForm"
     csrfToken=csrfToken
-    action="${ctx}/api/edit/missioni/${dettaglio.id}"
+    action="${ctx}/api/edit/missioni"
     method="post"
     fields=missioneFields
     submitLabel="Salva"

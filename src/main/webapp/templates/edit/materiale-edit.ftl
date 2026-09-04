@@ -53,7 +53,7 @@
 <@form
     id="materialeForm"
     csrfToken=csrfToken
-    action="${ctx}/api/edit/materiali/${dettaglio.id}"
+    action="${ctx}/api/edit/materiali"
     method="post"
     fields=materialeFields
     submitLabel="Salva"

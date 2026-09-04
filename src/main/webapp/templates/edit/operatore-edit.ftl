@@ -90,7 +90,7 @@
 <@form
     id="operatoreForm"
     csrfToken=csrfToken
-    action="${ctx}/api/edit/operatori/${dettaglio.id}"
+    action="${ctx}/api/edit/operatori"
     method="post"
     fields=operatoreFields
     submitLabel="Salva"

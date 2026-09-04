@@ -61,7 +61,7 @@
 <@form
     id="mezzoForm"
     csrfToken=csrfToken
-    action="${ctx}/api/edit/mezzi/${dettaglio.id}"
+    action="${ctx}/api/edit/mezzi"
     method="post"
     fields=mezzoFields
     submitLabel="Salva"

@@ -44,7 +44,7 @@
 <@form
     id="richiestaForm"
     csrfToken=csrfToken
-    action="${ctx}/api/edit/richieste/${dettaglio.id}"
+    action="${ctx}/api/edit/richieste"
     method="post"
     fields=richiestaFields
     submitLabel="Salva"
