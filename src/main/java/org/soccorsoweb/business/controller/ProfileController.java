@@ -15,7 +15,7 @@ import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.UtenteDAO;
 import org.soccorsoweb.model.Utente;
 
-public class ProfileServlet extends SoccorsoBaseController {
+public class ProfileController extends SoccorsoBaseController {
 
     private Configuration cfg;
 

@@ -33,24 +33,24 @@
     
     <!-- Admin Dashboard -->
     <servlet>
-        <servlet-name>AdminDashboard</servlet-name>
-        <servlet-class>org.soccorsoweb.business.controller.AdminDashboardServlet</servlet-class>
+        <servlet-name>AdminDashboardController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.AdminDashboardController</servlet-class>
     </servlet>
     
     <servlet-mapping>
-        <servlet-name>AdminDashboard</servlet-name>
+        <servlet-name>AdminDashboardController</servlet-name>
         <url-pattern>/admin-dashboard</url-pattern>
     </servlet-mapping>
     
     
     <!-- Operator Dashboard -->
     <servlet>
-        <servlet-name>OperatorDashboard</servlet-name>
-        <servlet-class>org.soccorsoweb.business.controller.OperatorDashboardServlet</servlet-class>
+        <servlet-name>OperatorDashboardController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.OperatorDashboardController</servlet-class>
     </servlet>
     
     <servlet-mapping>
-        <servlet-name>OperatorDashboard</servlet-name>
+        <servlet-name>OperatorDashboardController</servlet-name>
         <url-pattern>/operator-dashboard</url-pattern>
     </servlet-mapping>
     
@@ -77,16 +77,50 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>VehicleDetailController</servlet-name>
-        <servlet-class>org.soccorsoweb.business.controller.admin.details.VehicleDetailController</servlet-class>
+        <servlet-name>OperatorDetailsController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.details.OperatorDetailsController</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>VehicleDetailController</servlet-name>
+        <servlet-name>OperatorDetailsController</servlet-name>
+        <url-pattern>/api/detail/operators/*</url-pattern>
+        <url-pattern>/api/detail/operatori/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>RequestDetailsController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.details.OperatorDetailsController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>RequestDetailsController</servlet-name>
+        <url-pattern>/api/detail/requests/*</url-pattern>
+        <url-pattern>/api/detail/richieste/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>MissionDetailsController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.details.MissionDetailsController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>MissionDetailsController</servlet-name>
+        <url-pattern>/api/detail/missions/*</url-pattern>
+        <url-pattern>/api/detail/missioni/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>VehicleDetailsController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.details.VehicleDetailsController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>VehicleDetailsController</servlet-name>
         <url-pattern>/api/detail/vehicles/*</url-pattern>
         <url-pattern>/api/detail/mezzi/*</url-pattern>
     </servlet-mapping>
 
+    <!-- Edit API Servlet -->    
     <servlet>
         <servlet-name>EditApi</servlet-name>
         <servlet-class>org.soccorsoweb.test.EditApiServlet</servlet-class>
@@ -142,6 +176,18 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>EditMaterialController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.edit.EditMateralController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>EditMaterialController</servlet-name>
+        <url-pattern>/api/edit/materiali/*</url-pattern>
+        <url-pattern>/api/edit/materials/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Delete -->
+    <servlet>
         <servlet-name>DeleteMaterialController</servlet-name>
         <servlet-class>org.soccorsoweb.business.controller.admin.delete.DeleteMaterialController</servlet-class>
     </servlet>
@@ -185,6 +231,27 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>AddMaterialController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.add.AddMaterialController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>AddMaterialController</servlet-name>
+        <url-pattern>/api/add/materials/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AddVehicleController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.add.AddVehicleController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>AddVehicleController</servlet-name>
+        <url-pattern>/api/add/vehicles/*</url-pattern>
+        <url-pattern>/api/add/mezzi/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>AddOperatorController</servlet-name>
         <servlet-class>org.soccorsoweb.business.controller.admin.add.AddOperatorController</servlet-class>
     </servlet>
@@ -195,12 +262,12 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>CreaRichiesta</servlet-name>
-        <servlet-class>org.soccorsoweb.business.controller.CreaRichiestaServlet</servlet-class>
+        <servlet-name>CreaRichiestaController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.CreaRichiestaController</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>CreaRichiesta</servlet-name>
+        <servlet-name>CreaRichiestaController</servlet-name>
         <url-pattern>/submit</url-pattern>
     </servlet-mapping>
 
@@ -215,43 +282,55 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>HomeServlet</servlet-name>
-        <servlet-class>org.soccorsoweb.business.controller.HomeServlet</servlet-class>
+        <servlet-name>HomeController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.HomeController</servlet-class>
     </servlet>
     
     <servlet-mapping>
-        <servlet-name>HomeServlet</servlet-name>
+        <servlet-name>HomeController</servlet-name>
         <url-pattern>/</url-pattern>
         <url-pattern>/home</url-pattern>
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>LoginServlet</servlet-name>
-        <servlet-class>org.soccorsoweb.business.controller.LoginServlet</servlet-class>
+        <servlet-name>LoginController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.LoginController</servlet-class>
     </servlet>
     
     <servlet-mapping>
-        <servlet-name>LoginServlet</servlet-name>
+        <servlet-name>LoginController</servlet-name>
         <url-pattern>/login</url-pattern>
+        <url-pattern>/Login</url-pattern>
+    </servlet-mapping>
+
+   <servlet>
+        <servlet-name>LogoutController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.LogoutController</servlet-class>
+    </servlet>
+    
+    <servlet-mapping>
+        <servlet-name>LogoutController</servlet-name>
+        <url-pattern>/logout</url-pattern>
+        <url-pattern>/Logout</url-pattern>
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>SignupServlet</servlet-name>
-        <servlet-class>org.soccorsoweb.business.controller.SignupServlet</servlet-class>
+        <servlet-name>SignupController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.SignupController</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>SignupServlet</servlet-name>
+        <servlet-name>SignupController</servlet-name>
         <url-pattern>/signup</url-pattern>
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>ProfileServlet</servlet-name>
-        <servlet-class>org.soccorsoweb.business.controller.ProfileServlet</servlet-class>
+        <servlet-name>ProfileController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.ProfileController</servlet-class>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>ProfileServlet</servlet-name>
+        <servlet-name>ProfileController</servlet-name>
         <url-pattern>/profile</url-pattern>
         <url-pattern>/operator/profile</url-pattern>
     </servlet-mapping>

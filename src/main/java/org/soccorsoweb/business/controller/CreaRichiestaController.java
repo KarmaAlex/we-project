@@ -24,7 +24,7 @@ import org.soccorsoweb.model.enums.StatoRichiesta;
         maxFileSize = 5 * 1024 * 1024,
         maxRequestSize = 10 * 1024 * 1024
 )
-public class CreaRichiestaServlet extends SoccorsoBaseController {
+public class CreaRichiestaController extends SoccorsoBaseController {
 
     @Override
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
@@ -86,7 +86,7 @@ public class CreaRichiestaServlet extends SoccorsoBaseController {
             request.getSession(true).setAttribute("ultima_richiesta", payload);
                 request.getSession().setAttribute("verification.email", richiesta.getEmail());
                 request.getSession().setAttribute("verification.link",
-                    org.soccorsoweb.business.VerifyRequestController.buildVerificationLink(
+                    org.soccorsoweb.business.controller.VerifyRequestController.buildVerificationLink(
                         request, richiesta.getString()));
                 response.sendRedirect(request.getContextPath() + "/verify-request");
         } catch (IOException | DataException ex) {

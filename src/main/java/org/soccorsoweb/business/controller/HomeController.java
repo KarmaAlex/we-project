@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.soccorsoweb.framework.security.SecurityHelpers;
 
-public class HomeServlet extends SoccorsoBaseController {
+public class HomeController extends SoccorsoBaseController {
 
     private Configuration cfg;
 

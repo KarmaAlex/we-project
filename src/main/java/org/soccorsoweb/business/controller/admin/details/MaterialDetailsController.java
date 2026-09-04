@@ -5,13 +5,16 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.soccorsoweb.business.controller.SoccorsoBaseController;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.MaterialeDAO;
+import org.soccorsoweb.data.dao.MissioneDAO;
 import org.soccorsoweb.framework.security.SecurityHelpers;
 import org.soccorsoweb.model.Materiale;
+import org.soccorsoweb.model.Missione;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -54,14 +57,14 @@ public class MaterialDetailsController extends SoccorsoBaseController {
 				return;
 			}
 
-			renderMaterialDetails(request, response, materiale);
+			renderMaterialDetails(request, response, dataLayer, materiale);
 		} catch (DataException | IOException ex) {
 			handleError(ex, request, response);
 		}
 	}
 
 	private void renderMaterialDetails(HttpServletRequest request, HttpServletResponse response,
-			Materiale materiale) throws IOException, ServletException {
+			DataLayer dataLayer, Materiale materiale) throws IOException, DataException, ServletException {
 		Map<String, Object> dettaglio = new HashMap<>();
 		dettaglio.put("id", materiale.getKey());
 		dettaglio.put("nome", materiale.getNome());
@@ -71,6 +74,18 @@ public class MaterialDetailsController extends SoccorsoBaseController {
 		if (materiale.isAssegnato()) {
 			dettaglio.put("missione_corrente", materiale.getMissioneKey());
 		}
+
+		List<Map<String, Object>> storicoMissioni = new java.util.ArrayList<>();
+		List<Missione> missioni = ((MissioneDAO) dataLayer.getDAO(Missione.class))
+				.getStoricoMissioniByMateriale(materiale);
+		for (Missione missione : missioni) {
+			Map<String, Object> storico = new HashMap<>();
+			storico.put("missione_id", missione.getKey());
+			storico.put("data", missione.getInizio() == null ? "" : missione.getInizio().toLocalDate());
+			storico.put("descrizione", missione.getObiettivo());
+			storicoMissioni.add(storico);
+		}
+		dettaglio.put("storico_missioni", storicoMissioni);
 
 		Map<String, Object> model = new HashMap<>();
 		model.put("ctx", request.getContextPath());

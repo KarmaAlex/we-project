@@ -5,18 +5,21 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.soccorsoweb.business.controller.SoccorsoBaseController;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.MezzoDAO;
+import org.soccorsoweb.data.dao.MissioneDAO;
 import org.soccorsoweb.framework.security.SecurityHelpers;
 import org.soccorsoweb.model.Mezzo;
+import org.soccorsoweb.model.Missione;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class VehicleDetailController extends SoccorsoBaseController {
+public class VehicleDetailsController extends SoccorsoBaseController {
 
 	private Configuration cfg;
 
@@ -54,7 +57,7 @@ public class VehicleDetailController extends SoccorsoBaseController {
 				return;
 			}
 
-			renderVehicleDetails(request, response, mezzo);
+			renderVehicleDetails(request, response, dataLayer, mezzo);
 		} catch (DataException | IOException ex) {
 			handleError(ex, request, response);
 		}
@@ -69,8 +72,8 @@ public class VehicleDetailController extends SoccorsoBaseController {
 		return null;
 	}
 
-	private void renderVehicleDetails(HttpServletRequest request, HttpServletResponse response, Mezzo mezzo)
-			throws ServletException, IOException {
+	private void renderVehicleDetails(HttpServletRequest request, HttpServletResponse response, DataLayer dataLayer, Mezzo mezzo)
+			throws ServletException, IOException, DataException {
 		Map<String, Object> dettaglio = new HashMap<>();
 		dettaglio.put("id", mezzo.getKey());
 		dettaglio.put("nome", mezzo.getNome());
@@ -80,7 +83,16 @@ public class VehicleDetailController extends SoccorsoBaseController {
 		if (mezzo.isAssegnato()) {
 			dettaglio.put("missione_corrente", mezzo.getMissioneKey());
 		}
-
+		List<Map<String, Object>> storicoMissioni = new java.util.ArrayList<>();
+		List<Missione> missioni = ((MissioneDAO) dataLayer.getDAO(Missione.class)).getStoricoMissioniByMezzo(mezzo);
+		for (Missione missione : missioni) {
+			Map<String, Object> storico = new HashMap<>();
+			storico.put("missione_id", missione.getKey());
+			storico.put("data", missione.getInizio() == null ? "" : missione.getInizio().toLocalDate());
+			storico.put("descrizione", missione.getObiettivo());
+			storicoMissioni.add(storico);
+		}
+		dettaglio.put("storico_missioni", storicoMissioni);
 		Map<String, Object> model = new HashMap<>();
 		model.put("ctx", request.getContextPath());
 		model.put("dettaglio", dettaglio);

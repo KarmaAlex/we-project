@@ -20,6 +20,7 @@ import org.soccorsoweb.data.dao.impl.AbilitaDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.CredenzialiDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.DescRichiestaDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.AggiornamentoDAO_MySQL;
+import org.soccorsoweb.data.dao.impl.CommentoDAO_MySQL;
 
 import org.soccorsoweb.model.Utente;
 import org.soccorsoweb.model.Richiesta;
@@ -33,6 +34,7 @@ import org.soccorsoweb.model.Abilita;
 import org.soccorsoweb.model.Credenziali;
 import org.soccorsoweb.model.DescRichiesta;
 import org.soccorsoweb.model.Aggiornamento;
+import org.soccorsoweb.model.Commento;
 
 public abstract class SoccorsoBaseController extends AbstractBaseController {
 
@@ -54,6 +56,7 @@ public abstract class SoccorsoBaseController extends AbstractBaseController {
                     registerDAO(Credenziali.class, new CredenzialiDAO_MySQL(this));
                     registerDAO(DescRichiesta.class, new DescRichiestaDAO_MySQL(this));
                     registerDAO(Aggiornamento.class, new AggiornamentoDAO_MySQL(this));
+                    registerDAO(Commento.class, new CommentoDAO_MySQL(this));
                 }
             };
         } catch (SQLException ex) {

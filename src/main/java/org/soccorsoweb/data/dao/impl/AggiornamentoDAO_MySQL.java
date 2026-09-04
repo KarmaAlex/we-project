@@ -7,6 +7,7 @@ import org.soccorsoweb.data.dao.AggiornamentoDAO;
 import org.soccorsoweb.model.impl.proxy.AggiornamentoProxy;
 import org.soccorsoweb.model.Aggiornamento;
 import org.soccorsoweb.model.Utente;
+import org.soccorsoweb.model.Missione;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,6 +21,7 @@ public class AggiornamentoDAO_MySQL extends Dao implements AggiornamentoDAO {
 
     private PreparedStatement sAggiornamentoByID;
     private PreparedStatement sAggiornamentiByAdmin;
+    private PreparedStatement sAggiornamentiByMissione;
     private PreparedStatement iAggiornamento;
     private PreparedStatement uAggiornamento;
 
@@ -34,6 +36,7 @@ public class AggiornamentoDAO_MySQL extends Dao implements AggiornamentoDAO {
             // Allineato alle colonne esatte del DB: ID, ID_ADMIN, ID_MISSIONE
             sAggiornamentoByID = connection.prepareStatement("SELECT * FROM Aggiornamento WHERE ID=?");
             sAggiornamentiByAdmin = connection.prepareStatement("SELECT * FROM Aggiornamento WHERE ID_ADMIN=? ORDER BY timestamp DESC");
+            sAggiornamentiByMissione = connection.prepareStatement("SELECT * FROM Aggiornamento WHERE ID_MISSIONE=? ORDER BY timestamp DESC");
             iAggiornamento = connection.prepareStatement("INSERT INTO Aggiornamento (testo, timestamp, ID_ADMIN, ID_MISSIONE) VALUES (?,?,?,?)", Statement.RETURN_GENERATED_KEYS);
             uAggiornamento = connection.prepareStatement("UPDATE Aggiornamento SET testo=?, timestamp=?, ID_ADMIN=?, ID_MISSIONE=? WHERE ID=?");
         } catch (SQLException ex) {
@@ -46,6 +49,7 @@ public class AggiornamentoDAO_MySQL extends Dao implements AggiornamentoDAO {
         try {
             if (sAggiornamentoByID != null) sAggiornamentoByID.close();
             if (sAggiornamentiByAdmin != null) sAggiornamentiByAdmin.close();
+            if (sAggiornamentiByMissione != null) sAggiornamentiByMissione.close();
             if (iAggiornamento != null) iAggiornamento.close();
             if (uAggiornamento != null) uAggiornamento.close();
         } catch (SQLException ex) {
@@ -114,6 +118,29 @@ public class AggiornamentoDAO_MySQL extends Dao implements AggiornamentoDAO {
             }
         } catch (SQLException ex) {
             throw new DataException("Errore nel caricamento degli aggiornamenti dell'admin", ex);
+        }
+        return result;
+    }
+
+    @Override
+    public List<Aggiornamento> getAggiornamentiByMissione(Missione missione) throws DataException {
+        List<Aggiornamento> result = new ArrayList<>();
+        try {
+            sAggiornamentiByMissione.setInt(1, missione.getKey());
+            try (ResultSet rs = sAggiornamentiByMissione.executeQuery()) {
+                while (rs.next()) {
+                    int key = rs.getInt("ID");
+                    if (dataLayer.getCache().has(Aggiornamento.class, key)) {
+                        result.add((Aggiornamento) dataLayer.getCache().get(Aggiornamento.class, key));
+                    } else {
+                        AggiornamentoProxy aggiornamento = createAggiornamento(rs);
+                        dataLayer.getCache().add(Aggiornamento.class, aggiornamento);
+                        result.add(aggiornamento);
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataException("Errore nel caricamento degli aggiornamenti della missione", ex);
         }
         return result;
     }

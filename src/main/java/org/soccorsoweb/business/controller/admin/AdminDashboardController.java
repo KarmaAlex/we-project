@@ -20,7 +20,7 @@ import java.util.List;
  * AdminDashboardServlet: Gestisce la dashboard amministratore
  * Route: /admin-dashboard?section={requests|missions|operators|vehicles|materials}
  */
-public class AdminDashboardServlet extends HttpServlet {
+public class AdminDashboardController extends HttpServlet {
 
     private Configuration cfg;
 

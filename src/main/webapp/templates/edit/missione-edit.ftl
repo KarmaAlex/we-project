@@ -86,6 +86,13 @@
     ]
 },
 {
+    "type":"textarea",
+    "name":"commento",
+    "label":"Commento conclusivo",
+    "rows":5,
+    "placeholder":"Inserisci il commento conclusivo..."
+},
+{
     "type":"date",
     "name":"data_inizio",
     "label":"Data Inizio",

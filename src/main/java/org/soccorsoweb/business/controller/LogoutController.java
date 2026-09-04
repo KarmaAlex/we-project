@@ -7,7 +7,7 @@ import org.soccorsoweb.framework.security.SecurityHelpers;
  *
  * @author Aurora
  */
-public class LogoutServlet extends SoccorsoBaseController {
+public class LogoutController extends SoccorsoBaseController {
 
     private void action_logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
         SecurityHelpers.disposeSession(request);

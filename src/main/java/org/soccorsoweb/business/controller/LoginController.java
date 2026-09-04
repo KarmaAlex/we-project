@@ -23,7 +23,7 @@ import org.soccorsoweb.model.Credenziali;
 import org.soccorsoweb.model.Utente;
 
 
-public class LoginServlet extends SoccorsoBaseController {
+public class LoginController extends SoccorsoBaseController {
 
     private Configuration cfg;
 

@@ -19,7 +19,7 @@ import org.soccorsoweb.test.MockDataProvider;
  * OperatorDashboardServlet: Gestisce la dashboard operatore
  * Route: /operator-dashboard?section={missions|profile}
  */
-public class OperatorDashboardServlet extends HttpServlet {
+public class OperatorDashboardController extends HttpServlet {
 
     private Configuration cfg;
 

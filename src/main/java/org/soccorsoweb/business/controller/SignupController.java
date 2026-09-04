@@ -22,7 +22,7 @@ import org.soccorsoweb.model.Anagrafica;
 import org.soccorsoweb.model.Credenziali;
 import org.soccorsoweb.model.Utente;
 
-public class SignupServlet extends SoccorsoBaseController {
+public class SignupController extends SoccorsoBaseController {
 
     private Configuration cfg;
 

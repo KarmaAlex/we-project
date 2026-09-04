@@ -12,14 +12,14 @@ import org.soccorsoweb.business.controller.SoccorsoBaseController;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.AggiornamentoDAO;
+import org.soccorsoweb.data.dao.CommentoDAO;
 import org.soccorsoweb.data.dao.MissioneDAO;
-import org.soccorsoweb.data.dao.RichiestaDAO;
 import org.soccorsoweb.data.dao.SquadraDAO;
 import org.soccorsoweb.data.dao.UtenteDAO;
 import org.soccorsoweb.framework.security.SecurityHelpers;
 import org.soccorsoweb.model.Missione;
 import org.soccorsoweb.model.Aggiornamento;
-import org.soccorsoweb.model.Richiesta;
+import org.soccorsoweb.model.Commento;
 import org.soccorsoweb.model.Squadra;
 import org.soccorsoweb.model.Utente;
 import org.soccorsoweb.model.enums.EsitoMissione;
@@ -27,7 +27,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-/*TODO: implementazione della modifica e inserimento dei commenti */
 public class EditMissionController extends SoccorsoBaseController {
 
 	private Configuration cfg;
@@ -147,6 +146,25 @@ public class EditMissionController extends SoccorsoBaseController {
 				return;
 			}
 			missione.setSuccesso(esito);
+
+			String testoCommento = SecurityHelpers.sanitizeTextInput(request.getParameter("commento"));
+			if (testoCommento.isBlank()) {
+				response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+				response.getWriter().write("{\"error\":\"Il commento è obbligatorio per una missione completata\"}");
+				return;
+			}
+			Integer adminId = getSessionUserId(request);
+			Utente admin = adminId == null
+					? null
+					: ((UtenteDAO) dataLayer.getDAO(Utente.class)).getUtente(adminId);
+			if (admin == null) {
+				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+				return;
+			}
+			Commento commento = ((CommentoDAO) dataLayer.getDAO(Commento.class)).createCommento();
+			commento.setAdmin(admin);
+			commento.setTesto(testoCommento);
+			((CommentoDAO) dataLayer.getDAO(Commento.class)).storeCommento(commento, missioneId);
 		} else if ("IN_CORSO".equalsIgnoreCase(stato)) {
 			String testoAggiornamento = SecurityHelpers.sanitizeTextInput(
 					request.getParameter("nuovo_aggiornamento"));

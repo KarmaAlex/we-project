@@ -1,9 +1,9 @@
-package org.soccorsoweb.business;
+package org.soccorsoweb.business.controller;
 
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import org.soccorsoweb.business.controller.SoccorsoBaseController;
+
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.RichiestaDAO;
