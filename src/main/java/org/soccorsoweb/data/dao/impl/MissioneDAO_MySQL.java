@@ -19,6 +19,8 @@ import java.sql.Time;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.soccorsoweb.model.Materiale;
+import org.soccorsoweb.model.Mezzo;
 
 public class MissioneDAO_MySQL extends Dao implements MissioneDAO {
 
@@ -27,6 +29,9 @@ public class MissioneDAO_MySQL extends Dao implements MissioneDAO {
     private PreparedStatement sMissioniByUtente;
     private PreparedStatement iMissione;
     private PreparedStatement uMissione;
+    private PreparedStatement sStoricoByUtente;
+    private PreparedStatement sStoricoByMezzo;
+    private PreparedStatement sStoricoByMateriale;
 
     public MissioneDAO_MySQL(DataLayer dlayer) {
         super(dlayer);
@@ -57,6 +62,29 @@ public class MissioneDAO_MySQL extends Dao implements MissioneDAO {
             uMissione = connection.prepareStatement(
                 "UPDATE Missione SET ID_RICHIESTA=?, ID_SQUADRA=?, ID_ADMIN=?, obiettivo=?, inizio=?, fine=?, completata=?, successo=?, durata=? WHERE ID=?"
             );
+            
+            sStoricoByUtente = connection.prepareStatement(
+                "SELECT DISTINCT mi.* FROM Missione mi " +
+                "JOIN assegna_squadra asq ON asq.ID_SQUADRA = mi.ID_SQUADRA " +
+                "WHERE asq.ID_UTENTE = ? AND mi.completata = true " +
+                "UNION " +
+                "SELECT DISTINCT mi.* FROM Missione mi " +
+                "JOIN Squadra s ON s.ID = mi.ID_SQUADRA " +
+                "WHERE s.ID_CAPO = ? AND mi.completata = true"
+            );
+
+            sStoricoByMezzo = connection.prepareStatement(
+                "SELECT mi.* FROM Missione mi " +
+                "JOIN assegna_mezzo am ON am.ID_MISSIONE = mi.ID " +
+                "WHERE am.ID_MEZZO = ? AND mi.completata = true"
+            );
+
+            sStoricoByMateriale = connection.prepareStatement(
+                "SELECT mi.* FROM Missione mi " +
+                "JOIN assegna_materiale amat ON amat.ID_MISSIONE = mi.ID " +
+                "WHERE amat.ID_MATERIALE = ? AND mi.completata = true"
+            );
+            
         } catch (SQLException ex) {
             throw new DataException("Errore nell'inizializzazione dei prepared statements di Missione", ex);
         }
@@ -70,6 +98,9 @@ public class MissioneDAO_MySQL extends Dao implements MissioneDAO {
             if (sMissioniByUtente != null) sMissioniByUtente.close();
             if (iMissione != null) iMissione.close();
             if (uMissione != null) uMissione.close();
+            if (sStoricoByUtente != null) sStoricoByUtente.close();
+            if (sStoricoByMezzo != null) sStoricoByMezzo.close();
+            if (sStoricoByMateriale != null) sStoricoByMateriale.close();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
@@ -280,5 +311,54 @@ public class MissioneDAO_MySQL extends Dao implements MissioneDAO {
             if (k > 0) return k;
         }
         return m.getRichiesta() != null ? m.getRichiesta().getKey() : 0;
+    }
+    
+    @Override
+    public List<Missione> getStoricoMissioniByUtente(Utente utente) throws DataException {
+        List<Missione> res = new ArrayList<>();
+        try {
+            sStoricoByUtente.setInt(1, utente.getKey());
+            sStoricoByUtente.setInt(2, utente.getKey());
+            try (ResultSet rs = sStoricoByUtente.executeQuery()) {
+                while (rs.next()) {
+                    res.add(getMissione(rs.getInt("ID")));
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataException("Errore nel recupero dello storico missioni per utente", ex);
+        }
+        return res;
+    }
+
+    @Override
+    public List<Missione> getStoricoMissioniByMezzo(Mezzo mezzo) throws DataException {
+        List<Missione> res = new ArrayList<>();
+        try {
+            sStoricoByMezzo.setInt(1, mezzo.getKey());
+            try (ResultSet rs = sStoricoByMezzo.executeQuery()) {
+                while (rs.next()) {
+                    res.add(getMissione(rs.getInt("ID")));
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataException("Errore nel recupero dello storico missioni per mezzo", ex);
+        }
+        return res;
+    }
+
+    @Override
+    public List<Missione> getStoricoMissioniByMateriale(Materiale materiale) throws DataException {
+        List<Missione> res = new ArrayList<>();
+        try {
+            sStoricoByMateriale.setInt(1, materiale.getKey());
+            try (ResultSet rs = sStoricoByMateriale.executeQuery()) {
+                while (rs.next()) {
+                    res.add(getMissione(rs.getInt("ID")));
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataException("Errore nel recupero dello storico missioni per materiale", ex);
+        }
+        return res;
     }
 }
