@@ -1,6 +1,5 @@
 package org.soccorsoweb.business.controller.admin.details;
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
@@ -8,7 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.soccorsoweb.business.controller.SoccorsoBaseController;
+
+import org.soccorsoweb.business.controller.AbstractIdRequiredController;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.AggiornamentoDAO;
@@ -28,52 +28,42 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class MissionDetailsController extends SoccorsoBaseController {
-
-	private Configuration cfg;
+public class MissionDetailsController extends AbstractIdRequiredController {
 
 	@Override
-	public void init() throws ServletException {
-		super.init();
-		cfg = new Configuration(Configuration.VERSION_2_3_34);
-		cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-		cfg.setDefaultEncoding("UTF-8");
-	}
-
-	@Override
-	protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException {
 		if (!SecurityHelpers.isAdmin(request)) {
 			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
 
-		Integer missioneId = parseId(request);
+		Integer missioneId = getRequestId(request);
 		if (missioneId == null) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
 
 		try {
-			DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-			if (dataLayer == null) {
+			
+			if (this.dl == null) {
 				throw new ServletException("DataLayer non inizializzato");
 			}
 
-			Missione missione = ((MissioneDAO) dataLayer.getDAO(Missione.class)).getMissione(missioneId);
+			Missione missione = ((MissioneDAO) this.dl.getDAO(Missione.class)).getMissione(missioneId);
 			if (missione == null) {
 				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 				return;
 			}
 
-			renderMissionDetails(request, response, dataLayer, missione);
+			renderMissionDetails(request, response, this.dl, missione);
 		} catch (DataException | IOException ex) {
 			handleError(ex, request, response);
 		}
 	}
 
 	private void renderMissionDetails(HttpServletRequest request, HttpServletResponse response,
-			DataLayer dataLayer, Missione missione) throws IOException, DataException, ServletException {
+			DataLayer dl, Missione missione) throws IOException, DataException, ServletException {
 		Map<String, Object> dettaglio = new HashMap<>();
 		dettaglio.put("id", missione.getKey());
 		dettaglio.put("richiesta_id", missione.getRichiesta() == null ? "" : missione.getRichiesta().getKey());
@@ -87,10 +77,10 @@ public class MissionDetailsController extends SoccorsoBaseController {
 		dettaglio.put("caposquadra", squadra == null || squadra.getCapoSquadra() == null
 				? "" : squadra.getCapoSquadra().getNomeUtente());
 		dettaglio.put("operatori", getOperatori(squadra));
-		dettaglio.put("mezzi", getMezzi(dataLayer, missione));
-		dettaglio.put("materiali", getMateriali(dataLayer, missione));
-		dettaglio.put("aggiornamenti", getAggiornamenti(dataLayer, missione));
-		getCommenti(dataLayer, missione);
+		dettaglio.put("mezzi", getMezzi(this.dl, missione));
+		dettaglio.put("materiali", getMateriali(this.dl, missione));
+		dettaglio.put("aggiornamenti", getAggiornamenti(this.dl, missione));
+		getCommenti(this.dl, missione);
 
 		Map<String, Object> model = new HashMap<>();
 		model.put("ctx", request.getContextPath());
@@ -126,9 +116,9 @@ public class MissionDetailsController extends SoccorsoBaseController {
 		return operatori;
 	}
 
-	private List<String> getMezzi(DataLayer dataLayer, Missione missione) throws DataException {
+	private List<String> getMezzi(DataLayer dl, Missione missione) throws DataException {
 		List<String> mezzi = new ArrayList<>();
-		for (Mezzo mezzo : ((MezzoDAO) dataLayer.getDAO(Mezzo.class)).getMezziConStato()) {
+		for (Mezzo mezzo : ((MezzoDAO) this.dl.getDAO(Mezzo.class)).getMezziConStato()) {
 			if (missione.getKey().equals(mezzo.getMissioneKey())) {
 				mezzi.add(mezzo.getNome());
 			}
@@ -136,9 +126,9 @@ public class MissionDetailsController extends SoccorsoBaseController {
 		return mezzi;
 	}
 
-	private List<String> getMateriali(DataLayer dataLayer, Missione missione) throws DataException {
+	private List<String> getMateriali(DataLayer dl, Missione missione) throws DataException {
 		List<String> materiali = new ArrayList<>();
-		for (Materiale materiale : ((MaterialeDAO) dataLayer.getDAO(Materiale.class)).getMateriali()) {
+		for (Materiale materiale : ((MaterialeDAO) this.dl.getDAO(Materiale.class)).getMateriali()) {
 			if (missione.getKey().equals(materiale.getMissioneKey())) {
 				materiali.add(materiale.getNome());
 			}
@@ -146,9 +136,9 @@ public class MissionDetailsController extends SoccorsoBaseController {
 		return materiali;
 	}
 
-	private List<Map<String, Object>> getAggiornamenti(DataLayer dataLayer, Missione missione) throws DataException {
+	private List<Map<String, Object>> getAggiornamenti(DataLayer dl, Missione missione) throws DataException {
 		List<Map<String, Object>> aggiornamenti = new ArrayList<>();
-		for (Aggiornamento aggiornamento : ((AggiornamentoDAO) dataLayer.getDAO(Aggiornamento.class))
+		for (Aggiornamento aggiornamento : ((AggiornamentoDAO) this.dl.getDAO(Aggiornamento.class))
 				.getAggiornamentiByMissione(missione)) {
 			Map<String, Object> item = new HashMap<>();
 			item.put("timestamp", aggiornamento.getTimestamp() == null ? "" : aggiornamento.getTimestamp());
@@ -158,18 +148,10 @@ public class MissionDetailsController extends SoccorsoBaseController {
 		return aggiornamenti;
 	}
 
-	private void getCommenti(DataLayer dataLayer, Missione missione) throws DataException {
-		List<Commento> commenti = ((CommentoDAO) dataLayer.getDAO(Commento.class)).getCommentiByMissione(missione);
+	private void getCommenti(DataLayer dl, Missione missione) throws DataException {
+		List<Commento> commenti = ((CommentoDAO) this.dl.getDAO(Commento.class)).getCommentiByMissione(missione);
 		missione.setCommenti(commenti);
 	}
 
-	private Integer parseId(HttpServletRequest request) {
-		String path = request.getRequestURI().substring(request.getContextPath().length());
-		try {
-			return Integer.valueOf(path.substring(path.lastIndexOf('/') + 1));
-		} catch (NumberFormatException ex) {
-			return null;
-		}
-	}
 
 }

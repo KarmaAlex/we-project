@@ -1,6 +1,5 @@
 package org.soccorsoweb.business.controller.admin.edit;
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
@@ -8,7 +7,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-import org.soccorsoweb.business.controller.SoccorsoBaseController;
+
+import org.soccorsoweb.business.controller.AbstractIdRequiredController;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.AggiornamentoDAO;
@@ -27,17 +27,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class EditMissionController extends SoccorsoBaseController {
-
-	private Configuration cfg;
-
-	@Override
-	public void init() throws ServletException {
-		super.init();
-		cfg = new Configuration(Configuration.VERSION_2_3_34);
-		cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-		cfg.setDefaultEncoding("UTF-8");
-	}
+public class EditMissionController extends AbstractIdRequiredController {
 
 	@Override
 	protected void processRequest(HttpServletRequest request, HttpServletResponse response)
@@ -47,19 +37,19 @@ public class EditMissionController extends SoccorsoBaseController {
 			return;
 		}
 
-		Integer missioneId = parseId(request);
+		Integer missioneId = getRequestId(request);
 		if (missioneId == null) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
 
 		try {
-			DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-			if (dataLayer == null) {
+			
+			if (this.dl == null) {
 				throw new ServletException("DataLayer non inizializzato");
 			}
 			if ("GET".equalsIgnoreCase(request.getMethod())) {
-				renderEditMission(request, response, dataLayer, missioneId);
+				renderEditMission(request, response, this.dl, missioneId);
 				return;
 			}
 			if (!"POST".equalsIgnoreCase(request.getMethod())) {
@@ -70,15 +60,15 @@ public class EditMissionController extends SoccorsoBaseController {
 				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 				return;
 			}
-			editMission(request, response, dataLayer, missioneId);
+			editMission(request, response, this.dl, missioneId);
 		} catch (IOException | DataException ex) {
 			handleError(ex, request, response);
 		}
 	}
 
 	private void renderEditMission(HttpServletRequest request, HttpServletResponse response,
-			DataLayer dataLayer, int missioneId) throws IOException, DataException, ServletException {
-		Missione missione = ((MissioneDAO) dataLayer.getDAO(Missione.class)).getMissione(missioneId);;
+			DataLayer dl, int missioneId) throws IOException, DataException, ServletException {
+		Missione missione = ((MissioneDAO) this.dl.getDAO(Missione.class)).getMissione(missioneId);;
 		if (missione == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			return;
@@ -109,9 +99,9 @@ public class EditMissionController extends SoccorsoBaseController {
 	}
 
 	private void editMission(HttpServletRequest request, HttpServletResponse response,
-			DataLayer dataLayer, int missioneId) throws IOException, DataException {
-		Missione missione = ((MissioneDAO) dataLayer.getDAO(Missione.class)).getMissione(missioneId);;
-		Integer squadraId = parseId(request.getParameter("squadra"));
+			DataLayer dl, int missioneId) throws IOException, DataException {
+		Missione missione = ((MissioneDAO) this.dl.getDAO(Missione.class)).getMissione(missioneId);;
+		Integer squadraId = Integer.parseInt(request.getParameter("squadra"));
 		String obiettivo = SecurityHelpers.sanitizeTextInput(request.getParameter("obiettivo"));
 		if (missione == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -123,7 +113,7 @@ public class EditMissionController extends SoccorsoBaseController {
 			return;
 		}
 
-		Squadra squadra = ((SquadraDAO) dataLayer.getDAO(Squadra.class)).getSquadra(squadraId);
+		Squadra squadra = ((SquadraDAO) this.dl.getDAO(Squadra.class)).getSquadra(squadraId);
 		String dataInizio = request.getParameter("data_inizio");
 		String dataFine = request.getParameter("data_fine");
 		if (squadra == null || dataInizio == null || dataInizio.isBlank()) {
@@ -156,38 +146,38 @@ public class EditMissionController extends SoccorsoBaseController {
 			Integer adminId = getSessionUserId(request);
 			Utente admin = adminId == null
 					? null
-					: ((UtenteDAO) dataLayer.getDAO(Utente.class)).getUtente(adminId);
+					: ((UtenteDAO) this.dl.getDAO(Utente.class)).getUtente(adminId);
 			if (admin == null) {
 				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 				return;
 			}
-			Commento commento = ((CommentoDAO) dataLayer.getDAO(Commento.class)).createCommento();
+			Commento commento = ((CommentoDAO) this.dl.getDAO(Commento.class)).createCommento();
 			commento.setAdmin(admin);
 			commento.setTesto(testoCommento);
-			((CommentoDAO) dataLayer.getDAO(Commento.class)).storeCommento(commento, missioneId);
+			((CommentoDAO) this.dl.getDAO(Commento.class)).storeCommento(commento, missioneId);
 		} else if ("IN_CORSO".equalsIgnoreCase(stato)) {
 			String testoAggiornamento = SecurityHelpers.sanitizeTextInput(
 					request.getParameter("nuovo_aggiornamento"));
 			if (!testoAggiornamento.isBlank()) {
 				Integer adminId = getSessionUserId(request);
 				Utente admin = adminId == null ? null
-						: ((UtenteDAO) dataLayer.getDAO(Utente.class)).getUtente(adminId);
+						: ((UtenteDAO) this.dl.getDAO(Utente.class)).getUtente(adminId);
 				if (admin == null) {
 					response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 					return;
 				}
-				Aggiornamento aggiornamento = ((AggiornamentoDAO) dataLayer
+				Aggiornamento aggiornamento = ((AggiornamentoDAO) this.dl
 						.getDAO(Aggiornamento.class)).createAggiornamento();
 				aggiornamento.setAdmin(admin);
 				aggiornamento.setTimestamp(LocalDateTime.now());
 				aggiornamento.setTesto(testoAggiornamento);
-				((AggiornamentoDAO) dataLayer.getDAO(Aggiornamento.class))
+				((AggiornamentoDAO) this.dl.getDAO(Aggiornamento.class))
 						.storeAggiornamento(aggiornamento, missioneId);
 			}
 		} else {
 			missione.setSuccesso(null);
 		}
-		((MissioneDAO) dataLayer.getDAO(Missione.class)).storeMissione(missione);
+		((MissioneDAO) this.dl.getDAO(Missione.class)).storeMissione(missione);
 
 		response.setContentType("application/json;charset=UTF-8");
 		response.getWriter().write("{\"success\":true,\"message\":\"Missione modificata con successo\"}");
@@ -205,19 +195,6 @@ public class EditMissionController extends SoccorsoBaseController {
 		}
 	}
 
-	private Integer parseId(HttpServletRequest request) {
-		String path = request.getRequestURI().substring(request.getContextPath().length());
-		return parseId(path.substring(path.lastIndexOf('/') + 1));
-	}
-
-	private Integer parseId(String value) {
-		try {
-			return value == null ? null : Integer.valueOf(value);
-		} catch (NumberFormatException ex) {
-			return null;
-		}
-	}
-
 	private EsitoMissione parseEsito(String value) {
 		try {
 			return value == null || value.isBlank() ? null : EsitoMissione.valueOf(value.toUpperCase());
@@ -229,7 +206,7 @@ public class EditMissionController extends SoccorsoBaseController {
 	private Integer getSessionUserId(HttpServletRequest request) {
 		Object value = request.getSession(false) == null ? null
 				: request.getSession(false).getAttribute("userid");
-		return value instanceof Number ? ((Number) value).intValue() : parseId(String.valueOf(value));
+		return value instanceof Number ? ((Number) value).intValue() : Integer.parseInt(String.valueOf(value));
 	}
 
 }

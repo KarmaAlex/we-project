@@ -4,235 +4,258 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-
-import org.soccorsoweb.framework.security.SecurityHelpers;
-import org.soccorsoweb.test.MockDataProvider;
-
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-/**
- * AdminDashboardServlet: Gestisce la dashboard amministratore
- * Route: /admin-dashboard?section={requests|missions|operators|vehicles|materials}
- */
-public class AdminDashboardController extends HttpServlet {
+import org.soccorsoweb.business.controller.SoccorsoBaseController;
+import org.soccorsoweb.data.DataException;
+import org.soccorsoweb.data.DataLayer;
+import org.soccorsoweb.data.dao.MaterialeDAO;
+import org.soccorsoweb.data.dao.MezzoDAO;
+import org.soccorsoweb.data.dao.MissioneDAO;
+import org.soccorsoweb.data.dao.RichiestaDAO;
+import org.soccorsoweb.data.dao.UtenteDAO;
+import org.soccorsoweb.framework.security.SecurityHelpers;
+import org.soccorsoweb.model.Anagrafica;
+import org.soccorsoweb.model.Materiale;
+import org.soccorsoweb.model.Mezzo;
+import org.soccorsoweb.model.Missione;
+import org.soccorsoweb.model.Richiesta;
+import org.soccorsoweb.model.Utente;
+import org.soccorsoweb.model.enums.EsitoMissione;
+import org.soccorsoweb.model.enums.StatoRichiesta;
 
-    private Configuration cfg;
+/** Admin dashboard backed by the current session and database. */
+public class AdminDashboardController extends SoccorsoBaseController {
 
     @Override
-    public void init() throws ServletException {
-        super.init();
-        cfg = new Configuration(Configuration.VERSION_2_3_34);
-        cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-        cfg.setDefaultEncoding("UTF-8");
-    }
-
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String ctx = req.getContextPath();
-        String path = req.getRequestURI().substring(ctx.length());
-
-        if ("/admin-dashboard".equals(path)) {
-            if (!SecurityHelpers.isAdmin(req)) {
-                resp.sendRedirect(ctx + "/login");
-                return;
-            }
-
-            resp.setContentType("text/html;charset=UTF-8");
-            
-            String section = req.getParameter("section");
-            if (section == null || section.isEmpty()) {
-                section = "requests";
-            }
-
-            try {
-                // Preparare il modello comune
-                Map<String, Object> model = new HashMap<>();
-                model.put("ctx", ctx);
-
-                // Mock user
-                Map<String, Object> user = new HashMap<>();
-                user.put("id", 1);
-                user.put("nome", "Admin Test");
-                user.put("email", "admin@soccorsoweb.it");
-                user.put("ruolo", "ADMIN");
-                model.put("user", user);
-                user.put("authenticated", true);
-                model.put("currentUser", user);
-
-                model.put("section", section);
-                model.put("page", getIntParameter(req, "page", 1));
-
-                // Load data based on section
-                switch (section) {
-                    case "requests":
-                        loadRequestsSection(model, req);
-                        break;
-                    case "missions":
-                        loadMissionsSection(model, req);
-                        break;
-                    case "operators":
-                        loadOperatorsSection(model, req);
-                        break;
-                    case "vehicles":
-                        loadVehiclesSection(model, req);
-                        break;
-                    case "materials":
-                        loadMaterialsSection(model, req);
-                        break;
-                }
-
-                // Renderizzare il template specifico della sezione
-                String templateName = getTemplateNameForSection(section);
-                Template tpl = cfg.getTemplate(templateName);
-                tpl.process(model, resp.getWriter());
-
-            } catch (TemplateException ex) {
-                throw new ServletException("Error while processing Freemarker template", ex);
-            }
+    protected void processRequest(HttpServletRequest req, HttpServletResponse resp)
+            throws ServletException, IOException {
+        if (!SecurityHelpers.isAdmin(req)) {
+            resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
-        // Forward to default servlet for static files
-        jakarta.servlet.RequestDispatcher rd = getServletContext().getNamedDispatcher("default");
-        if (rd != null) {
-            rd.forward(req, resp);
+        String section = req.getParameter("section");
+        if (section == null || section.isEmpty()) {
+            section = "requests";
         }
-    }
 
-    private int getIntParameter(HttpServletRequest req, String paramName, int defaultValue) {
-        String param = req.getParameter(paramName);
-        if (param != null && !param.isEmpty()) {
-            try {
-                return Integer.parseInt(param);
-            } catch (NumberFormatException e) {
-                return defaultValue;
+        Map<String, Object> model = new HashMap<>();
+        model.put("ctx", req.getContextPath());
+        Map<String, Object> currentUser = buildCurrentUser(req.getSession(false));
+        model.put("user", currentUser);
+        model.put("currentUser", currentUser);
+        model.put("section", section);
+        model.put("page", getIntParameter(req, "page", 1));
+
+        try {
+            switch (section) {
+                case "requests" -> loadRequestsSection(model, req);
+                case "missions" -> loadMissionsSection(model, req);
+                case "operators" -> loadOperatorsSection(model, req);
+                case "vehicles" -> loadVehiclesSection(model, req);
+                case "materials" -> loadMaterialsSection(model, req);
+                default -> { }
             }
+
+            resp.setContentType("text/html;charset=UTF-8");
+            Template tpl = cfg.getTemplate("admin-dashboard.ftl");
+            tpl.process(model, resp.getWriter());
+        } catch (DataException | TemplateException ex) {
+            throw new ServletException("Error while loading admin dashboard", ex);
         }
-        return defaultValue;
     }
 
-    private List<Map<String, Object>> filterMockRichieste(HttpServletRequest req) {
-        List<Map<String, Object>> all = MockDataProvider.getMockRichieste();
-        String status = req.getParameter("status");
-        String segnalante = req.getParameter("segnalante");
+    private Map<String, Object> buildCurrentUser(HttpSession session) {
+        Map<String, Object> user = new HashMap<>();
+        user.put("authenticated", session != null && session.getAttribute("userid") != null);
+        if (session != null) {
+            user.put("userid", session.getAttribute("userid"));
+            user.put("username", session.getAttribute("username"));
+            user.put("nome", session.getAttribute("username"));
+            user.put("ruolo", session.getAttribute("ruolo"));
+        }
+        return user;
+    }
+
+    private int getIntParameter(HttpServletRequest req, String name, int defaultValue) {
+        try {
+            String value = req.getParameter(name);
+            return value == null || value.isBlank() ? defaultValue : Integer.parseInt(value);
+        } catch (NumberFormatException ex) {
+            return defaultValue;
+        }
+    }
+
+    private DataLayer dl(HttpServletRequest req) throws ServletException {
         
-        System.out.println("[FilterRichieste] Original count: " + all.size());
-        System.out.println("[FilterRichieste] Status filter: " + status);
-        System.out.println("[FilterRichieste] Segnalante filter: " + segnalante);
+        if (this.dl == null) {
+            throw new ServletException("DataLayer non inizializzato");
+        }
+        return this.dl;
+    }
 
-        List<Map<String, Object>> filtered = all.stream()
-            .filter(r -> status == null || status.isEmpty() || status.equals(r.get("stato")))
-            .filter(r -> segnalante == null || segnalante.isEmpty() || 
-                        ((String)r.get("email")).toLowerCase().contains(segnalante.toLowerCase()))
-            .toList();
+    private void loadRequestsSection(Map<String, Object> model, HttpServletRequest req)
+            throws DataException, ServletException {
+        RichiestaDAO dao = (RichiestaDAO) this.dl(req).getDAO(Richiesta.class);
+        List<Richiesta> richieste = dao.getRichiesteFiltrate(
+                parseDate(req.getParameter("data_from"), false),
+                parseDate(req.getParameter("data_to"), true),
+                parseRequestStatus(req.getParameter("status")),
+                blankToNull(req.getParameter("segnalante")));
+        model.put("richieste", richieste.stream().map(this::requestRow).toList());
+    }
+
+    private void loadMissionsSection(Map<String, Object> model, HttpServletRequest req)
+            throws DataException, ServletException {
+        MissioneDAO dao = (MissioneDAO) this.dl(req).getDAO(Missione.class);
+        List<Missione> missioni = dao.getMissioniFiltrate(
+                parseDate(req.getParameter("data_from"), false),
+                parseDate(req.getParameter("data_to"), true),
+                parseMissionStatus(req.getParameter("status")));
+        model.put("missioni", missioni.stream().map(this::missionRow).toList());
+    }
+
+    private void loadOperatorsSection(Map<String, Object> model, HttpServletRequest req)
+            throws DataException, ServletException {
         
-        System.out.println("[FilterRichieste] Filtered count: " + filtered.size());
-        return filtered;
+        UtenteDAO dao = (UtenteDAO) this.dl.getDAO(Utente.class);
+        MissioneDAO missioneDAO = (MissioneDAO) this.dl.getDAO(Missione.class);
+        String status = blankToNull(req.getParameter("stato"));
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (Utente operator : dao.getUtenti()) {
+            if (operator.isAdmin()) {
+                continue;
+            }
+            boolean busy = !missioneDAO.getMissioniByUtente(operator).stream().allMatch(Missione::isCompletata);
+            String actualStatus = busy ? "OCCUPATO" : "DISPONIBILE";
+            if (status != null && !status.equals(actualStatus)) {
+                continue;
+            }
+            Map<String, Object> row = new HashMap<>();
+            Anagrafica anagrafica = operator.getAnagrafica();
+            row.put("id", operator.getKey());
+            row.put("nome", anagrafica == null ? operator.getNomeUtente()
+                    : anagrafica.getNome() + " " + anagrafica.getCognome());
+            row.put("email", operator.getEmail());
+            row.put("telefono", "");
+            row.put("stato", actualStatus);
+            row.put("missione_corrente", busy ? "In missione" : "-");
+            rows.add(row);
+        }
+        model.put("operatori", rows);
     }
 
-    private List<Map<String, Object>> filterMockMissioni(HttpServletRequest req) {
-        List<Map<String, Object>> all = MockDataProvider.getMockMissioni();
-        String status = req.getParameter("status");
-
-        return all.stream()
-            .filter(m -> status == null || status.isEmpty() || status.equals(m.get("stato")))
-            .toList();
+    private void loadVehiclesSection(Map<String, Object> model, HttpServletRequest req)
+            throws DataException, ServletException {
+        MezzoDAO dao = (MezzoDAO) this.dl(req).getDAO(Mezzo.class);
+        String status = blankToNull(req.getParameter("stato"));
+        model.put("mezzi", dao.getMezziConStato().stream()
+                .map(this::vehicleRow)
+                .filter(row -> status == null || status.equals(row.get("stato")))
+                .toList());
     }
 
-    /**
-     * Carica la sezione delle richieste
-     */
-    private void loadRequestsSection(Map<String, Object> model, HttpServletRequest req) {
-        model.put("richieste", filterMockRichieste(req));
+    private void loadMaterialsSection(Map<String, Object> model, HttpServletRequest req)
+            throws DataException, ServletException {
+        MaterialeDAO dao = (MaterialeDAO) this.dl(req).getDAO(Materiale.class);
+        String status = blankToNull(req.getParameter("status"));
+        Set<Integer> availableIds = new HashSet<>(dao.getMaterialiDisponibili().stream()
+            .map(Materiale::getKey)
+            .toList());
+        model.put("materiali", dao.getMateriali().stream()
+            .map(material -> materialRow(material, availableIds.contains(material.getKey())))
+                .filter(row -> status == null || status.equals(row.get("stato")))
+                .toList());
     }
 
-    /**
-     * Carica la sezione delle missioni
-     */
-    private void loadMissionsSection(Map<String, Object> model, HttpServletRequest req) {
-        model.put("missioni", filterMockMissioni(req));
+    private Map<String, Object> requestRow(Richiesta request) {
+        Map<String, Object> row = new HashMap<>();
+        row.put("id", request.getKey());
+        row.put("segnalante", request.getNome());
+        row.put("email", request.getEmail());
+        row.put("indirizzo", request.getString());
+        row.put("stato", request.getStato() == null ? "" : request.getStato().name());
+        row.put("data_creazione", request.getData());
+        return row;
     }
 
-    /**
-     * Carica la sezione degli operatori
-     */
-    private void loadOperatorsSection(Map<String, Object> model, HttpServletRequest req) {
-        model.put("operatori", filterMockOperatori(req));
+    private Map<String, Object> missionRow(Missione mission) {
+        Map<String, Object> row = new HashMap<>();
+        row.put("id", mission.getKey());
+        row.put("richiesta_id", mission.getRichiesta() == null ? "" : mission.getRichiesta().getKey());
+        row.put("squadra", mission.getSquadra() == null ? "" : mission.getSquadra().getKey());
+        row.put("obiettivo", mission.getObiettivo());
+        row.put("stato", mission.isCompletata() && mission.getEsito() != null
+                ? mission.getEsito().name() : "IN_CORSO");
+        row.put("data_inizio", mission.getInizio());
+        return row;
     }
 
-    /**
-     * Carica la sezione dei mezzi
-     */
-    private void loadVehiclesSection(Map<String, Object> model, HttpServletRequest req) {
-        model.put("mezzi", filterMockMezzi(req));
+    private Map<String, Object> vehicleRow(Mezzo vehicle) {
+        Map<String, Object> row = new HashMap<>();
+        row.put("id", vehicle.getKey());
+        row.put("nome", vehicle.getNome());
+        row.put("descrizione", vehicle.getDesc());
+        row.put("targa", vehicle.getTarga());
+        row.put("stato", vehicle.isAssegnato() ? "OCCUPATO" : "DISPONIBILE");
+        row.put("missione_corrente", vehicle.getMissioneKey() == null ? "-" : vehicle.getMissioneKey());
+        return row;
     }
 
-    /**
-     * Carica la sezione dei materiali
-     */
-    private void loadMaterialsSection(Map<String, Object> model, HttpServletRequest req) {
-        model.put("materiali", filterMockMateriali(req));
+    private Map<String, Object> materialRow(Materiale material, boolean available) {
+        Map<String, Object> row = new HashMap<>();
+        row.put("id", material.getKey());
+        row.put("stato", available ? "DISPONIBILE" : "OCCUPATO");
+        return row;
     }
 
-    /**
-     * Filtra gli operatori in base ai parametri della richiesta
-     */
-    private List<Map<String, Object>> filterMockOperatori(HttpServletRequest req) {
-        List<Map<String, Object>> all = MockDataProvider.getMockOperatori();
-        String ruolo = req.getParameter("ruolo");
-        String stato = req.getParameter("stato");
-
-        return all.stream()
-            .filter(o -> ruolo == null || ruolo.isEmpty() || ruolo.equals(o.get("ruolo")))
-            .filter(o -> stato == null || stato.isEmpty() || stato.equals(o.get("stato")))
-            .toList();
+    private StatoRichiesta parseRequestStatus(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return StatoRichiesta.valueOf(value.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 
-    /**
-     * Filtra i mezzi in base ai parametri della richiesta
-     */
-    private List<Map<String, Object>> filterMockMezzi(HttpServletRequest req) {
-        List<Map<String, Object>> all = MockDataProvider.getMockMezzi();
-        String tipo = req.getParameter("tipo");
-        String stato = req.getParameter("stato");
-
-        return all.stream()
-            .filter(m -> tipo == null || tipo.isEmpty() || tipo.equals(m.get("tipo")))
-            .filter(m -> stato == null || stato.isEmpty() || stato.equals(m.get("stato")))
-            .toList();
+    private EsitoMissione parseMissionStatus(String value) {
+        if (value == null || value.isBlank() || "IN_CORSO".equals(value)) {
+            return null;
+        }
+        try {
+            return EsitoMissione.valueOf(value.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 
-    /**
-     * Filtra i materiali in base ai parametri della richiesta
-     */
-    private List<Map<String, Object>> filterMockMateriali(HttpServletRequest req) {
-        List<Map<String, Object>> all = MockDataProvider.getMockMateriali();
-        String tipo = req.getParameter("tipo");
-        String categoria = req.getParameter("categoria");
-
-        return all.stream()
-            .filter(m -> tipo == null || tipo.isEmpty() || tipo.equals(m.get("tipo")))
-            .filter(m -> categoria == null || categoria.isEmpty() || categoria.equals(m.get("categoria")))
-            .toList();
+    private LocalDateTime parseDate(String value, boolean endOfDay) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            LocalDate date = LocalDate.parse(value);
+            return endOfDay ? date.plusDays(1).atStartOfDay().minusNanos(1) : date.atStartOfDay();
+        } catch (RuntimeException ex) {
+            return null;
+        }
     }
 
-    /**
-     * Restituisce il nome del template da renderizzare in base alla sezione
-     */
-    private String getTemplateNameForSection(String section) {
-        return switch (section) {
-            case "requests" -> "admin/requests-table.ftl";
-            case "missions" -> "admin/missions-table.ftl";
-            case "operators" -> "admin/operators-table.ftl";
-            case "vehicles" -> "admin/vehicles-table.ftl";
-            case "materials" -> "admin/materials-table.ftl";
-            default -> "admin-dashboard.ftl";
-        };
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 }

@@ -34,7 +34,7 @@
     <!-- Admin Dashboard -->
     <servlet>
         <servlet-name>AdminDashboardController</servlet-name>
-        <servlet-class>org.soccorsoweb.business.controller.AdminDashboardController</servlet-class>
+        <servlet-class>org.soccorsoweb.business.controller.admin.AdminDashboardController</servlet-class>
     </servlet>
     
     <servlet-mapping>
@@ -55,17 +55,7 @@
     </servlet-mapping>
     
     
-    <!-- Detail API Servlet (for modal content) -->
-    <servlet>
-        <servlet-name>DetailApi</servlet-name>
-        <servlet-class>org.soccorsoweb.test.DetailApiServlet</servlet-class>
-    </servlet>
-    
-    <servlet-mapping>
-        <servlet-name>DetailApi</servlet-name>
-        <url-pattern>/api/detail/*</url-pattern>
-    </servlet-mapping>
-
+    <!-- Detail API Servlets (for modal content) -->
     <servlet>
         <servlet-name>MaterialDetailsController</servlet-name>
         <servlet-class>org.soccorsoweb.business.controller.admin.details.MaterialDetailsController</servlet-class>
@@ -89,7 +79,7 @@
 
     <servlet>
         <servlet-name>RequestDetailsController</servlet-name>
-        <servlet-class>org.soccorsoweb.business.controller.admin.details.OperatorDetailsController</servlet-class>
+        <servlet-class>org.soccorsoweb.business.controller.admin.details.RequestDetailsController</servlet-class>
     </servlet>
 
     <servlet-mapping>

@@ -1,12 +1,12 @@
 package org.soccorsoweb.business.controller.admin.edit;
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.soccorsoweb.business.controller.SoccorsoBaseController;
+
+import org.soccorsoweb.business.controller.AbstractIdRequiredController;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.RichiestaDAO;
@@ -17,18 +17,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class EditRequestController extends SoccorsoBaseController {
-
-	private Configuration cfg;
-
-	@Override
-	public void init() throws ServletException {
-		super.init();
-		cfg = new Configuration(Configuration.VERSION_2_3_34);
-		cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-		cfg.setDefaultEncoding("UTF-8");
-	}
-
+public class EditRequestController extends AbstractIdRequiredController {
+	
 	@Override
 	protected void processRequest(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException {
@@ -37,19 +27,19 @@ public class EditRequestController extends SoccorsoBaseController {
 			return;
 		}
 
-		Integer richiestaId = parseId(request);
+		Integer richiestaId = getRequestId(request);
 		if (richiestaId == null) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
 
 		try {
-			DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-			if (dataLayer == null) {
+			
+			if (this.dl == null) {
 				throw new ServletException("DataLayer non inizializzato");
 			}
 			if ("GET".equalsIgnoreCase(request.getMethod())) {
-				renderEditRequest(request, response, dataLayer, richiestaId);
+				renderEditRequest(request, response, this.dl, richiestaId);
 				return;
 			}
 			if (!"POST".equalsIgnoreCase(request.getMethod())) {
@@ -60,15 +50,15 @@ public class EditRequestController extends SoccorsoBaseController {
 				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 				return;
 			}
-			editRequest(request, response, dataLayer, richiestaId);
+			editRequest(request, response, this.dl, richiestaId);
 		} catch (IOException | DataException ex) {
 			handleError(ex, request, response);
 		}
 	}
 
 	private void renderEditRequest(HttpServletRequest request, HttpServletResponse response,
-			DataLayer dataLayer, int richiestaId) throws IOException, DataException, ServletException {
-		Richiesta richiesta = ((RichiestaDAO) dataLayer.getDAO(Richiesta.class)).getRichiesta(richiestaId);
+			DataLayer dl, int richiestaId) throws IOException, DataException, ServletException {
+		Richiesta richiesta = ((RichiestaDAO) this.dl.getDAO(Richiesta.class)).getRichiesta(richiestaId);
 		if (richiesta == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			return;
@@ -94,8 +84,8 @@ public class EditRequestController extends SoccorsoBaseController {
 	}
 
 	private void editRequest(HttpServletRequest request, HttpServletResponse response,
-			DataLayer dataLayer, int richiestaId) throws IOException, DataException {
-		Richiesta richiesta = ((RichiestaDAO) dataLayer.getDAO(Richiesta.class)).getRichiesta(richiestaId);
+			DataLayer dl, int richiestaId) throws IOException, DataException {
+		Richiesta richiesta = ((RichiestaDAO) this.dl.getDAO(Richiesta.class)).getRichiesta(richiestaId);
 		if (richiesta == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			response.getWriter().write("{\"error\":\"Richiesta non trovata\"}");
@@ -111,7 +101,7 @@ public class EditRequestController extends SoccorsoBaseController {
 
 		richiesta.setStato(stato);
 		richiesta.setVerificato(request.getParameter("verificato") != null);
-		((RichiestaDAO) dataLayer.getDAO(Richiesta.class)).storeRichiesta(richiesta);
+		((RichiestaDAO) this.dl.getDAO(Richiesta.class)).storeRichiesta(richiesta);
 
 		response.setContentType("application/json;charset=UTF-8");
 		response.getWriter().write("{\"success\":true,\"message\":\"Richiesta modificata con successo\"}");
@@ -122,15 +112,6 @@ public class EditRequestController extends SoccorsoBaseController {
 		try {
 			return value == null ? null : StatoRichiesta.valueOf(value.toUpperCase());
 		} catch (IllegalArgumentException ex) {
-			return null;
-		}
-	}
-
-	private Integer parseId(HttpServletRequest request) {
-		String path = request.getRequestURI().substring(request.getContextPath().length());
-		try {
-			return Integer.valueOf(path.substring(path.lastIndexOf('/') + 1));
-		} catch (NumberFormatException ex) {
 			return null;
 		}
 	}

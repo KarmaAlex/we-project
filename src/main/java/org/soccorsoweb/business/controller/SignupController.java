@@ -48,8 +48,8 @@ public class SignupController extends SoccorsoBaseController {
         }
 
         try {
-            DataLayer dataLayer = (DataLayer) req.getAttribute("datalayer");
-            if (dataLayer == null) {
+            
+            if (this.dl == null) {
                 throw new ServletException("DataLayer non inizializzato");
             }
 
@@ -109,13 +109,13 @@ public class SignupController extends SoccorsoBaseController {
             );
             req.getSession(true).setAttribute("signup.signature", signature);
 
-            UtenteDAO utenteDAO = (UtenteDAO) dataLayer.getDAO(Utente.class);
+            UtenteDAO utenteDAO = (UtenteDAO) this.dl.getDAO(Utente.class);
             Utente utente = utenteDAO.getUtenteByUsername(username);
             if (utente == null) {
                 throw new ServletException("Utente non trovato per il completamento del profilo.");
             }
 
-            AnagraficaDAO anagraficaDAO = (AnagraficaDAO) dataLayer.getDAO(Anagrafica.class);
+            AnagraficaDAO anagraficaDAO = (AnagraficaDAO) this.dl.getDAO(Anagrafica.class);
             Anagrafica anagrafica = anagraficaDAO.getAnagraficaByUtente(utente);
             if (anagrafica == null) {
                 anagrafica = anagraficaDAO.createAnagrafica();
@@ -128,7 +128,7 @@ public class SignupController extends SoccorsoBaseController {
             anagrafica.setDataNasc(birthDate);
             anagraficaDAO.storeAnagrafica(anagrafica, utente);
 
-            CredenzialiDAO credenzialiDAO = (CredenzialiDAO) dataLayer.getDAO(Credenziali.class);
+            CredenzialiDAO credenzialiDAO = (CredenzialiDAO) this.dl.getDAO(Credenziali.class);
             Credenziali credenziali = credenzialiDAO.getCredenzialiByUtente(utente);
             if (credenziali == null) {
                 credenziali = credenzialiDAO.createCredenziali();

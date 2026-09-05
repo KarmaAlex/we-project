@@ -1,13 +1,14 @@
 package org.soccorsoweb.business.controller.admin.details;
 
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.soccorsoweb.business.controller.SoccorsoBaseController;
+import java.util.logging.Logger;
+
+import org.soccorsoweb.business.controller.AbstractIdRequiredController;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.DescRichiestaDAO;
@@ -19,53 +20,45 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class RequestDetailsController extends SoccorsoBaseController {
-private Configuration cfg;
+public class RequestDetailsController extends AbstractIdRequiredController {
 
 	@Override
-	public void init() throws ServletException {
-		super.init();
-		cfg = new Configuration(Configuration.VERSION_2_3_34);
-		cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-		cfg.setDefaultEncoding("UTF-8");
-	}
-
-	@Override
-	protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException {
+		Logger.getLogger(RequestDetailsController.class.getName()).info("Requesting info for request id:");
 		if (!SecurityHelpers.isAdmin(request)) {
 			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
 
-		Integer richiestaId = parseId(request);
+		Integer richiestaId = getRequestId(request);
 		if (richiestaId == null) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
-
+		Logger.getLogger(RequestDetailsController.class.getName()).info("Requesting info for request id: "+richiestaId);
 		try {
-			DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-			if (dataLayer == null) {
+			
+			if (this.dl == null) {
 				throw new ServletException("DataLayer non inizializzato");
 			}
-
-			Richiesta richiesta = ((RichiestaDAO) dataLayer.getDAO(Richiesta.class)).getRichiesta(richiestaId);
+			Logger.getLogger(RequestDetailsController.class.getName()).info("Requesting info for request id: "+richiestaId);
+			Richiesta richiesta = ((RichiestaDAO) this.dl.getDAO(Richiesta.class)).getRichiesta(richiestaId);
 			if (richiesta == null) {
 				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 				return;
 			}
 
-			renderRichiestaDetails(request, response, dataLayer, richiesta);
+			renderRichiestaDetails(request, response, this.dl, richiesta);
 		} catch (DataException | IOException ex) {
 			handleError(ex, request, response);
 		}
 	}
 
 	private void renderRichiestaDetails(HttpServletRequest request, HttpServletResponse response,
-			DataLayer dataLayer, Richiesta richiesta) throws IOException, DataException, ServletException {
+			DataLayer dl, Richiesta richiesta) throws IOException, DataException, ServletException {
 
-		DescRichiesta descRichiesta = ((DescRichiestaDAO) dataLayer.getDAO(DescRichiesta.class))
+		DescRichiesta descRichiesta = ((DescRichiestaDAO) this.dl.getDAO(DescRichiesta.class))
 				.getDescRichiestaByRichiesta(richiesta);
 
 		Map<String, Object> dettaglio = new HashMap<>();
@@ -92,15 +85,6 @@ private Configuration cfg;
 			template.process(model, response.getWriter());
 		} catch (TemplateException ex) {
 			throw new ServletException("Errore durante il rendering del dettaglio richiesta", ex);
-		}
-	}
-
-	private Integer parseId(HttpServletRequest request) {
-		String path = request.getRequestURI().substring(request.getContextPath().length());
-		try {
-			return Integer.valueOf(path.substring(path.lastIndexOf('/') + 1));
-		} catch (NumberFormatException ex) {
-			return null;
 		}
 	}
 }

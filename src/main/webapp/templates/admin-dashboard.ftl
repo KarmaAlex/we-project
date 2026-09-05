@@ -1,8 +1,6 @@
 <#-- Admin Dashboard Entry Point -->
 <#include "dashboard.ftl">
-<#include "table.ftl">
 <#include "pagination.ftl">
-<#include "modal.ftl">
 
 <#assign section = section?default("requests")>
 <#assign page = page?default(1)>

@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
+
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,9 +26,16 @@ import org.soccorsoweb.model.Anagrafica;
  *
  * @author Aurora
  */
-public class SecurityHelpers {
-     public static HttpSession checkSession(HttpServletRequest r) {
+public class  SecurityHelpers {
+    private static final Logger LOG = Logger.getLogger(SecurityHelpers.class.getName());
+
+    public static HttpSession checkSession(HttpServletRequest r) {
         return checkSession(r, false);
+    }
+
+    public static HttpSession checkOrCreateSession(HttpServletRequest r){
+        HttpSession session = checkSession(r,false);
+        return session != null ? session : createAnonymousSession(r);
     }
 
     public static HttpSession checkSession(HttpServletRequest r, boolean loginAgeCheck) {
@@ -38,7 +47,6 @@ public class SecurityHelpers {
         if (s == null) {
             return null;
         }
-
         //data/ora correnti
         //current timestamp
         LocalDateTime now_ts = LocalDateTime.now();
@@ -66,8 +74,11 @@ public class SecurityHelpers {
         //secondi trascorsi dall'ultimo refresh della sessione
         //seconds from the last session refresh
         long seconds_from_refresh = Duration.between(refresh_ts, now_ts).abs().getSeconds();
+        Boolean authBool = (Boolean)s.getAttribute("authenticated");
+        boolean auth = authBool != null ? authBool.booleanValue() : false;
+        Object uid = s.getAttribute("userid");
         //
-        if (s.getAttribute("userid") == null || start_ts == null) {
+        if ((uid == null && auth == true) || start_ts == null) {
             //check sulla validità della sessione
             //second, check is the session contains valid data
             //nota: oltre a controllare se la sessione contiene un userid, 
@@ -117,6 +128,14 @@ public class SecurityHelpers {
         //
         s.setAttribute("ip", request.getRemoteHost());
         //
+        s.setAttribute("session-start-ts", LocalDateTime.now());
+        return s;
+    }
+
+    public static HttpSession createAnonymousSession(HttpServletRequest request){
+        disposeSession(request);
+        HttpSession s = request.getSession();
+        s.setAttribute("ip", request.getRemoteHost());
         s.setAttribute("session-start-ts", LocalDateTime.now());
         return s;
     }
@@ -388,7 +407,7 @@ public class SecurityHelpers {
 private static final String CSRF_SESSION_ATTR = "csrfToken";
 
 public static String createCsrfToken(HttpServletRequest request) {
-    HttpSession session = request.getSession(true);
+    HttpSession session = request.getSession(false);
     byte[] bytes = new byte[32];
     new SecureRandom().nextBytes(bytes);
     String token = toHexString(bytes);

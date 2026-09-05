@@ -19,16 +19,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public class AddVehicleController extends SoccorsoBaseController {
-
-    private Configuration cfg;
-
-    @Override
-    public void init() throws ServletException {
-        super.init();
-        cfg = new Configuration(Configuration.VERSION_2_3_34);
-        cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-        cfg.setDefaultEncoding("UTF-8");
-    }
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException {
@@ -55,8 +45,8 @@ public class AddVehicleController extends SoccorsoBaseController {
 
 
         try {
-            DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-            addMezzo(request, response, dataLayer);
+            
+            addMezzo(request, response, this.dl);
         } catch (IOException | DataException ex) {
             handleError(ex, request, response);
         }
@@ -66,7 +56,7 @@ public class AddVehicleController extends SoccorsoBaseController {
        /**
      * Aggiunge un nuovo mezzo
      */
-    private void addMezzo(HttpServletRequest request, HttpServletResponse response, DataLayer dataLayer)
+    private void addMezzo(HttpServletRequest request, HttpServletResponse response, DataLayer dl)
             throws IOException, DataException {
 
         response.setContentType("application/json;charset=UTF-8");
@@ -93,7 +83,7 @@ public class AddVehicleController extends SoccorsoBaseController {
             return;
         }
 
-        MezzoDAO mezzoDAO = (MezzoDAO) dataLayer.getDAO(Mezzo.class);
+        MezzoDAO mezzoDAO = (MezzoDAO) this.dl.getDAO(Mezzo.class);
         Mezzo mezzo = mezzoDAO.createMezzo();
 
         mezzo.setNome(nome);

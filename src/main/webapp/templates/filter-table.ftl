@@ -1,3 +1,5 @@
+<#include "table.ftl">
+<#include "modal.ftl">
 <#macro filtertable
     section
     items

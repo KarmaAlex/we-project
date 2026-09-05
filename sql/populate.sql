@@ -1,5 +1,6 @@
 use soccorso;
 -- svuotamento tabelle relazioni
+delete from assegna_credenziali;
 delete from assegna_squadra;
 delete from assegna_mezzo;
 delete from assegna_materiale;
@@ -18,6 +19,7 @@ delete from Aggiornamento;
 delete from Missione;
 delete from Commento;
 delete from Squadra;
+delete from Credenziali;
 
 -- proceedure
 DELIMITER $$
@@ -141,6 +143,79 @@ insert into Utente(nome_utente)
 values ('John');
 insert into Anagrafica(ID_UTENTE, nome, cognome, cf, luogo_nasc, data_nasc)
 values(LAST_INSERT_ID(), 'John', 'Smith', 'dnusv67391brdvi', 'Denver', '95/08/05');
+
+-- credenziali di test: password generate da CredentialsTestDataGenerator
+-- Giorgio1 / iy+Umotse5aPxaVH
+insert into Credenziali(email, passwordhash)
+values('Giorgio1@soccorsoweb.local', CONCAT('7cdc42a91744fe66001513ef74dddbf351d5a4467aac56a48df2b6',
+'2555ff6d0274bba47a338b84ea3ea4b6d7fcfd31fd'));
+insert into assegna_credenziali
+select u.ID, c.ID from Utente u join Credenziali c on c.email = 'Giorgio1@soccorsoweb.local'
+where u.nome_utente = 'Giorgio1';
+-- Armando / C5YTN0YEd39fN+3w
+insert into Credenziali(email, passwordhash)
+values('Armando@soccorsoweb.local', CONCAT('fad570a9b56da58f0209550ad99da09335a70101714ebf35fb3fe34',
+'d7f6c61ab1b0080c1643a9f86948cde484d6e8da6'));
+insert into assegna_credenziali
+select u.ID, c.ID from Utente u join Credenziali c on c.email = 'Armando@soccorsoweb.local'
+where u.nome_utente = 'Armando';
+-- Anna / sB1Z5ATN/AvChMr0
+insert into Credenziali(email, passwordhash)
+values('Anna@soccorsoweb.local', CONCAT('828fc48724820b12fdec785d08c315b3a25f602a899606002df0286634',
+'986262f7b7443f3ab5af56c5a327c3fda265a6'));
+insert into assegna_credenziali
+select u.ID, c.ID from Utente u join Credenziali c on c.email = 'Anna@soccorsoweb.local'
+where u.nome_utente = 'Anna';
+-- Gioia / HU4pcEeO4yppFq4w
+insert into Credenziali(email, passwordhash)
+values('Gioia@soccorsoweb.local', CONCAT('baee6528d53a550d88ef3da01f20b55ae32c6dcb72f79dc767e62a5e3',
+'1e4a829931ad4cb31c27ae08a725051fe2204a3'));
+insert into assegna_credenziali
+select u.ID, c.ID from Utente u join Credenziali c on c.email = 'Gioia@soccorsoweb.local'
+where u.nome_utente = 'Gioia';
+-- Nino / ZXXB+gMy6DLZLwlM
+insert into Credenziali(email, passwordhash)
+values('Nino@soccorsoweb.local', CONCAT('9da5c5221431b5b9fd14ffcf3a82c056cbae5e0b833697950801d9a803',
+'b8372eb437864b4728ae2566da0710de942d20'));
+insert into assegna_credenziali
+select u.ID, c.ID from Utente u join Credenziali c on c.email = 'Nino@soccorsoweb.local'
+where u.nome_utente = 'Nino';
+-- Alba / qDEyxHzgSQEEEGL7
+insert into Credenziali(email, passwordhash)
+values('Alba@soccorsoweb.local', CONCAT('de64298dfd41b17560197e84326283fd3ce95dfd16ca645447857e2935',
+'cffed82ee67f4ad866b40405011c9385c9a495'));
+insert into assegna_credenziali
+select u.ID, c.ID from Utente u join Credenziali c on c.email = 'Alba@soccorsoweb.local'
+where u.nome_utente = 'Alba';
+-- Stefano2 / xHaJuiQWmOnZBJnt
+insert into Credenziali(email, passwordhash)
+values('Stefano2@soccorsoweb.local', CONCAT('ec8f36ee783b24d7b060b1ccfd2ce052b27360d0e51518748e49dd',
+'e4eb46515cb2eec229829434db052604ec98b732a7'));
+insert into assegna_credenziali
+select u.ID, c.ID from Utente u join Credenziali c on c.email = 'Stefano2@soccorsoweb.local'
+where u.nome_utente = 'Stefano2';
+-- Mery / eYiRlfuGrKgJ6Fou
+insert into Credenziali(email, passwordhash)
+values('Mery@soccorsoweb.local', CONCAT('bef32377c137a87621ac06f373484ce93c9189d0267b042e86d49ddab5',
+'21f3c7f6ee90d52dc2e089532b2cc3d85a082f'));
+insert into assegna_credenziali
+select u.ID, c.ID from Utente u join Credenziali c on c.email = 'Mery@soccorsoweb.local'
+where u.nome_utente = 'Mery';
+-- Lauretta / +OlANBAKz2hfL4lD
+insert into Credenziali(email, passwordhash)
+values('Lauretta@soccorsoweb.local', CONCAT('c09d580403beaceeb20e45a89f53a1a8c583579e765b90265fe32f',
+'73216457042e85aaf7745b0fc56406f62710d351ba'));
+insert into assegna_credenziali
+select u.ID, c.ID from Utente u join Credenziali c on c.email = 'Lauretta@soccorsoweb.local'
+where u.nome_utente = 'Lauretta';
+-- John / BfsqwH5NTfC/VefR
+insert into Credenziali(email, passwordhash)
+values('John@soccorsoweb.local', CONCAT('c1af7439a84c7191b50b0f5b384038f6442ade77ce4d7949aa361d34f6',
+'e453130a3d5cc024d2c7d7d1f4b0189fc7a632'));
+insert into assegna_credenziali
+select u.ID, c.ID from Utente u join Credenziali c on c.email = 'John@soccorsoweb.local'
+where u.nome_utente = 'John';
+
 -- patenti
 insert into Patente(tipo, numero)
 values('B', 'ABCD123456');

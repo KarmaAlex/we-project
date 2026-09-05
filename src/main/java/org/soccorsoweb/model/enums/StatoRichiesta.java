@@ -5,5 +5,7 @@ public enum StatoRichiesta {
     IN_CORSO,
     COMPLETATA,
     RIFIUTATA,
-    ANNULLATA
+    ANNULLATA,
+    CHIUSA,
+    ATTIVA
 }

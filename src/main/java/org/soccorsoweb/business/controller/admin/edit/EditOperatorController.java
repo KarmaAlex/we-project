@@ -1,12 +1,12 @@
 package org.soccorsoweb.business.controller.admin.edit;
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.soccorsoweb.business.controller.SoccorsoBaseController;
+
+import org.soccorsoweb.business.controller.AbstractIdRequiredController;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.AnagraficaDAO;
@@ -20,17 +20,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class EditOperatorController extends SoccorsoBaseController {
-
-	private Configuration cfg;
-
-	@Override
-	public void init() throws ServletException {
-		super.init();
-		cfg = new Configuration(Configuration.VERSION_2_3_34);
-		cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-		cfg.setDefaultEncoding("UTF-8");
-	}
+public class EditOperatorController extends AbstractIdRequiredController {
 
 	@Override
 	protected void processRequest(HttpServletRequest request, HttpServletResponse response)
@@ -40,20 +30,20 @@ public class EditOperatorController extends SoccorsoBaseController {
 			return;
 		}
 
-		Integer operatorId = parseId(request);
+		Integer operatorId = getRequestId(request);
 		if (operatorId == null) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
 
 		try {
-			DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-			if (dataLayer == null) {
+			
+			if (this.dl == null) {
 				throw new ServletException("DataLayer non inizializzato");
 			}
 
 			if ("GET".equalsIgnoreCase(request.getMethod())) {
-				renderEditOperator(request, response, dataLayer, operatorId);
+				renderEditOperator(request, response, this.dl, operatorId);
 				return;
 			}
 			if (!"POST".equalsIgnoreCase(request.getMethod())) {
@@ -65,22 +55,22 @@ public class EditOperatorController extends SoccorsoBaseController {
 				return;
 			}
 
-			editOperator(request, response, dataLayer, operatorId);
+			editOperator(request, response, this.dl, operatorId);
 		} catch (IOException | DataException ex) {
 			handleError(ex, request, response);
 		}
 	}
 
 	private void renderEditOperator(HttpServletRequest request, HttpServletResponse response,
-			DataLayer dataLayer, int operatorId) throws IOException, DataException, ServletException {
-		Utente utente = ((UtenteDAO) dataLayer.getDAO(Utente.class)).getUtente(operatorId);
+			DataLayer dl, int operatorId) throws IOException, DataException, ServletException {
+		Utente utente = ((UtenteDAO) this.dl.getDAO(Utente.class)).getUtente(operatorId);
 		if (utente == null || utente.isAdmin()) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
 
-		Anagrafica anagrafica = ((AnagraficaDAO) dataLayer.getDAO(Anagrafica.class)).getAnagraficaByUtente(utente);
-		Credenziali credenziali = ((CredenzialiDAO) dataLayer.getDAO(Credenziali.class)).getCredenzialiByUtente(utente);
+		Anagrafica anagrafica = ((AnagraficaDAO) this.dl.getDAO(Anagrafica.class)).getAnagraficaByUtente(utente);
+		Credenziali credenziali = ((CredenzialiDAO) this.dl.getDAO(Credenziali.class)).getCredenzialiByUtente(utente);
 		Map<String, Object> dettaglio = new HashMap<>();
 		dettaglio.put("id", utente.getKey());
 		dettaglio.put("nome", anagrafica == null ? "" : anagrafica.getNome());
@@ -107,7 +97,7 @@ public class EditOperatorController extends SoccorsoBaseController {
 	}
 
 	private void editOperator(HttpServletRequest request, HttpServletResponse response,
-			DataLayer dataLayer, int operatorId) throws IOException, DataException {
+			DataLayer dl, int operatorId) throws IOException, DataException {
 		String nome = SecurityHelpers.sanitizeTextInput(request.getParameter("nome"));
 		String cognome = SecurityHelpers.sanitizeTextInput(request.getParameter("cognome"));
 		String email = SecurityHelpers.sanitizeTextInput(request.getParameter("email"));
@@ -117,14 +107,14 @@ public class EditOperatorController extends SoccorsoBaseController {
 			return;
 		}
 
-		Utente utente = ((UtenteDAO) dataLayer.getDAO(Utente.class)).getUtente(operatorId);
+		Utente utente = ((UtenteDAO) this.dl.getDAO(Utente.class)).getUtente(operatorId);
 		if (utente == null || utente.isAdmin()) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			response.getWriter().write("{\"error\":\"Operatore non trovato\"}");
 			return;
 		}
 
-		AnagraficaDAO anagraficaDAO = (AnagraficaDAO) dataLayer.getDAO(Anagrafica.class);
+		AnagraficaDAO anagraficaDAO = (AnagraficaDAO) this.dl.getDAO(Anagrafica.class);
 		Anagrafica anagrafica = anagraficaDAO.getAnagraficaByUtente(utente);
 		if (anagrafica == null) {
 			response.setStatus(HttpServletResponse.SC_CONFLICT);
@@ -135,7 +125,7 @@ public class EditOperatorController extends SoccorsoBaseController {
 		anagrafica.setCognome(cognome);
 		anagraficaDAO.storeAnagrafica(anagrafica, utente);
 
-		CredenzialiDAO credenzialiDAO = (CredenzialiDAO) dataLayer.getDAO(Credenziali.class);
+		CredenzialiDAO credenzialiDAO = (CredenzialiDAO) this.dl.getDAO(Credenziali.class);
 		Credenziali credenziali = credenzialiDAO.getCredenzialiByUtente(utente);
 		if (credenziali == null) {
 			response.setStatus(HttpServletResponse.SC_CONFLICT);
@@ -147,16 +137,6 @@ public class EditOperatorController extends SoccorsoBaseController {
 
 		response.setContentType("application/json;charset=UTF-8");
 		response.getWriter().write("{\"success\":true,\"message\":\"Operatore modificato con successo\"}");
-	}
-
-	private Integer parseId(HttpServletRequest request) {
-		String path = request.getRequestURI().substring(request.getContextPath().length());
-		String[] segments = path.split("/");
-		try {
-			return Integer.valueOf(segments[segments.length - 1]);
-		} catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
-			return null;
-		}
 	}
 
 }

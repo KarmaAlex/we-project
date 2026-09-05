@@ -14,7 +14,7 @@
       },
       {
           "type":"password",
-          "name":"password"
+          "name":"Password"
       }
       ]>
 
@@ -26,7 +26,7 @@
           submitLabel="Accedi"
           resetLabel="Annulla"
       />
-      <p class="error" id="error_msg" <#if (!errorMessage??) && errorMessage != "">hidden</#if>><#if errorMessage?? && errorMessage!="">${errorMessage}</#if></p>
+      <p class="error" id="error_msg" <#if errorMessage?? && errorMessage != ""><#else>hidden</#if>><#if errorMessage?? && errorMessage!="">${errorMessage}</#if></p>
     </div>
   </section>
 </@basePage>

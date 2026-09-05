@@ -11,10 +11,11 @@ import org.soccorsoweb.framework.security.SecurityHelpers;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
 
 public class ServletHelpers {
-        public static String saveUploadedFile(HttpServletRequest request) throws IOException, ServletException {
+    public static String saveUploadedFile(HttpServletRequest request) throws IOException, ServletException {
         Part filePart = request.getPart("foto");
         if (filePart == null || filePart.getSize() == 0L) {
             return "";
@@ -40,5 +41,14 @@ public class ServletHelpers {
         return "/uploads/" + fileName;
     }
     
-
+    public static void redirectAndOpenTab(HttpServletResponse response, String redirectUrl, String newTabUrl) throws IOException{
+        response.setContentType("text/html");
+        //Redirect and open tab using a small embedded script in the response
+        response.getWriter().printf("""
+            <script>
+                window.open('%s', '_blank');
+                window.location.replace('%s');
+            </script>
+            """, newTabUrl, redirectUrl);
+    }
 }

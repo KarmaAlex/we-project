@@ -2,6 +2,7 @@
 package org.soccorsoweb.framework.controller;
 import org.soccorsoweb.framework.results.FailureResult;
 import org.soccorsoweb.framework.security.SecurityHelpers;
+import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -26,8 +27,9 @@ public abstract class AbstractBaseController extends HttpServlet {
 
     private DataSource ds;
     private Pattern protect;
+    protected DataLayer dl;
 
-    protected abstract void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
+    protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{};
 
     //creare la propria classe derivata da DataLayer
     //create your own datalayer derived class
@@ -126,6 +128,13 @@ public abstract class AbstractBaseController extends HttpServlet {
             ds = (DataSource) ctx.lookup("java:comp/env/" + config.getServletContext().getInitParameter("data.source"));
         } catch (NamingException ex) {
             throw new ServletException(ex);
+        }
+
+        this.dl = this.createDataLayer(ds);
+        try{
+            dl.init();
+        } catch(DataException e){
+            throw new ServletException(e);
         }
     }
       

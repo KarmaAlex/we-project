@@ -56,6 +56,7 @@
           id="main_form"
           fields=emergencyFields
           csrfToken=csrfToken
+          enctype="multipart/form-data"
           submitLabel="Invia richiesta"
           resetLabel="Annulla"
       />

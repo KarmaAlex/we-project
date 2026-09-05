@@ -135,7 +135,7 @@ on delete restrict
 create table Credenziali(
 ID int unsigned auto_increment primary key,
 email varchar(255) not null,
-passwordhash binary(64) not null,
+passwordhash binary(96) not null,
 constraint email_unica unique(email)
 );
 

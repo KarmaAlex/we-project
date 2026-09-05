@@ -27,17 +27,13 @@ import jakarta.servlet.http.HttpServletResponse;
  
 public class AddMissionController extends SoccorsoBaseController {
 
-	private Configuration cfg;
 	private Configuration emailCfg;
 
 	@Override
 	public void init() throws ServletException {
 		super.init();
-		cfg = new Configuration(Configuration.VERSION_2_3_34);
-		cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-		cfg.setDefaultEncoding("UTF-8");
 		emailCfg = new Configuration(Configuration.VERSION_2_3_34);
-		emailCfg.setServletContextForTemplateLoading(getServletContext(), "/");
+		emailCfg.setServletContextForTemplateLoading(getServletContext(), "/templates/email");
 		emailCfg.setDefaultEncoding("UTF-8");
 	}
 
@@ -68,11 +64,11 @@ public class AddMissionController extends SoccorsoBaseController {
 		}
 
 		try {
-			DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-			if (dataLayer == null) {
+			
+			if (this.dl == null) {
 				throw new ServletException("DataLayer non inizializzato");
 			}
-			createMission(request, response, dataLayer);
+			createMission(request, response, this.dl);
 		} catch (DataException | IOException ex) {
 			handleError(ex, request, response);
 		}
@@ -96,7 +92,7 @@ public class AddMissionController extends SoccorsoBaseController {
 				"Errore durante il rendering del form missione");
 	}
 
-	private void createMission(HttpServletRequest request, HttpServletResponse response, DataLayer dataLayer)
+	private void createMission(HttpServletRequest request, HttpServletResponse response, DataLayer dl)
 			throws IOException, DataException {
 		Integer richiestaId = parseId(request.getParameter("richiesta_id"));
 		Integer squadraId = parseId(request.getParameter("squadra"));
@@ -109,27 +105,27 @@ public class AddMissionController extends SoccorsoBaseController {
 			return;
 		}
 
-		Richiesta richiesta = ((RichiestaDAO) dataLayer.getDAO(Richiesta.class)).getRichiesta(richiestaId);
-		Squadra squadra = ((SquadraDAO) dataLayer.getDAO(Squadra.class)).getSquadra(squadraId);
+		Richiesta richiesta = ((RichiestaDAO) this.dl.getDAO(Richiesta.class)).getRichiesta(richiestaId);
+		Squadra squadra = ((SquadraDAO) this.dl.getDAO(Squadra.class)).getSquadra(squadraId);
 		Integer adminId = getSessionUserId(request);
 		Utente admin = adminId == null ? null
-				: ((UtenteDAO) dataLayer.getDAO(Utente.class)).getUtente(adminId);
+				: ((UtenteDAO) this.dl.getDAO(Utente.class)).getUtente(adminId);
 		if (richiesta == null || squadra == null || admin == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			response.getWriter().write("{\"error\":\"Richiesta, squadra o amministratore non trovato\"}");
 			return;
 		}
 
-		Missione missione = ((MissioneDAO) dataLayer.getDAO(Missione.class)).createMissione();
+		Missione missione = ((MissioneDAO) this.dl.getDAO(Missione.class)).createMissione();
 		missione.setRichiesta(richiesta);
 		missione.setSquadra(squadra);
 		missione.setAdmin(admin);
 		missione.setObiettivo(obiettivo);
 		missione.setInizio(LocalDateTime.parse(dataInizio));
 		missione.setCompletata(false);
-		((MissioneDAO) dataLayer.getDAO(Missione.class)).storeMissione(missione);
+		((MissioneDAO) this.dl.getDAO(Missione.class)).storeMissione(missione);
 
-		List<Utente> componenti = ((SquadraDAO) dataLayer.getDAO(Squadra.class)).getOperatoriSquadra(squadraId);
+		List<Utente> componenti = ((SquadraDAO) this.dl.getDAO(Squadra.class)).getOperatoriSquadra(squadraId);
 		Map<String, Object> missioneMail = new HashMap<>();
 		missioneMail.put("posizione", richiesta.getDescrizioneDettaglio() == null
 				? "Non specificata" : richiesta.getDescrizioneDettaglio().getPosizione());
@@ -137,7 +133,7 @@ public class AddMissionController extends SoccorsoBaseController {
 		missioneMail.put("inizio", missione.getInizio());
 		missioneMail.put("obiettivo", missione.getObiettivo());
 		request.getSession(true).setAttribute("mission.mail.missione", missioneMail);
-		request.getSession().setAttribute("mission.mail.recipients", getRecipientEmails(componenti, dataLayer));
+		request.getSession().setAttribute("mission.mail.recipients", getRecipientEmails(componenti, this.dl));
 		response.sendRedirect(request.getContextPath() + "/api/add/missioni/mail");
 	}
 
@@ -157,9 +153,9 @@ public class AddMissionController extends SoccorsoBaseController {
 				"Errore durante il rendering delle email missione");
 	}
 
-	private List<String> getRecipientEmails(List<Utente> componenti, DataLayer dataLayer) throws DataException {
+	private List<String> getRecipientEmails(List<Utente> componenti, DataLayer dl) throws DataException {
 		List<String> recipients = new ArrayList<>();
-		var credenzialiDAO = (org.soccorsoweb.data.dao.CredenzialiDAO) dataLayer.getDAO(org.soccorsoweb.model.Credenziali.class);
+		var credenzialiDAO = (org.soccorsoweb.data.dao.CredenzialiDAO) this.dl.getDAO(org.soccorsoweb.model.Credenziali.class);
 		for (Utente componente : componenti) {
 			var credenziali = credenzialiDAO.getCredenzialiByUtente(componente);
 			if (credenziali != null && credenziali.getEmail() != null && !credenziali.getEmail().isBlank()) {

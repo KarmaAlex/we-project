@@ -2,6 +2,8 @@ package org.soccorsoweb.business.controller;
 
 import jakarta.servlet.ServletException;
 import java.sql.SQLException;
+import java.util.logging.Logger;
+
 import javax.sql.DataSource;
 
 import org.soccorsoweb.data.DataLayer;
@@ -23,6 +25,9 @@ import org.soccorsoweb.data.dao.impl.AggiornamentoDAO_MySQL;
 import org.soccorsoweb.data.dao.impl.CommentoDAO_MySQL;
 
 import org.soccorsoweb.model.Utente;
+
+import freemarker.template.Configuration;
+
 import org.soccorsoweb.model.Richiesta;
 import org.soccorsoweb.model.Materiale;
 import org.soccorsoweb.model.Mezzo;
@@ -37,6 +42,15 @@ import org.soccorsoweb.model.Aggiornamento;
 import org.soccorsoweb.model.Commento;
 
 public abstract class SoccorsoBaseController extends AbstractBaseController {
+    protected Configuration cfg;
+
+	@Override
+	public void init() throws ServletException {
+		super.init();
+		cfg = new Configuration(Configuration.VERSION_2_3_34);
+		cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
+		cfg.setDefaultEncoding("UTF-8");
+	}
 
     @Override
     protected DataLayer createDataLayer(DataSource ds) throws ServletException {

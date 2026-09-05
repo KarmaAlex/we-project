@@ -12,7 +12,7 @@ public class CredenzialiImpl extends DataItemImpl<Integer> implements Credenzial
     public CredenzialiImpl() {
         super();
         this.email = "";
-        this.passwordHash = new byte[64];
+        this.passwordHash = new byte[96];
         this.version = 0;
     }
 

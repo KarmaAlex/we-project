@@ -1,13 +1,13 @@
 package org.soccorsoweb.business.controller.admin.details;
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.soccorsoweb.business.controller.SoccorsoBaseController;
+
+import org.soccorsoweb.business.controller.AbstractIdRequiredController;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.MezzoDAO;
@@ -19,45 +19,35 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class VehicleDetailsController extends SoccorsoBaseController {
-
-	private Configuration cfg;
+public class VehicleDetailsController extends AbstractIdRequiredController {
 
 	@Override
-	public void init() throws ServletException {
-		super.init();
-		cfg = new Configuration(Configuration.VERSION_2_3_34);
-		cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-		cfg.setDefaultEncoding("UTF-8");
-	}
-
-	@Override
-	protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		if (!SecurityHelpers.isAdmin(request)) {
 			response.sendRedirect(request.getContextPath() + "/login");
 			return;
 		}
 
-		Integer mezzoId = parseId(request);
+		Integer mezzoId = getRequestId(request);
 		if (mezzoId == null) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
 
 		try {
-			DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-			if (dataLayer == null) {
+			
+			if (this.dl == null) {
 				throw new ServletException("DataLayer non inizializzato");
 			}
 
-			Mezzo mezzo = findMezzo((MezzoDAO) dataLayer.getDAO(Mezzo.class), mezzoId);
+			Mezzo mezzo = findMezzo((MezzoDAO) this.dl.getDAO(Mezzo.class), mezzoId);
 			if (mezzo == null) {
 				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 				return;
 			}
 
-			renderVehicleDetails(request, response, dataLayer, mezzo);
+			renderVehicleDetails(request, response, this.dl, mezzo);
 		} catch (DataException | IOException ex) {
 			handleError(ex, request, response);
 		}
@@ -72,7 +62,7 @@ public class VehicleDetailsController extends SoccorsoBaseController {
 		return null;
 	}
 
-	private void renderVehicleDetails(HttpServletRequest request, HttpServletResponse response, DataLayer dataLayer, Mezzo mezzo)
+	private void renderVehicleDetails(HttpServletRequest request, HttpServletResponse response, DataLayer dl, Mezzo mezzo)
 			throws ServletException, IOException, DataException {
 		Map<String, Object> dettaglio = new HashMap<>();
 		dettaglio.put("id", mezzo.getKey());
@@ -84,7 +74,7 @@ public class VehicleDetailsController extends SoccorsoBaseController {
 			dettaglio.put("missione_corrente", mezzo.getMissioneKey());
 		}
 		List<Map<String, Object>> storicoMissioni = new java.util.ArrayList<>();
-		List<Missione> missioni = ((MissioneDAO) dataLayer.getDAO(Missione.class)).getStoricoMissioniByMezzo(mezzo);
+		List<Missione> missioni = ((MissioneDAO) this.dl.getDAO(Missione.class)).getStoricoMissioniByMezzo(mezzo);
 		for (Missione missione : missioni) {
 			Map<String, Object> storico = new HashMap<>();
 			storico.put("missione_id", missione.getKey());
@@ -106,12 +96,4 @@ public class VehicleDetailsController extends SoccorsoBaseController {
 		}
 	}
 
-	private Integer parseId(HttpServletRequest request) {
-		String path = request.getRequestURI().substring(request.getContextPath().length());
-		try {
-			return Integer.valueOf(path.substring(path.lastIndexOf('/') + 1));
-		} catch (NumberFormatException ex) {
-			return null;
-		}
-	}
 }

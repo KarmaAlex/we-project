@@ -1,6 +1,5 @@
 package org.soccorsoweb.business.controller.admin.details;
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
@@ -8,7 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.soccorsoweb.business.controller.SoccorsoBaseController;
+
+import org.soccorsoweb.business.controller.AbstractIdRequiredController;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.AbilitaDAO;
@@ -26,62 +26,52 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class OperatorDetailsController extends SoccorsoBaseController {
-
-	private Configuration cfg;
+public class OperatorDetailsController extends AbstractIdRequiredController {
 
 	@Override
-	public void init() throws ServletException {
-		super.init();
-		cfg = new Configuration(Configuration.VERSION_2_3_34);
-		cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-		cfg.setDefaultEncoding("UTF-8");
-	}
-
-	@Override
-	protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException {
 		if (!SecurityHelpers.isAdmin(request)) {
 			response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
 
-		Integer operatoreId = parseId(request);
+		Integer operatoreId = getRequestId(request);
 		if (operatoreId == null) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
 
 		try {
-			DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-			if (dataLayer == null) {
+			
+			if (this.dl == null) {
 				throw new ServletException("DataLayer non inizializzato");
 			}
 
-			Utente utente = ((UtenteDAO) dataLayer.getDAO(Utente.class)).getUtente(operatoreId);
+			Utente utente = ((UtenteDAO) this.dl.getDAO(Utente.class)).getUtente(operatoreId);
 			if (utente == null || utente.isAdmin()) {
 				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 				return;
 			}
 
-			renderOperatorDetails(request, response, dataLayer, utente);
+			renderOperatorDetails(request, response, this.dl, utente);
 		} catch (DataException | IOException ex) {
 			handleError(ex, request, response);
 		}
 	}
 
 	private void renderOperatorDetails(HttpServletRequest request, HttpServletResponse response,
-			DataLayer dataLayer, Utente utente) throws IOException, DataException, ServletException {
-		Anagrafica anagrafica = ((AnagraficaDAO) dataLayer.getDAO(Anagrafica.class))
+			DataLayer dl, Utente utente) throws IOException, DataException, ServletException {
+		Anagrafica anagrafica = ((AnagraficaDAO) this.dl.getDAO(Anagrafica.class))
 				.getAnagraficaByUtente(utente);
-		List<Patente> patenti = ((PatenteDAO) dataLayer.getDAO(Patente.class))
+		List<Patente> patenti = ((PatenteDAO) this.dl.getDAO(Patente.class))
 				.getPatentiByUtente(utente);
-		List<Abilita> abilita = ((AbilitaDAO) dataLayer.getDAO(Abilita.class))
+		List<Abilita> abilita = ((AbilitaDAO) this.dl.getDAO(Abilita.class))
 				.getAbilitaByUtente(utente);
 
-		List<Missione> missioniAttive = ((MissioneDAO) dataLayer.getDAO(Missione.class))
+		List<Missione> missioniAttive = ((MissioneDAO) this.dl.getDAO(Missione.class))
 				.getMissioniByUtente(utente);
-		List<Missione> storicoMissioni = ((MissioneDAO) dataLayer.getDAO(Missione.class))
+		List<Missione> storicoMissioni = ((MissioneDAO) this.dl.getDAO(Missione.class))
 				.getStoricoMissioniByUtente(utente);
 
 		Map<String, Object> dettaglio = new HashMap<>();
@@ -126,15 +116,6 @@ public class OperatorDetailsController extends SoccorsoBaseController {
 			template.process(model, response.getWriter());
 		} catch (TemplateException ex) {
 			throw new ServletException("Errore durante il rendering del dettaglio operatore", ex);
-		}
-	}
-
-	private Integer parseId(HttpServletRequest request) {
-		String path = request.getRequestURI().substring(request.getContextPath().length());
-		try {
-			return Integer.valueOf(path.substring(path.lastIndexOf('/') + 1));
-		} catch (NumberFormatException ex) {
-			return null;
 		}
 	}
 

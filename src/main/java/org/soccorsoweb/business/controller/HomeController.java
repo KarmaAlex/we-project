@@ -1,6 +1,5 @@
 package org.soccorsoweb.business.controller;
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import jakarta.servlet.ServletException;
@@ -13,16 +12,6 @@ import java.util.Map;
 import org.soccorsoweb.framework.security.SecurityHelpers;
 
 public class HomeController extends SoccorsoBaseController {
-
-    private Configuration cfg;
-
-    @Override
-    public void init() throws ServletException {
-        super.init();
-        cfg = new Configuration(Configuration.VERSION_2_3_34);
-        cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-        cfg.setDefaultEncoding("UTF-8");
-    }
 
     @Override
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
@@ -69,6 +58,7 @@ public class HomeController extends SoccorsoBaseController {
 
         if (session == null) {
             currentUser.put("authenticated", false);
+            SecurityHelpers.createAnonymousSession(request);
             return currentUser;
         }
 

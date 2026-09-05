@@ -1,6 +1,5 @@
 package org.soccorsoweb.business.controller;
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import jakarta.servlet.ServletException;
@@ -11,21 +10,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.soccorsoweb.data.DataException;
-import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.UtenteDAO;
 import org.soccorsoweb.model.Utente;
 
 public class ProfileController extends SoccorsoBaseController {
-
-    private Configuration cfg;
-
-    @Override
-    public void init() throws ServletException {
-        super.init();
-        cfg = new Configuration(Configuration.VERSION_2_3_34);
-        cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-        cfg.setDefaultEncoding("UTF-8");
-    }
 
     @Override
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
@@ -50,13 +38,13 @@ public class ProfileController extends SoccorsoBaseController {
             return;
         }
 
-        DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-        if (dataLayer == null) {
+        
+        if (this.dl == null) {
             throw new ServletException("DataLayer non inizializzato");
         }
 
         try {
-            UtenteDAO utenteDAO = (UtenteDAO) dataLayer.getDAO(Utente.class);
+            UtenteDAO utenteDAO = (UtenteDAO) this.dl.getDAO(Utente.class);
             Utente utente = utenteDAO.getUtente(userId);
 
             if (utente == null) {

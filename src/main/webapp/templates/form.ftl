@@ -5,7 +5,7 @@
     action=""
     method="post"
     cssClass="request-form"
-    enctype="multipart/form-data"
+    enctype="application/x-www-form-urlencoded"
     submitLabel="Submit"
     resetLabel="Reset">
 

@@ -1,12 +1,12 @@
 package org.soccorsoweb.business.controller.admin.edit;
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.soccorsoweb.business.controller.SoccorsoBaseController;
+
+import org.soccorsoweb.business.controller.AbstractIdRequiredController;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.MezzoDAO;
@@ -16,17 +16,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-public class EditVehicleController extends SoccorsoBaseController {
-
-	private Configuration cfg;
-
-	@Override
-	public void init() throws ServletException {
-		super.init();
-		cfg = new Configuration(Configuration.VERSION_2_3_34);
-		cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-		cfg.setDefaultEncoding("UTF-8");
-	}
+public class EditVehicleController extends AbstractIdRequiredController {
 
 	@Override
 	protected void processRequest(HttpServletRequest request, HttpServletResponse response)
@@ -36,20 +26,20 @@ public class EditVehicleController extends SoccorsoBaseController {
 			return;
 		}
 
-		Integer mezzoId = parseMezzoId(request);
+		Integer mezzoId = getRequestId(request);
 		if (mezzoId == null) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 			return;
 		}
 
 		try {
-			DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-			if (dataLayer == null) {
+			
+			if (this.dl == null) {
 				throw new ServletException("DataLayer non inizializzato");
 			}
 
 			if ("GET".equalsIgnoreCase(request.getMethod())) {
-				renderEditVehiclePage(request, response, dataLayer, mezzoId);
+				renderEditVehiclePage(request, response, this.dl, mezzoId);
 				return;
 			}
 
@@ -63,15 +53,15 @@ public class EditVehicleController extends SoccorsoBaseController {
 				return;
 			}
 
-			editMezzo(request, response, dataLayer, mezzoId);
+			editMezzo(request, response, this.dl, mezzoId);
 		} catch (IOException | DataException ex) {
 			handleError(ex, request, response);
 		}
 	}
 
 	private void renderEditVehiclePage(HttpServletRequest request, HttpServletResponse response,
-			DataLayer dataLayer, int mezzoId) throws IOException, DataException, ServletException {
-		Mezzo mezzo = getMezzo(dataLayer, mezzoId);
+			DataLayer dl, int mezzoId) throws IOException, DataException, ServletException {
+		Mezzo mezzo = getMezzo(this.dl, mezzoId);
 		if (mezzo == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			return;
@@ -100,7 +90,7 @@ public class EditVehicleController extends SoccorsoBaseController {
 	}
 
 	private void editMezzo(HttpServletRequest request, HttpServletResponse response,
-			DataLayer dataLayer, int mezzoId) throws IOException, DataException {
+			DataLayer dl, int mezzoId) throws IOException, DataException {
 		String nome = SecurityHelpers.sanitizeTextInput(request.getParameter("nome"));
 		String descrizione = SecurityHelpers.sanitizeTextInput(request.getParameter("descrizione"));
 		String targa = SecurityHelpers.sanitizeTextInput(request.getParameter("targa"));
@@ -110,7 +100,7 @@ public class EditVehicleController extends SoccorsoBaseController {
 			return;
 		}
 
-		Mezzo mezzo = getMezzo(dataLayer, mezzoId);
+		Mezzo mezzo = getMezzo(this.dl, mezzoId);
 		if (mezzo == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			response.getWriter().write("{\"error\":\"Mezzo non trovato\"}");
@@ -120,26 +110,13 @@ public class EditVehicleController extends SoccorsoBaseController {
 		mezzo.setNome(nome);
 		mezzo.setDesc(descrizione);
 		mezzo.setTarga(targa);
-		((MezzoDAO) dataLayer.getDAO(Mezzo.class)).storeMezzo(mezzo);
+		((MezzoDAO) this.dl.getDAO(Mezzo.class)).storeMezzo(mezzo);
 
 		response.setContentType("application/json;charset=UTF-8");
 		response.getWriter().write("{\"success\":true,\"message\":\"Mezzo modificato con successo\"}");
 	}
 
-	private Mezzo getMezzo(DataLayer dataLayer, int mezzoId) throws DataException {
-		return ((MezzoDAO) dataLayer.getDAO(Mezzo.class)).getMezzo(mezzoId);
-	}
-
-	private Integer parseMezzoId(HttpServletRequest request) {
-		String path = request.getRequestURI().substring(request.getContextPath().length());
-		String[] segments = path.split("/");
-		if (segments.length == 0) {
-			return null;
-		}
-		try {
-			return Integer.valueOf(segments[segments.length - 1]);
-		} catch (NumberFormatException ex) {
-			return null;
-		}
+	private Mezzo getMezzo(DataLayer dl, int mezzoId) throws DataException {
+		return ((MezzoDAO) this.dl.getDAO(Mezzo.class)).getMezzo(mezzoId);
 	}
 }

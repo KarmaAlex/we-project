@@ -40,9 +40,9 @@ public class CreaRichiestaController extends SoccorsoBaseController {
         }
 
         try {
-            DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-            RichiestaDAO richiestaDAO = (RichiestaDAO) dataLayer.getDAO(Richiesta.class);
-            DescRichiestaDAO descRichiestaDAO = (DescRichiestaDAO) dataLayer.getDAO(DescRichiesta.class);
+            
+            RichiestaDAO richiestaDAO = (RichiestaDAO) this.dl.getDAO(Richiesta.class);
+            DescRichiestaDAO descRichiestaDAO = (DescRichiestaDAO) this.dl.getDAO(DescRichiesta.class);
 
             Map<String, Object> payload = new LinkedHashMap<>();
             payload.put("nome", SecurityHelpers.sanitizeTextInput(request.getParameter("nome")));

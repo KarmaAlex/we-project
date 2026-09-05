@@ -23,16 +23,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class AddOperatorController extends SoccorsoBaseController {
 
-	private Configuration cfg;
-
-	@Override
-	public void init() throws ServletException {
-		super.init();
-		cfg = new Configuration(Configuration.VERSION_2_3_34);
-		cfg.setServletContextForTemplateLoading(getServletContext(), "/");
-		cfg.setDefaultEncoding("UTF-8");
-	}
-
 	@Override
 	protected void processRequest(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException {
@@ -62,11 +52,11 @@ public class AddOperatorController extends SoccorsoBaseController {
 		}
 
 		try {
-			DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-			if (dataLayer == null) {
+			
+			if (this.dl == null) {
 				throw new ServletException("DataLayer non inizializzato");
 			}
-			addOperator(request, response, dataLayer);
+			addOperator(request, response, this.dl);
 		} catch (DataException | IOException | NoSuchAlgorithmException | InvalidKeySpecException ex) {
 			handleError(ex, request, response);
 		}
@@ -80,7 +70,7 @@ public class AddOperatorController extends SoccorsoBaseController {
 		renderTemplate(request, response, "templates/add/operatore-add.ftl", model, "Errore durante il rendering del form operatore");
 	}
 
-	private void addOperator(HttpServletRequest request, HttpServletResponse response, DataLayer dataLayer)
+	private void addOperator(HttpServletRequest request, HttpServletResponse response, DataLayer dl)
 		    throws IOException, DataException, ServletException, NoSuchAlgorithmException, InvalidKeySpecException {
 		String nome = SecurityHelpers.sanitizeTextInput(request.getParameter("nome"));
 		String cognome = SecurityHelpers.sanitizeTextInput(request.getParameter("cognome"));
@@ -93,7 +83,7 @@ public class AddOperatorController extends SoccorsoBaseController {
 			return;
 		}
 
-		UtenteDAO utenteDAO = (UtenteDAO) dataLayer.getDAO(Utente.class);
+		UtenteDAO utenteDAO = (UtenteDAO) this.dl.getDAO(Utente.class);
 		if (utenteDAO.getUtenteByUsername(username) != null) {
 			response.setStatus(HttpServletResponse.SC_CONFLICT);
 			response.getWriter().write("{\"error\":\"Nome utente già in uso\"}");
@@ -107,7 +97,7 @@ public class AddOperatorController extends SoccorsoBaseController {
 		utente.setMonteOre(0);
 		utenteDAO.storeUtente(utente);
 
-		CredenzialiDAO credenzialiDAO = (CredenzialiDAO) dataLayer.getDAO(Credenziali.class);
+		CredenzialiDAO credenzialiDAO = (CredenzialiDAO) this.dl.getDAO(Credenziali.class);
 		Credenziali credenziali = credenzialiDAO.createCredenziali();
 		credenziali.setEmail(email);
 		credenziali.setPasswordHash(SecurityHelpers.getPasswordHashPBKDF2(temporaryPassword).getBytes());

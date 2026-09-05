@@ -18,8 +18,8 @@ public class VerifyRequestController extends SoccorsoBaseController {
 	@Override
 	protected void processRequest(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-		if (dataLayer == null) {
+		
+		if (this.dl == null) {
 			throw new ServletException("DataLayer non inizializzato");
 		}
 
@@ -30,7 +30,7 @@ public class VerifyRequestController extends SoccorsoBaseController {
 		}
 
 		try {
-			RichiestaDAO richiestaDAO = (RichiestaDAO) dataLayer.getDAO(Richiesta.class);
+			RichiestaDAO richiestaDAO = (RichiestaDAO) this.dl.getDAO(Richiesta.class);
 			Richiesta richiesta = findByToken(richiestaDAO, token);
 			if (richiesta == null) {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Richiesta non trovata");

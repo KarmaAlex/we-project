@@ -19,16 +19,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public class AddMaterialController extends SoccorsoBaseController {
-
-    private Configuration cfg;
-
-    @Override
-    public void init() throws ServletException {
-        super.init();
-        cfg = new Configuration(Configuration.VERSION_2_3_34);
-        cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-        cfg.setDefaultEncoding("UTF-8");
-    }
     
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException {
@@ -55,8 +45,8 @@ public class AddMaterialController extends SoccorsoBaseController {
 
 
         try {
-            DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-            addMateriale(request, response, dataLayer);
+            
+            addMateriale(request, response, this.dl);
         } catch (IOException | DataException ex) {
             handleError(ex, request, response);
         }
@@ -78,7 +68,7 @@ public class AddMaterialController extends SoccorsoBaseController {
     }
 
 
-    private void addMateriale(HttpServletRequest request, HttpServletResponse response, DataLayer dataLayer)
+    private void addMateriale(HttpServletRequest request, HttpServletResponse response, DataLayer dl)
             throws IOException, DataException {
         response.setContentType("application/json;charset=UTF-8");
 
@@ -122,7 +112,7 @@ public class AddMaterialController extends SoccorsoBaseController {
         }
 
         // Creazione e salvataggio materiale
-        MaterialeDAO materialeDAO = (MaterialeDAO) dataLayer.getDAO(Materiale.class);
+        MaterialeDAO materialeDAO = (MaterialeDAO) this.dl.getDAO(Materiale.class);
         Materiale materiale = materialeDAO.createMateriale();
         
         // Impostiamo i dati

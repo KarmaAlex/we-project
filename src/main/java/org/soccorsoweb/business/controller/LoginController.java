@@ -8,10 +8,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.AnagraficaDAO;
@@ -25,67 +27,38 @@ import org.soccorsoweb.model.Utente;
 
 public class LoginController extends SoccorsoBaseController {
 
-    private Configuration cfg;
-
-    @Override
-    public void init() throws ServletException {
-        super.init();
-        cfg = new Configuration(Configuration.VERSION_2_3_34);
-        cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
-        cfg.setDefaultEncoding("UTF-8");
+    @Override 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException{
+        SecurityHelpers.checkOrCreateSession(request);
+        renderLoginPage(request, response, null);
     }
 
     @Override
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException {
-        String ctx = request.getContextPath();
-        String path = request.getRequestURI().substring(ctx.length());
-
-        if ("/login".equals(path) || "/login.html".equals(path)) {
-            if ("POST".equalsIgnoreCase(request.getMethod())) {
-                handleLogin(request, response);
-            } else {
-                renderLoginPage(request, response, null);
-            }
-            return;
-        }
-
-        jakarta.servlet.RequestDispatcher rd = getServletContext().getNamedDispatcher("default");
-        if (rd != null) {
-            try {
-                rd.forward(request, response);
-            } catch (IOException ex) {
-                throw new ServletException("Errore nel forward delle risorse statiche", ex);
-            }
-            return;
-        }
-
-        try {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-        } catch (IOException ex) {
-            throw new ServletException("Errore 404 dal login servlet", ex);
-        }
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException{
+        SecurityHelpers.checkOrCreateSession(request);
+        handleLogin(request, response);
     }
-
 
     private void handleLogin(HttpServletRequest request, HttpServletResponse response)
             throws ServletException {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
+        String csrfToken = request.getParameter("csrf");
+        if(csrfToken == null || csrfToken.isBlank() || !SecurityHelpers.isValidCsrfToken(request, csrfToken)) throw new ServletException("Invalid csrf token");
 
         if (username == null || username.isBlank() || password == null || password.isBlank()) {
             renderLoginPage(request, response, "Inserisci username e password");
             return;
         }
 
-        DataLayer dataLayer = (DataLayer) request.getAttribute("datalayer");
-        if (dataLayer == null) {
+        
+        if (this.dl == null) {
             throw new ServletException("DataLayer non inizializzato");
         }
 
         try {
-            UtenteDAO utenteDAO = (UtenteDAO) dataLayer.getDAO(Utente.class);
-            CredenzialiDAO credenzialiDAO = (CredenzialiDAO) dataLayer.getDAO(Credenziali.class);
+            UtenteDAO utenteDAO = (UtenteDAO) this.dl.getDAO(Utente.class);
+            CredenzialiDAO credenzialiDAO = (CredenzialiDAO) this.dl.getDAO(Credenziali.class);
 
             Utente utente = utenteDAO.getUtenteByUsername(username);
             if (utente == null) {
@@ -99,7 +72,7 @@ public class LoginController extends SoccorsoBaseController {
                 return;
             }
 
-            String storedHash = SecurityHelpers.toHexString(credenziali.getPasswordHash());
+            String storedHash = new String(credenziali.getPasswordHash(), StandardCharsets.UTF_8);
             boolean passwordOk = SecurityHelpers.checkPasswordHashPBKDF2(password, storedHash);
             if (!passwordOk) {
                 renderLoginPage(request, response, "Password errata");
@@ -110,7 +83,7 @@ public class LoginController extends SoccorsoBaseController {
             session.setAttribute("ruolo", utente.isAdmin() ? "ADMIN" : "OPERATOR");
             session.setAttribute("admin", utente.isAdmin());
 
-            AnagraficaDAO anagraficaDAO = (AnagraficaDAO) dataLayer.getDAO(Anagrafica.class);
+            AnagraficaDAO anagraficaDAO = (AnagraficaDAO) this.dl.getDAO(Anagrafica.class);
             Anagrafica anagrafica = anagraficaDAO.getAnagraficaByUtente(utente);
             boolean incompleteRegistration = SecurityHelpers.isIncompleteRegistration(anagrafica);
             if (incompleteRegistration) {
@@ -139,6 +112,7 @@ public class LoginController extends SoccorsoBaseController {
             Map<String, Object> model = new HashMap<>();
             model.put("ctx", request.getContextPath());
             model.put("errorMessage", errorMessage);
+            model.put("csrfToken", SecurityHelpers.createCsrfToken(request));
             tpl.process(model, response.getWriter());
         } catch (TemplateException ex) {
             throw new ServletException("Errore nel rendering del template login", ex);
