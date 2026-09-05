@@ -24,7 +24,8 @@
     "label":"Targa",
     "value":"",
     "required":true,
-    "placeholder":"AB123CD"
+    "placeholder":"AB123CD",
+    "maxlength":10
 }
 ]>
 

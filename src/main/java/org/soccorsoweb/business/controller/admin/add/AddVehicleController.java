@@ -83,6 +83,12 @@ public class AddVehicleController extends SoccorsoBaseController {
             return;
         }
 
+        if(targa.length() > 10){
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{\"error\":\"Targa non valida\"}");
+            return;
+        }
+
         MezzoDAO mezzoDAO = (MezzoDAO) this.dl.getDAO(Mezzo.class);
         Mezzo mezzo = mezzoDAO.createMezzo();
 
@@ -99,7 +105,7 @@ public class AddVehicleController extends SoccorsoBaseController {
         }
 
         response.setStatus(HttpServletResponse.SC_CREATED);
-        response.getWriter().write("{\"success\":true,\"message\":\"Mezzo aggiunto con successo\",\"id\":" + mezzo.getKey() + "}");
+        response.sendRedirect(request.getContextPath() + "/admin-dashboard?section=vehicles");
     }
         private void renderAddVehiclePage(HttpServletRequest request, HttpServletResponse response)
             throws ServletException {

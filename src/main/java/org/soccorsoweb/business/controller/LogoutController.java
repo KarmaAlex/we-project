@@ -15,7 +15,8 @@ public class LogoutController extends SoccorsoBaseController {
         if (request.getParameter("referrer") != null) {
             response.sendRedirect(request.getParameter("referrer"));
         } else {
-            response.sendRedirect("issues");
+            String home = request.getContextPath() + "/home";
+            response.sendRedirect(home);
         }
     }
 

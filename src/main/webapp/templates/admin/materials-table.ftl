@@ -7,6 +7,10 @@
         "sortable":true
     },
     {
+        "field":"nome",
+        "label":"Nome"
+    },
+    {
         "field":"stato",
         "label":"Stato",
         "sortable": true,

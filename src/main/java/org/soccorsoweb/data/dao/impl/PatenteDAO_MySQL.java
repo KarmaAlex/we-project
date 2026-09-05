@@ -20,6 +20,8 @@ import java.util.List;
 public class PatenteDAO_MySQL extends Dao implements PatenteDAO {
     private PreparedStatement sPatenteByID;
     private PreparedStatement sPatenti;
+    private PreparedStatement sPatentiDisponibili;
+    private PreparedStatement sPatenteDisponibile;
     private PreparedStatement sPatentiByUtente;
     private PreparedStatement iPatente;
     private PreparedStatement uPatente;
@@ -37,6 +39,14 @@ public class PatenteDAO_MySQL extends Dao implements PatenteDAO {
 
             sPatenteByID = connection.prepareStatement("SELECT * FROM Patente WHERE ID=?");
             sPatenti = connection.prepareStatement("SELECT * FROM Patente");
+            sPatentiDisponibili = connection.prepareStatement(
+                "SELECT p.* FROM Patente p LEFT JOIN assegna_patente ap "
+                + "ON p.ID = ap.ID_PATENTE WHERE ap.ID_PATENTE IS NULL"
+            );
+            sPatenteDisponibile = connection.prepareStatement(
+                "SELECT p.ID FROM Patente p LEFT JOIN assegna_patente ap "
+                + "ON p.ID = ap.ID_PATENTE WHERE p.ID=? AND ap.ID_PATENTE IS NULL"
+            );
             sPatentiByUtente = connection.prepareStatement(
                 "SELECT p.* FROM Patente p JOIN assegna_patente ap ON p.ID = ap.ID_PATENTE WHERE ap.ID_UTENTE=?"
             );
@@ -68,6 +78,8 @@ public class PatenteDAO_MySQL extends Dao implements PatenteDAO {
         try {
             if (sPatenteByID != null) sPatenteByID.close();
             if (sPatenti != null) sPatenti.close();
+            if (sPatentiDisponibili != null) sPatentiDisponibili.close();
+            if (sPatenteDisponibile != null) sPatenteDisponibile.close();
             if (sPatentiByUtente != null) sPatentiByUtente.close();
             if (iPatente != null) iPatente.close();
             if (uPatente != null) uPatente.close();
@@ -136,6 +148,33 @@ public class PatenteDAO_MySQL extends Dao implements PatenteDAO {
             throw new DataException("Unable to load patenti list", ex);
         }
         return result;
+    }
+
+    @Override
+    public List<Patente> getPatentiDisponibili() throws DataException {
+        List<Patente> result = new ArrayList<>();
+        try (ResultSet rs = sPatentiDisponibili.executeQuery()) {
+            while (rs.next()) {
+                Patente p = createPatente(rs);
+                getDataLayer().getCache().add(Patente.class, p);
+                result.add(p);
+            }
+        } catch (SQLException ex) {
+            throw new DataException("Unable to load available patenti", ex);
+        }
+        return result;
+    }
+
+    @Override
+    public boolean isPatenteDisponibile(int patenteKey) throws DataException {
+        try {
+            sPatenteDisponibile.setInt(1, patenteKey);
+            try (ResultSet rs = sPatenteDisponibile.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException ex) {
+            throw new DataException("Unable to check patente availability", ex);
+        }
     }
 
     @Override

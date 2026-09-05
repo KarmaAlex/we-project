@@ -10,7 +10,7 @@
       <strong>Telefono:</strong> ${dettaglio.telefono!''}<br>
       <strong>Stato:</strong> <span class="badge ${(dettaglio.stato!'')?lower_case}">${dettaglio.stato!''}</span><br>
       <#if dettaglio.missione_corrente?has_content>
-        <strong>Missione Corrente:</strong> <a href="#" style="color: var(--accent);">${dettaglio.missione_corrente}</a>
+        <strong>Missione Corrente:</strong> <a class="btn modal-trigger" href="${ctx}/api/detail/missions?id=${dettaglio.missione_corrente}"  data-modal="missionsDetailModal" data-toggle="modal">${dettaglio.missione_corrente}</a>
       </#if>
     </div>
 
@@ -56,7 +56,7 @@
                 <td style="padding: 0.5rem;"><strong>${hist.missione_id!''}</strong></td>
                 <td style="padding: 0.5rem;">${hist.data!''}</td>
                 <td style="padding: 0.5rem;">${hist.descrizione!''}</td>
-                <td style="padding: 0.5rem;"><span class="badge" style="background: #d4edda; color: #155724;">${hist.esito!''}</span></td>
+                <td style="padding: 0.5rem;"><span class="badge">${hist.esito!''}</span></td>
               </tr>
             </#list>
           </tbody>

@@ -16,10 +16,6 @@
         "label":"Email"
     },
     {
-        "field":"telefono",
-        "label":"Telefono"
-    },
-    {
         "field":"stato",
         "label":"Stato",
         "sortable":true,
@@ -28,6 +24,11 @@
     {
         "field":"missione_corrente",
         "label":"Missione"
+    },
+    {
+        "field":"monte_ore",
+        "label":"Monte ore",
+        "sortable":true
     }
 ]>
 

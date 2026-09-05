@@ -6,6 +6,10 @@
 </head>
 <body>
 
+<h1>Email di verifica</h1>
+
+<p>Email simulata inviata a:${email}</p>
+
 <h2>Richiesta ricevuta</h2>
 
 <p>

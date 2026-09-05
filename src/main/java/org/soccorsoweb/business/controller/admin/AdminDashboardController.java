@@ -1,6 +1,5 @@
 package org.soccorsoweb.business.controller.admin;
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import jakarta.servlet.ServletException;
@@ -20,16 +19,22 @@ import java.util.Set;
 import org.soccorsoweb.business.controller.SoccorsoBaseController;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
+import org.soccorsoweb.data.dao.CredenzialiDAO;
+import org.soccorsoweb.data.dao.AbilitaDAO;
 import org.soccorsoweb.data.dao.MaterialeDAO;
 import org.soccorsoweb.data.dao.MezzoDAO;
 import org.soccorsoweb.data.dao.MissioneDAO;
+import org.soccorsoweb.data.dao.PatenteDAO;
 import org.soccorsoweb.data.dao.RichiestaDAO;
 import org.soccorsoweb.data.dao.UtenteDAO;
 import org.soccorsoweb.framework.security.SecurityHelpers;
 import org.soccorsoweb.model.Anagrafica;
+import org.soccorsoweb.model.Abilita;
+import org.soccorsoweb.model.Credenziali;
 import org.soccorsoweb.model.Materiale;
 import org.soccorsoweb.model.Mezzo;
 import org.soccorsoweb.model.Missione;
+import org.soccorsoweb.model.Patente;
 import org.soccorsoweb.model.Richiesta;
 import org.soccorsoweb.model.Utente;
 import org.soccorsoweb.model.enums.EsitoMissione;
@@ -61,12 +66,29 @@ public class AdminDashboardController extends SoccorsoBaseController {
 
         try {
             switch (section) {
-                case "requests" -> loadRequestsSection(model, req);
-                case "missions" -> loadMissionsSection(model, req);
-                case "operators" -> loadOperatorsSection(model, req);
-                case "vehicles" -> loadVehiclesSection(model, req);
-                case "materials" -> loadMaterialsSection(model, req);
-                default -> { }
+                case "requests":
+                    loadRequestsSection(model, req);
+                    break;
+                case "missions":
+                    loadMissionsSection(model, req);
+                    break;
+                case "operators":
+                    loadOperatorsSection(model, req);
+                    break;
+                case "vehicles":
+                    loadVehiclesSection(model, req);
+                    break;
+                case "materials":
+                    loadMaterialsSection(model, req);
+                    break;
+                case "abilities":
+                    loadAbilitiesSection(model, req);
+                    break;
+                case "licenses":
+                    loadLicensesSection(model, req);
+                    break;
+                default:
+                    break;
             }
 
             resp.setContentType("text/html;charset=UTF-8");
@@ -132,12 +154,10 @@ public class AdminDashboardController extends SoccorsoBaseController {
         
         UtenteDAO dao = (UtenteDAO) this.dl.getDAO(Utente.class);
         MissioneDAO missioneDAO = (MissioneDAO) this.dl.getDAO(Missione.class);
+        CredenzialiDAO credenzialiDAO = (CredenzialiDAO) this.dl.getDAO(Credenziali.class);
         String status = blankToNull(req.getParameter("stato"));
         List<Map<String, Object>> rows = new ArrayList<>();
         for (Utente operator : dao.getUtenti()) {
-            if (operator.isAdmin()) {
-                continue;
-            }
             boolean busy = !missioneDAO.getMissioniByUtente(operator).stream().allMatch(Missione::isCompletata);
             String actualStatus = busy ? "OCCUPATO" : "DISPONIBILE";
             if (status != null && !status.equals(actualStatus)) {
@@ -148,10 +168,10 @@ public class AdminDashboardController extends SoccorsoBaseController {
             row.put("id", operator.getKey());
             row.put("nome", anagrafica == null ? operator.getNomeUtente()
                     : anagrafica.getNome() + " " + anagrafica.getCognome());
-            row.put("email", operator.getEmail());
-            row.put("telefono", "");
+            row.put("email", credenzialiDAO.getCredenzialiByUtente(operator).getEmail());
             row.put("stato", actualStatus);
             row.put("missione_corrente", busy ? "In missione" : "-");
+            row.put("monte_ore", operator.getMonteOre());
             rows.add(row);
         }
         model.put("operatori", rows);
@@ -179,6 +199,26 @@ public class AdminDashboardController extends SoccorsoBaseController {
                 .filter(row -> status == null || status.equals(row.get("stato")))
                 .toList());
     }
+
+            private void loadAbilitiesSection(Map<String, Object> model, HttpServletRequest req)
+                throws DataException, ServletException {
+            AbilitaDAO dao = (AbilitaDAO) this.dl(req).getDAO(Abilita.class);
+            String search = blankToNull(req.getParameter("nome"));
+            model.put("abilita", dao.getAbilitaList().stream()
+                .map(this::abilityRow)
+                .filter(row -> search == null || row.get("nome").toString().toLowerCase().contains(search.toLowerCase()))
+                .toList());
+            }
+
+            private void loadLicensesSection(Map<String, Object> model, HttpServletRequest req)
+                throws DataException, ServletException {
+            PatenteDAO dao = (PatenteDAO) this.dl(req).getDAO(Patente.class);
+            String search = blankToNull(req.getParameter("numero"));
+            model.put("patenti", dao.getPatenti().stream()
+                .map(this::licenseRow)
+                .filter(row -> search == null || row.get("numero").toString().toLowerCase().contains(search.toLowerCase()))
+                .toList());
+            }
 
     private Map<String, Object> requestRow(Richiesta request) {
         Map<String, Object> row = new HashMap<>();
@@ -218,6 +258,23 @@ public class AdminDashboardController extends SoccorsoBaseController {
         Map<String, Object> row = new HashMap<>();
         row.put("id", material.getKey());
         row.put("stato", available ? "DISPONIBILE" : "OCCUPATO");
+        row.put("nome", material.getNome());
+        return row;
+    }
+
+    private Map<String, Object> abilityRow(Abilita ability) {
+        Map<String, Object> row = new HashMap<>();
+        row.put("id", ability.getKey());
+        row.put("nome", ability.getNome());
+        row.put("descrizione", ability.getDesc());
+        return row;
+    }
+
+    private Map<String, Object> licenseRow(Patente license) {
+        Map<String, Object> row = new HashMap<>();
+        row.put("id", license.getKey());
+        row.put("numero", license.getNumero());
+        row.put("tipo", license.getTipo() == null ? "" : license.getTipo().name());
         return row;
     }
 

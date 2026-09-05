@@ -3,6 +3,16 @@
 <@basePage title="SoccorsoWeb - Home" css=["/style/home.css"]>
   <section class="hero" id="main-content" aria-labelledby="request-heading">
     <div class="container">
+    <#if success?? && success>
+      <div class="home-alert home-alert-success">
+        Richiesta inviata con successo. Segua le istruzioni inviate per email per verificarla.
+      </div>
+    </#if>
+    <#if error?? && error>
+      <div class="home-alert home-alert-error">
+        C'è stato un'errore nell'invio della richiesta, riprovi più tardi.
+      </div>
+    </#if>
       <h2 id="request-heading">Invia una richiesta di soccorso</h2>
       <p id="form-description">Compila i campi sottostanti per inviare una richiesta di soccorso.</p>
       <#assign emergencyFields = [
@@ -59,6 +69,7 @@
           enctype="multipart/form-data"
           submitLabel="Invia richiesta"
           resetLabel="Annulla"
+          action="${ctx}/submit"
       />
     </div>
   </section>

@@ -63,7 +63,7 @@ public class CreaRichiestaController extends SoccorsoBaseController {
             );
             if (isDuplicateRequest(richiestaDAO, richiestaSignature)) {
                 request.getSession(true).setAttribute("ultima_richiesta", payload);
-                response.sendRedirect(request.getContextPath() + "/home?success=richiesta-sent");
+                response.sendRedirect(request.getContextPath() + "/home?error=true");
                 return;
             }
 
@@ -88,7 +88,7 @@ public class CreaRichiestaController extends SoccorsoBaseController {
                 request.getSession().setAttribute("verification.link",
                     org.soccorsoweb.business.controller.VerifyRequestController.buildVerificationLink(
                         request, richiesta.getString()));
-                response.sendRedirect(request.getContextPath() + "/verify-request");
+                ServletHelpers.redirectAndOpenTab(response, request.getContextPath() + "/home?success=true", request.getContextPath() + "/verify-request");
         } catch (IOException | DataException ex) {
             handleError(ex, request, response);
         }

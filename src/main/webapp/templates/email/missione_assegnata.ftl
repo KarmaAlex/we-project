@@ -1,6 +1,3 @@
-```ftl
-<#-- Template: missione_assegnata.ftl -->
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -9,20 +6,20 @@
 </head>
 <body>
 
-<h2>Nuova missione assegnata</h2>
+<h1>Email simulata</h1>
 
-<p>
-    Ti è stata assegnata una nuova missione.
-</p>
-
-<#if destinatari?? && destinatari?has_content>
-<p><strong>Email simulate:</strong></p>
+<p>Questa email sarebbe stata inviata a:</p>
 <ul>
     <#list destinatari as destinatario>
         <li>${destinatario}</li>
     </#list>
 </ul>
-</#if>
+
+<h2>Nuova missione assegnata</h2>
+
+<p>
+    Ti è stata assegnata una nuova missione.
+</p>
 
 <h3>Dettagli della missione</h3>
 
@@ -32,12 +29,12 @@
         <td>${missione.posizione}</td>
     </tr>
     <tr>
-        <td><strong>Squadra:</strong></td>
-        <td>${missione.ID_SQUADRA}</td>
+        <td><strong>Caposquadra:</strong></td>
+        <td>${missione.caposquadra}</td>
     </tr>
     <tr>
         <td><strong>Inizio:</strong></td>
-        <td>${missione.inizio?string("dd/MM/yyyy HH:mm")}</td>
+        <td>${missione.inizio?datetime("yyyy-MM-dd'T'HH:mm")?string("dd/MM/yyyy HH:mm")}</td>
     </tr>
 </table>
 
@@ -59,4 +56,3 @@
 
 </body>
 </html>
-```

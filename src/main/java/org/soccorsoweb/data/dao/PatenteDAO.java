@@ -13,6 +13,10 @@ public interface PatenteDAO extends GenericDao{
     Patente getPatente(int patente_key) throws DataException;
     
     List<Patente> getPatenti() throws DataException;
+
+    List<Patente> getPatentiDisponibili() throws DataException;
+
+    boolean isPatenteDisponibile(int patenteKey) throws DataException;
     
     List<Patente> getPatentiByUtente(Utente utente) throws DataException;
     

@@ -9,14 +9,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.soccorsoweb.business.controller.SoccorsoBaseController;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
+import org.soccorsoweb.data.dao.MaterialeDAO;
+import org.soccorsoweb.data.dao.MezzoDAO;
 import org.soccorsoweb.data.dao.MissioneDAO;
 import org.soccorsoweb.data.dao.RichiestaDAO;
 import org.soccorsoweb.data.dao.SquadraDAO;
 import org.soccorsoweb.data.dao.UtenteDAO;
 import org.soccorsoweb.framework.security.SecurityHelpers;
+import org.soccorsoweb.framework.util.ServletHelpers;
+import org.soccorsoweb.model.Anagrafica;
+import org.soccorsoweb.model.Materiale;
+import org.soccorsoweb.model.Mezzo;
 import org.soccorsoweb.model.Missione;
 import org.soccorsoweb.model.Richiesta;
 import org.soccorsoweb.model.Squadra;
@@ -26,16 +34,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
  
 public class AddMissionController extends SoccorsoBaseController {
-
-	private Configuration emailCfg;
-
-	@Override
-	public void init() throws ServletException {
-		super.init();
-		emailCfg = new Configuration(Configuration.VERSION_2_3_34);
-		emailCfg.setServletContextForTemplateLoading(getServletContext(), "/templates/email");
-		emailCfg.setDefaultEncoding("UTF-8");
-	}
 
 	@Override
 	protected void processRequest(HttpServletRequest request, HttpServletResponse response)
@@ -74,22 +72,55 @@ public class AddMissionController extends SoccorsoBaseController {
 		}
 	}
 
-	private void renderAddMission(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException {
-		Map<String, Object> model = new HashMap<>();
-		model.put("ctx", request.getContextPath());
-		model.put("csrfToken", SecurityHelpers.createCsrfToken(request));
-		model.put("currentTime", LocalDateTime.now().withSecond(0).withNano(0).toString());
-		model.put("richiestaId", request.getParameter("richiesta_id"));
-		Map<String, Object> item = new HashMap<>();
-		item.put("id", request.getParameter("richiesta_id"));
-		item.put("indirizzo", "");
-		model.put("item", item);
-		model.put("squadreDisponibili", List.of());
-		model.put("mezziDisponibili", List.of());
-		model.put("materialiDisponibili", List.of());
-		renderTemplate(response, "add/missione-add.ftl", model,
-				"Errore durante il rendering del form missione");
+	private void renderAddMission(HttpServletRequest request, HttpServletResponse response) throws ServletException {
+		try{
+			Map<String, Object> model = new HashMap<>();
+			RichiestaDAO richestaDAO = (RichiestaDAO)this.dl.getDAO(Richiesta.class);
+			Richiesta richiesta = richestaDAO.getRichiesta(Integer.parseInt(request.getParameter("richiesta_id")));
+			SquadraDAO squadraDAO = (SquadraDAO)this.dl.getDAO(Squadra.class);
+			List<Map<String, Object>> squadre = new ArrayList<>();
+			for(Squadra s: squadraDAO.getSquadreDisponibili()){
+				Map<String, Object> sMap = new HashMap<>();
+				sMap.put("id", s.getKey());
+				Anagrafica capoAnag = s.getCapoSquadra().getAnagrafica();
+				sMap.put("caposquadra", capoAnag.getNome() + " " + capoAnag.getCognome());
+				squadre.add(sMap);
+			}
+
+			MezzoDAO mezzoDAO = (MezzoDAO)this.dl.getDAO(Mezzo.class);
+			List<Map<String, Object>> mezzi = new ArrayList<>();
+			for(Mezzo m: mezzoDAO.getMezziDisponibili()){
+				Map<String, Object> mMap = new HashMap<>();
+				mMap.put("id", m.getKey());
+				mMap.put("nome", m.getNome());
+				mezzi.add(mMap);
+			}
+
+			MaterialeDAO materialeDAO = (MaterialeDAO)this.dl.getDAO(Materiale.class);
+			List<Map<String, Object>> materiali = new ArrayList<>();
+			for(Materiale m: materialeDAO.getMaterialiDisponibili()){
+				Map<String, Object> mMap = new HashMap<>();
+				mMap.put("id", m.getKey());
+				mMap.put("nome", m.getNome());
+				materiali.add(mMap);
+			}
+
+			model.put("ctx", request.getContextPath());
+			model.put("csrfToken", SecurityHelpers.createCsrfToken(request));
+			model.put("currentTime", LocalDateTime.now().withSecond(0).withNano(0).toString());
+			model.put("richiestaId", request.getParameter("richiesta_id"));
+			Map<String, Object> item = new HashMap<>();
+			item.put("id", request.getParameter("richiesta_id"));
+			item.put("indirizzo", richiesta.getDescrizioneDettaglio().getPosizione());
+			model.put("item", item);
+			model.put("squadreDisponibili", squadre);
+			model.put("mezziDisponibili", mezzi);
+			model.put("materialiDisponibili", materiali);
+			renderTemplate(response, "add/missione-add.ftl", model,
+					"Errore durante il rendering del form missione");
+		} catch(DataException e){
+			throw new ServletException(e);
+		}
 	}
 
 	private void createMission(HttpServletRequest request, HttpServletResponse response, DataLayer dl)
@@ -129,12 +160,13 @@ public class AddMissionController extends SoccorsoBaseController {
 		Map<String, Object> missioneMail = new HashMap<>();
 		missioneMail.put("posizione", richiesta.getDescrizioneDettaglio() == null
 				? "Non specificata" : richiesta.getDescrizioneDettaglio().getPosizione());
-		missioneMail.put("ID_SQUADRA", squadra.getKey());
+		Anagrafica anagCapo = squadra.getCapoSquadra().getAnagrafica();
+		missioneMail.put("caposquadra", anagCapo.getNome() + " " + anagCapo.getCognome());
 		missioneMail.put("inizio", missione.getInizio());
 		missioneMail.put("obiettivo", missione.getObiettivo());
 		request.getSession(true).setAttribute("mission.mail.missione", missioneMail);
 		request.getSession().setAttribute("mission.mail.recipients", getRecipientEmails(componenti, this.dl));
-		response.sendRedirect(request.getContextPath() + "/api/add/missioni/mail");
+		ServletHelpers.redirectAndOpenTab(response, request.getContextPath() + "/admin-dashboard?section=missions", request.getContextPath() + "/api/add/missioni/mail");
 	}
 
 	private void renderMissionMail(HttpServletRequest request, HttpServletResponse response)
@@ -169,8 +201,7 @@ public class AddMissionController extends SoccorsoBaseController {
 			String errorMessage) throws ServletException {
 		response.setContentType("text/html;charset=UTF-8");
 		try {
-			Configuration templateConfiguration = templateName.startsWith("email/") ? emailCfg : cfg;
-			Template template = templateConfiguration.getTemplate(templateName);
+			Template template = cfg.getTemplate(templateName);
 			template.process(model, response.getWriter());
 		} catch (IOException | TemplateException ex) {
 			throw new ServletException(errorMessage, ex);

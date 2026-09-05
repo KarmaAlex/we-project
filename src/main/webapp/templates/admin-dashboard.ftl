@@ -24,6 +24,12 @@
     <#case "materials">
         <#include "admin/materials-table.ftl">
     <#break>
+    <#case "abilities">
+        <#include "admin/abilities-table.ftl">
+    <#break>
+    <#case "licenses">
+        <#include "admin/licenses-table.ftl">
+    <#break>
     <#default>
         <div class="empty-state">
             <p>Sezione non trovata</p>

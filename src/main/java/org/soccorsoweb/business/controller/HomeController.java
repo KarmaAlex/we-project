@@ -14,18 +14,19 @@ import org.soccorsoweb.framework.security.SecurityHelpers;
 public class HomeController extends SoccorsoBaseController {
 
     @Override
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException {
         String ctx = request.getContextPath();
         String path = request.getRequestURI().substring(ctx.length());
         if((!"/".equals(path)) && (!"/home".equals(path))){
             try {
                 getServletContext().getNamedDispatcher("default").forward(request, response);
+                return;
             } catch (IOException e) {
                 throw new ServletException(e);
             }
-            
         }
+
         Map<String, Object> model = new HashMap<>();
         model.put("ctx", ctx);
         model.put("currentUser", buildCurrentUser(request));
@@ -34,6 +35,8 @@ public class HomeController extends SoccorsoBaseController {
         model.put("isOperator", SecurityHelpers.isOperator(request));
         model.put("successMessage", request.getParameter("success"));
         model.put("csrfToken", SecurityHelpers.createCsrfToken(request));
+        model.put("success", request.getParameter("success") != null ? true : false);
+        model.put("error", request.getParameter("error") != null ? true : false);
 
         response.setContentType("text/html;charset=UTF-8");
 

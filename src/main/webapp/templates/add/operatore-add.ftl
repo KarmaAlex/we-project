@@ -29,6 +29,13 @@
     "label":"Email",
     "value":"",
     "required":true
+},
+{
+    "type":"select",
+    "name":"patente",
+    "label":"Patente",
+    "options":patentiDisponibili![],
+    "placeholder":"Nessuna patente"
 }
 ]>
 

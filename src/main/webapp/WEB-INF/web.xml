@@ -242,6 +242,26 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>AddAbilityController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.add.AddAbilityController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>AddAbilityController</servlet-name>
+        <url-pattern>/api/add/abilities/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AddLicenseController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.add.AddLicenseController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>AddLicenseController</servlet-name>
+        <url-pattern>/api/add/licenses/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>AddOperatorController</servlet-name>
         <servlet-class>org.soccorsoweb.business.controller.admin.add.AddOperatorController</servlet-class>
     </servlet>
@@ -263,7 +283,7 @@
 
     <servlet>
         <servlet-name>VerifyRequestController</servlet-name>
-        <servlet-class>org.soccorsoweb.business.VerifyRequestController</servlet-class>
+        <servlet-class>org.soccorsoweb.business.controller.VerifyRequestController</servlet-class>
     </servlet>
 
     <servlet-mapping>
@@ -323,6 +343,17 @@
         <servlet-name>ProfileController</servlet-name>
         <url-pattern>/profile</url-pattern>
         <url-pattern>/operator/profile</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>OperatorProfileController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.OperatorProfileController</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>OperatorProfileController</servlet-name>
+        <url-pattern>/api/operator/profile/update</url-pattern>
+        <url-pattern>/api/operator/profile/abilities</url-pattern>
     </servlet-mapping>
     
     

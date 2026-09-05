@@ -49,7 +49,7 @@ public class OperatorDetailsController extends AbstractIdRequiredController {
 			}
 
 			Utente utente = ((UtenteDAO) this.dl.getDAO(Utente.class)).getUtente(operatoreId);
-			if (utente == null || utente.isAdmin()) {
+			if (utente == null) {
 				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 				return;
 			}

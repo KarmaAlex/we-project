@@ -1,6 +1,5 @@
 package org.soccorsoweb.business.controller.admin.add;
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
@@ -13,9 +12,12 @@ import org.soccorsoweb.business.controller.SoccorsoBaseController;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.CredenzialiDAO;
+import org.soccorsoweb.data.dao.PatenteDAO;
 import org.soccorsoweb.data.dao.UtenteDAO;
 import org.soccorsoweb.framework.security.SecurityHelpers;
+import org.soccorsoweb.framework.util.ServletHelpers;
 import org.soccorsoweb.model.Credenziali;
+import org.soccorsoweb.model.Patente;
 import org.soccorsoweb.model.Utente;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -67,7 +69,12 @@ public class AddOperatorController extends SoccorsoBaseController {
 		Map<String, Object> model = new HashMap<>();
 		model.put("ctx", request.getContextPath());
 		model.put("csrfToken", SecurityHelpers.createCsrfToken(request));
-		renderTemplate(request, response, "templates/add/operatore-add.ftl", model, "Errore durante il rendering del form operatore");
+		try {
+			model.put("patentiDisponibili", getAvailableLicenses());
+		} catch (DataException ex) {
+			throw new ServletException("Errore durante il caricamento delle patenti", ex);
+		}
+		renderTemplate(request, response, "add/operatore-add.ftl", model, "Errore durante il rendering del form operatore");
 	}
 
 	private void addOperator(HttpServletRequest request, HttpServletResponse response, DataLayer dl)
@@ -76,6 +83,7 @@ public class AddOperatorController extends SoccorsoBaseController {
 		String cognome = SecurityHelpers.sanitizeTextInput(request.getParameter("cognome"));
 		String username = SecurityHelpers.sanitizeTextInput(request.getParameter("nome_utente"));
 		String email = SecurityHelpers.sanitizeTextInput(request.getParameter("email"));
+		String patenteIdValue = SecurityHelpers.sanitizeTextInput(request.getParameter("patente"));
 
 		if (nome.isBlank() || cognome.isBlank() || username.isBlank() || email.isBlank()) {
 			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -90,12 +98,30 @@ public class AddOperatorController extends SoccorsoBaseController {
 			return;
 		}
 
+		Patente patente = null;
+		if (!patenteIdValue.isBlank()) {
+			try {
+				int patenteId = Integer.parseInt(patenteIdValue);
+				patente = ((PatenteDAO) this.dl.getDAO(Patente.class)).getPatente(patenteId);
+			} catch (NumberFormatException ex) {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Patente non valida");
+				return;
+			}
+			if (patente == null || !isLicenseAvailable(patente.getKey())) {
+				response.sendError(HttpServletResponse.SC_CONFLICT, "Patente già assegnata o non valida");
+				return;
+			}
+		}
+
 		String temporaryPassword = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
 		Utente utente = utenteDAO.createUtente();
 		utente.setNomeUtente(username);
 		utente.setAdmin(false);
 		utente.setMonteOre(0);
 		utenteDAO.storeUtente(utente);
+		if (patente != null) {
+			((PatenteDAO) this.dl.getDAO(Patente.class)).legaPatenteAUtente(patente, utente);
+		}
 
 		CredenzialiDAO credenzialiDAO = (CredenzialiDAO) this.dl.getDAO(Credenziali.class);
 		Credenziali credenziali = credenzialiDAO.createCredenziali();
@@ -107,7 +133,28 @@ public class AddOperatorController extends SoccorsoBaseController {
 		request.getSession(true).setAttribute("operator.mail.username", username);
 		request.getSession(true).setAttribute("operator.mail.email", email);
 		request.getSession(true).setAttribute("operator.mail.password", temporaryPassword);
-		response.sendRedirect(request.getContextPath() + "/api/add/operators/mail");
+		ServletHelpers.redirectAndOpenTab(response, request.getContextPath() + "/admin-dashboard?section=materials", request.getContextPath() + "/api/add/operators/mail");
+	}
+
+	private java.util.List<Map<String, Object>> getAvailableLicenses() throws DataException {
+		PatenteDAO patenteDAO = (PatenteDAO) this.dl.getDAO(Patente.class);
+		return patenteDAO.getPatentiDisponibili().stream()
+				.map(this::licenseOption)
+				.toList();
+	}
+
+	private boolean isLicenseAvailable(Integer licenseId) throws DataException {
+		if (licenseId == null) {
+			return false;
+		}
+		return ((PatenteDAO) this.dl.getDAO(Patente.class)).isPatenteDisponibile(licenseId);
+	}
+
+	private Map<String, Object> licenseOption(Patente patente) {
+		Map<String, Object> option = new HashMap<>();
+		option.put("value", patente.getKey());
+		option.put("label", patente.getNumero() + " (" + patente.getTipo() + ")");
+		return option;
 	}
 
 	private void renderMailConfirmation(HttpServletRequest request, HttpServletResponse response)

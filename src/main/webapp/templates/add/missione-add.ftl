@@ -5,7 +5,7 @@
         <#assign squadraOptions = squadraOptions + [
             {
                 "value":"${squadra.id}",
-                "label":"${squadra.id}"
+                "label":"#${squadra.id}, Capo: ${squadra.caposquadra}"
             }
         ]>
     </#list>
@@ -17,7 +17,7 @@
         <#assign mezzoOptions = mezzoOptions + [
             {
                 "value":"${mezzo.id}",
-                "label":"${mezzo.id}"
+                "label":"${mezzo.nome}"
             }
         ]>
     </#list>
@@ -29,7 +29,7 @@
         <#assign materialeOptions = materialeOptions + [
             {
                 "value":"${materiale.id}",
-                "label":"${materiale.id}"
+                "label":"${materiale.nome}"
             }
         ]>
     </#list>

@@ -4,6 +4,7 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +20,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public class AddMaterialController extends SoccorsoBaseController {
+
+    private static final SecureRandom RANDOM = new SecureRandom();
     
+    @Override 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException {
         if (!SecurityHelpers.isAdmin(request)) {
@@ -46,7 +50,7 @@ public class AddMaterialController extends SoccorsoBaseController {
 
         try {
             
-            addMateriale(request, response, this.dl);
+            addMateriale(request, response);
         } catch (IOException | DataException ex) {
             handleError(ex, request, response);
         }
@@ -68,14 +72,13 @@ public class AddMaterialController extends SoccorsoBaseController {
     }
 
 
-    private void addMateriale(HttpServletRequest request, HttpServletResponse response, DataLayer dl)
+    private void addMateriale(HttpServletRequest request, HttpServletResponse response)
             throws IOException, DataException {
         response.setContentType("application/json;charset=UTF-8");
 
         // Validazione e sanificazione input
         String nome = SecurityHelpers.sanitizeTextInput(request.getParameter("nome"));
         String descrizione = SecurityHelpers.sanitizeTextInput(request.getParameter("descrizione"));
-        String quantitaStr = request.getParameter("quantita");
 
         // Validazione campi obbligatori
         if (nome == null || nome.isEmpty()) {
@@ -87,27 +90,6 @@ public class AddMaterialController extends SoccorsoBaseController {
         if (descrizione == null || descrizione.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.getWriter().write("{\"error\":\"Descrizione obbligatoria\"}");
-            return;
-        }
-
-        if (quantitaStr == null || quantitaStr.isEmpty()) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\":\"Quantità obbligatoria\"}");
-            return;
-        }
-
-        // Validazione quantità (numero positivo)
-        int quantita;
-        try {
-            quantita = SecurityHelpers.checkNumeric(quantitaStr);
-            if (quantita < 0) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"error\":\"Quantità deve essere positiva\"}");
-                return;
-            }
-        } catch (NumberFormatException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"error\":\"Quantità non valida\"}");
             return;
         }
 
@@ -132,10 +114,10 @@ public class AddMaterialController extends SoccorsoBaseController {
         
         // Risposta di successo
         response.setStatus(HttpServletResponse.SC_CREATED);
-        response.getWriter().write("{\"success\":true,\"message\":\"Materiale aggiunto con successo\",\"id\":" + materiale.getKey() + "}");
+        response.sendRedirect(request.getContextPath() + "/admin-dashboard?section=materials");
     }
 
-     private String generateCodiceMateriale() {
-        return "MAT-" + System.currentTimeMillis() + "-" + (int)(Math.random() * 10000);
+    private String generateCodiceMateriale() {
+        return String.format("MAT-%06d", RANDOM.nextInt(1000000));
     }
 }
