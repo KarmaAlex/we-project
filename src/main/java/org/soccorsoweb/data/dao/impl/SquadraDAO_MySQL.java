@@ -24,6 +24,7 @@ public class SquadraDAO_MySQL extends Dao implements SquadraDAO {
     private PreparedStatement iAssegnaSquadra;
     private PreparedStatement dAssegnaSquadra;
     private PreparedStatement sOperatoriSquadra;
+    private PreparedStatement sSquadreDisponibili;
 
     public SquadraDAO_MySQL(DataLayer d) {
         super(d);
@@ -56,6 +57,13 @@ public class SquadraDAO_MySQL extends Dao implements SquadraDAO {
             sOperatoriSquadra = connection.prepareStatement(
                 "SELECT ID_UTENTE FROM assegna_squadra WHERE ID_SQUADRA=?"
             );
+            
+            sSquadreDisponibili = connection.prepareStatement(
+                "SELECT * FROM Squadra s WHERE NOT EXISTS (" +
+                "  SELECT 1 FROM Missione mi " +
+                "  WHERE mi.ID_SQUADRA = s.ID AND mi.completata = false" +
+                ")"
+            );
 
         } catch (SQLException ex) {
             throw new DataException("Error initializing squadra data layer", ex);
@@ -71,6 +79,7 @@ public class SquadraDAO_MySQL extends Dao implements SquadraDAO {
             if (iAssegnaSquadra != null) iAssegnaSquadra.close();
             if (dAssegnaSquadra != null) dAssegnaSquadra.close();
             if (sOperatoriSquadra != null) sOperatoriSquadra.close();
+            if (sSquadreDisponibili != null) sSquadreDisponibili.close();
         } catch (SQLException ex) {
             // chiusura silente
         }
@@ -190,6 +199,21 @@ public class SquadraDAO_MySQL extends Dao implements SquadraDAO {
             }
         } catch (SQLException ex) {
             throw new DataException("Unable to load operatori della squadra", ex);
+        }
+        return result;
+    }
+    
+    @Override
+    public List<Squadra> getSquadreDisponibili() throws DataException {
+        List<Squadra> result = new ArrayList<>();
+        try (ResultSet rs = sSquadreDisponibili.executeQuery()) {
+            while (rs.next()) {
+                Squadra s = createSquadra(rs);
+                getDataLayer().getCache().add(Squadra.class, s);
+                result.add(s);
+            }
+        } catch (SQLException ex) {
+            throw new DataException("Unable to load squadre disponibili", ex);
         }
         return result;
     }
