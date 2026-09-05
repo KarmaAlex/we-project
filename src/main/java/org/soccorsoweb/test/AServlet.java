@@ -146,6 +146,15 @@ public class AServlet extends HttpServlet {
                     (!uPresente ? "[OK] " : "[FALLITO] ") +
                     "Utenti disponibili trovati: " + utentiDisp.size() +
                     " — utente di test " + (uPresente ? "ERRONEAMENTE presente" : "correttamente escluso") + "</p>");
+                
+                // --- Squadre disponibili: la squadra sq NON deve comparire, essendo assegnata alla missione attiva ---
+                out.println("<p>Test getSquadreDisponibili()...</p>");
+                List<Squadra> squadreDisp = squadraDAO.getSquadreDisponibili();
+                boolean sqPresente = squadreDisp.stream().anyMatch(x -> x.getKey().equals(sq.getKey()));
+                out.println("<p class='" + (!sqPresente ? "success" : "error") + "'>" +
+                    (!sqPresente ? "[OK] " : "[FALLITO] ") +
+                    "Squadre disponibili trovate: " + squadreDisp.size() +
+                    " — squadra di test " + (sqPresente ? "ERRONEAMENTE presente" : "correttamente esclusa") + "</p>");
 
                 // --- 2. Mezzi disponibili: mz NON deve comparire ---
                 out.println("<p>Test getMezziDisponibili()...</p>");

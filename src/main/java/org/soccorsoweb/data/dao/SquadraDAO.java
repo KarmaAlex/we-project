@@ -19,4 +19,6 @@ public interface SquadraDAO extends GenericDao{
     void rimuoviMembroDaSquadra(Squadra squadra, Utente utente) throws DataException;
 
     List<Utente> getOperatoriSquadra(int squadra_key) throws DataException;
+    
+    List<Squadra> getSquadreDisponibili() throws DataException;
 }
