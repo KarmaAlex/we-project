@@ -57,7 +57,7 @@
           "type":"text",
           "name":"captcha",
           "label":"Captcha: risolvi: ${captchaFirst} + ${captchaSecond} =",
-          "required":true,
+          "required":true
       }
       ]>
 
