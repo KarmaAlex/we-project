@@ -72,14 +72,11 @@ public class EditMaterialController extends AbstractIdRequiredController {
 		dettaglio.put("id", materiale.getKey());
 		dettaglio.put("nome", materiale.getNome());
 		dettaglio.put("descrizione", materiale.getDesc());
-		dettaglio.put("quantita", 0);
-		dettaglio.put("missioneId", "");
 
 		Map<String, Object> model = new HashMap<>();
 		model.put("ctx", request.getContextPath());
 		model.put("csrfToken", SecurityHelpers.createCsrfToken(request));
 		model.put("dettaglio", dettaglio);
-		model.put("missioniAperte", java.util.List.of());
 
 		response.setContentType("text/html;charset=UTF-8");
 		try {

@@ -1,21 +1,4 @@
 <#include "/form.ftl">
-<#assign missioneOptions = [
-    {
-        "value":"",
-        "label":"Nessuna"
-    }
-]>
-
-<#if missioniAperte??>
-    <#list missioniAperte as missione>
-        <#assign missioneOptions = missioneOptions + [
-            {
-                "value":"${missione.id}",
-                "label":"${missione.id}"
-            }
-        ]>
-    </#list>
-</#if>
 
 <#assign materialeFields = [
 {
@@ -34,14 +17,6 @@
     "rows":4,
     "required":true,
     "placeholder":"Descrizione del materiale"
-},
-{
-    "type":"select",
-    "name":"missione_corrente",
-    "label":"Missione Corrente",
-    "value":dettaglio.missioneId!'',
-    "required":false,
-    "options":missioneOptions
 },
 {
     "type":"hidden",

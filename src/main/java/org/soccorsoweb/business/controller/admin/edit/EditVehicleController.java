@@ -72,13 +72,11 @@ public class EditVehicleController extends AbstractIdRequiredController {
 		dettaglio.put("nome", mezzo.getNome());
 		dettaglio.put("descrizione", mezzo.getDesc());
 		dettaglio.put("targa", mezzo.getTarga());
-		dettaglio.put("missione_corrente", mezzo.isAssegnato() ? mezzo.getMissioneKey() : "");
 
 		Map<String, Object> model = new HashMap<>();
 		model.put("ctx", request.getContextPath());
 		model.put("csrfToken", SecurityHelpers.createCsrfToken(request));
 		model.put("dettaglio", dettaglio);
-		model.put("missioniAperte", java.util.List.of());
 
 		response.setContentType("text/html;charset=UTF-8");
 		try {
