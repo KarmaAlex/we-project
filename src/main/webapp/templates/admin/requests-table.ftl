@@ -47,16 +47,28 @@
                 "label":"Attiva"
             },
             {
+                "value":"IN_ATTESA",
+                "label":"In attesa"
+            },
+            {
                 "value":"IN_CORSO",
                 "label":"In Corso"
+            },
+            {
+                "value":"COMPLETATA",
+                "label":"Completata"
             },
             {
                 "value":"CHIUSA",
                 "label":"Chiusa"
             },
             {
-                "value":"IGNORATA",
-                "label":"Ignorata"
+                "value":"RIFIUTATA",
+                "label":"Rifiutata"
+            },
+            {
+                "value":"ANNULLATA",
+                "label":"Annullata"
             }
         ]
     },

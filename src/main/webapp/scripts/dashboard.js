@@ -3,8 +3,6 @@
  * Graceful degradation: Forms work without JavaScript
  */
 
-//TODO: fix filtering
-
 // Debounce to prevent spam filtering
 function debounce(func, delay) {
   let timeoutId;
@@ -66,11 +64,13 @@ const ModalManager = {
 
 // Table and pagination AJAX loader
 const DataLoader = {
-  async loadSection(section, page = 1, filters = {}) {
+  async loadSection(section, page = 1, filters = {}, sort = '', direction = 'asc') {
     try {
       const params = new URLSearchParams();
       params.append('section', section);
       params.append('page', page);
+      if (sort) params.append('sort', sort);
+      if (direction) params.append('direction', direction);
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
@@ -124,14 +124,19 @@ const DataLoader = {
   },
 
   attachHandlers() {
+    // JavaScript submits filters through AJAX.
+    const submitButton = document.getElementById('filter-submit');
+    if (submitButton) submitButton.style.display = 'none';
+
     // Pagination links
     document.querySelectorAll('.page-link:not(.disabled)').forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
         const page = link.dataset.page;
-        const section = link.dataset.section || document.querySelector('.data-table')?.dataset.section;
+        const table = document.querySelector('.data-table');
+        const section = link.dataset.section || table?.dataset.section;
         const filters = this.getFilters();
-        this.loadSection(section, page, filters);
+        this.loadSection(section, page, filters, table?.dataset.sort, table?.dataset.direction);
       });
     });
 
@@ -143,6 +148,24 @@ const DataLoader = {
         const href = trigger.href;
         const content = await this.loadModalContent(href);
         ModalManager.openModal(modalId, content);
+      });
+    });
+
+    document.querySelectorAll('th.sortable').forEach(header => {
+      const sort = () => {
+        const table = header.closest('.data-table');
+        const currentField = table?.dataset.sort;
+        const direction = currentField === header.dataset.field && table.dataset.direction === 'asc'
+          ? 'desc' : 'asc';
+        const section = table?.dataset.section;
+        if (section) this.loadSection(section, 1, this.getFilters(), header.dataset.field, direction);
+      };
+      header.addEventListener('click', sort);
+      header.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          sort();
+        }
       });
     });
 
@@ -160,7 +183,8 @@ const DataLoader = {
     });
     console.log('Extracted filters:', filters);
     return filters;
-  }
+  },
+
 };
 
 // Filter form handler
@@ -205,15 +229,12 @@ function setupFilterHandlers() {
 document.addEventListener('DOMContentLoaded', () => {
   ModalManager.init();
   DataLoader.attachHandlers();
-  setupFilterHandlers();
-  // Hide submit button if javascript is enabled since in that case we use AJAX
-  document.getElementById("filter-submit").style.display = "none";
 });
 
 // Exports for opening modals from the table buttons
 window.Dashboard = {
   openModal: (id, url) => ModalManager.openModal(id, url),
   closeModal: (id) => ModalManager.closeModal(id),
-  loadSection: (section, page, filters) => DataLoader.loadSection(section, page, filters),
+  loadSection: (section, page, filters, sort, direction) => DataLoader.loadSection(section, page, filters, sort, direction),
   loadModalContent: (url) => DataLoader.loadModalContent(url)
 };

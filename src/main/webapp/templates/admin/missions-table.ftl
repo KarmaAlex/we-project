@@ -19,8 +19,13 @@
         "label":"Obiettivo"
     },
     {
-        "field":"stato",
-        "label":"Stato",
+        "field":"successo",
+        "label":"Successo",
+        "sortable":true
+    },
+    {
+        "field":"completata",
+        "label":"Completata",
         "sortable":true,
         "type":"badge"
     },
@@ -34,20 +39,55 @@
 <#assign filters = [
     {
         "type":"select",
-        "name":"status",
-        "label":"Stato",
+        "name":"completata",
+        "label":"Completata",
         "options":[
             {
                 "value":"",
                 "label":"Tutti"
             },
             {
-                "value":"IN_CORSO",
-                "label":"In Corso"
+                "value":"false",
+                "label":"In corso"
             },
             {
-                "value":"CHIUSA",
-                "label":"Chiusa"
+                "value":"true",
+                "label":"Completata"
+            }
+        ]
+    },
+    {
+        "type":"select",
+        "name":"successo",
+        "label":"Successo",
+        "options":[
+            {
+                "value":"",
+                "label":"Tutti"
+            },
+            {
+                "value":"0",
+                "label":"0"
+            },
+            {
+                "value":"1",
+                "label":"1"
+            },
+            {
+                "value":"2",
+                "label":"2"
+            },
+            {
+                "value":"3",
+                "label":"3"
+            },
+            {
+                "value":"4",
+                "label":"4"
+            },
+            {
+                "value":"5",
+                "label":"5"
             }
         ]
     },

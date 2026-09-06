@@ -49,6 +49,7 @@ public abstract class SoccorsoBaseController extends AbstractBaseController {
 		cfg = new Configuration(Configuration.VERSION_2_3_34);
 		cfg.setServletContextForTemplateLoading(getServletContext(), "/templates");
 		cfg.setDefaultEncoding("UTF-8");
+        cfg.setOutputEncoding("UTF-8");
 	}
 
     @Override

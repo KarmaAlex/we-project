@@ -9,7 +9,6 @@ import java.util.List;
 import org.soccorsoweb.model.Materiale;
 import org.soccorsoweb.model.Mezzo;
 import org.soccorsoweb.model.Utente;
-import org.soccorsoweb.model.enums.EsitoMissione;
 
 public interface MissioneDAO extends GenericDao{
     
@@ -23,7 +22,7 @@ public interface MissioneDAO extends GenericDao{
     
     List<Missione> getMissioniByUtente(Utente utente) throws DataException; //lista delle missioni associate ad un operatore
     
-    List<Missione> getMissioniFiltrate(LocalDateTime inizio, LocalDateTime fine, EsitoMissione esito) throws DataException; //missioni filtrate in base alla data
+    List<Missione> getMissioniFiltrate(LocalDateTime inizio, LocalDateTime fine, Boolean completata, Integer successo) throws DataException; //missioni filtrate per data, completamento e successo
     
     List<Missione> getStoricoMissioniByUtente(Utente utente) throws DataException;
     

@@ -187,16 +187,16 @@ public class AServlet extends HttpServlet {
                 out.println("<p>Test getMissioniFiltrate() per intervallo data odierno...</p>");
                 LocalDateTime oggiInizio = LocalDateTime.now().minusDays(1);
                 LocalDateTime oggiFine = LocalDateTime.now().plusDays(1);
-                List<Missione> missioniData = missioneDAO.getMissioniFiltrate(oggiInizio, oggiFine, null);
+                List<Missione> missioniData = missioneDAO.getMissioniFiltrate(oggiInizio, oggiFine, null, null);
                 boolean misInFiltro = missioniData.stream().anyMatch(x -> x.getKey().equals(mis.getKey()));
                 out.println("<p class='" + (misInFiltro ? "success" : "error") + "'>" +
                     (misInFiltro ? "[OK] " : "[FALLITO] ") +
                     "Missioni nell'intervallo: " + missioniData.size() +
                     " — missione di test " + (misInFiltro ? "trovata" : "NON trovata") + "</p>");
 
-                out.println("<p>Test getMissioniFiltrate() per esito SUCCESSO (nessun match atteso, missione è ancora attiva)...</p>");
-                List<Missione> missioniEsito = missioneDAO.getMissioniFiltrate(null, null, EsitoMissione.SUCCESSO);
-                out.println("<p>Missioni con esito SUCCESSO trovate: " + missioniEsito.size() + "</p>");
+                out.println("<p>Test getMissioniFiltrate() per missioni completate...</p>");
+                List<Missione> missioniCompletate = missioneDAO.getMissioniFiltrate(null, null, true, null);
+                out.println("<p>Missioni completate trovate: " + missioniCompletate.size() + "</p>");
                 
                 
                 // --- 6. Filtro Richieste per data/stato/email ---

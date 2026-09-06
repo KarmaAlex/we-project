@@ -14,6 +14,13 @@
     addModalTitle="Aggiungi"
     addModalClass="modal-dialog"
 >
+    <#assign activeFilters = {}>
+    <#list filters as filter>
+        <#assign activeValue = (RequestParameters[filter.name])!''>
+        <#if activeValue?has_content>
+            <#assign activeFilters = activeFilters + {filter.name: activeValue}>
+        </#if>
+    </#list>
 
     <#if filters?has_content>
         <div class="filters-section">
@@ -28,20 +35,17 @@
                             </label>
                             <#switch filter.type>
                                 <#case "text">
-                                    <input type="text" id="filter${filter.name}" name="${filter.name}" placeholder="${filter.placeholder!''}" >
+                                    <input type="text" id="filter${filter.name}" name="${filter.name}" data-filter-field="${filter.name}" placeholder="${filter.placeholder!''}" value="${(RequestParameters[filter.name])!''}" >
                                     <#-- TODO: ricorda il valore dei filtri passandoli dal contesto value="${RequestParameters[filter.name]!}" -->
                                     <#break>
                                 <#case "date">
-                                    <input type="date" id="filter${filter.name}" name="${filter.name}" >
+                                    <input type="date" id="filter${filter.name}" name="${filter.name}" data-filter-field="${filter.name}" value="${(RequestParameters[filter.name])!''}" >
                                     <#-- value="${RequestParameters[filter.name]!}" -->
                                     <#break>
                                 <#case "select">
-                                    <select id="filter${filter.name}" name="${filter.name}" >
+                                    <select id="filter${filter.name}" name="${filter.name}" data-filter-field="${filter.name}" >
                                         <#list filter.options as option>
-                                            <option value="${option.value}" >
-                                            <#--<#if RequestParameters[filter.name]! == option.value>
-                                                    selected
-                                                </#if>-->
+                                            <option value="${option.value}" <#if (RequestParameters[filter.name])!'' == option.value>selected</#if>>
                                                 ${option.label}
                                             </option>
                                         </#list>
@@ -70,6 +74,9 @@
         totalPages=totalPages
         section=section
         hasDetails=hasDetails
+        filters=activeFilters
+        sort=sort!''
+        direction=direction!'asc'
     />
     <#if hasAddBtn>
         <div class="add-section">

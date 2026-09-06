@@ -42,7 +42,7 @@
     {
         "type":"select",
         "name":"stato",
-        "label":"Email",
+        "label":"Stato",
         "options":[
             {
                 "value":"",

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,7 +38,6 @@ import org.soccorsoweb.model.Missione;
 import org.soccorsoweb.model.Patente;
 import org.soccorsoweb.model.Richiesta;
 import org.soccorsoweb.model.Utente;
-import org.soccorsoweb.model.enums.EsitoMissione;
 import org.soccorsoweb.model.enums.StatoRichiesta;
 
 /** Admin dashboard backed by the current session and database. */
@@ -90,6 +90,7 @@ public class AdminDashboardController extends SoccorsoBaseController {
                 default:
                     break;
             }
+            applyTableState(model, section, req);
 
             resp.setContentType("text/html;charset=UTF-8");
             Template tpl = cfg.getTemplate("admin-dashboard.ftl");
@@ -142,11 +143,15 @@ public class AdminDashboardController extends SoccorsoBaseController {
     private void loadMissionsSection(Map<String, Object> model, HttpServletRequest req)
             throws DataException, ServletException {
         MissioneDAO dao = (MissioneDAO) this.dl(req).getDAO(Missione.class);
+        Boolean completata = parseBoolean(req.getParameter("completata"));
+        Integer successo = parseSuccessLevel(req.getParameter("successo"));
         List<Missione> missioni = dao.getMissioniFiltrate(
                 parseDate(req.getParameter("data_from"), false),
                 parseDate(req.getParameter("data_to"), true),
-                parseMissionStatus(req.getParameter("status")));
-        model.put("missioni", missioni.stream().map(this::missionRow).toList());
+            completata,
+            successo);
+        model.put("missioni", missioni.stream().map(this::missionRow)
+            .toList());
     }
 
     private void loadOperatorsSection(Map<String, Object> model, HttpServletRequest req)
@@ -156,9 +161,14 @@ public class AdminDashboardController extends SoccorsoBaseController {
         MissioneDAO missioneDAO = (MissioneDAO) this.dl.getDAO(Missione.class);
         CredenzialiDAO credenzialiDAO = (CredenzialiDAO) this.dl.getDAO(Credenziali.class);
         String status = blankToNull(req.getParameter("stato"));
+        String search = blankToNull(req.getParameter("nome"));
         List<Map<String, Object>> rows = new ArrayList<>();
         for (Utente operator : dao.getUtenti()) {
-            boolean busy = !missioneDAO.getMissioniByUtente(operator).stream().allMatch(Missione::isCompletata);
+            Missione currentMission = missioneDAO.getMissioniByUtente(operator).stream()
+                    .filter(mission -> !mission.isCompletata())
+                    .findFirst()
+                    .orElse(null);
+            boolean busy = currentMission != null;
             String actualStatus = busy ? "OCCUPATO" : "DISPONIBILE";
             if (status != null && !status.equals(actualStatus)) {
                 continue;
@@ -170,8 +180,11 @@ public class AdminDashboardController extends SoccorsoBaseController {
                     : anagrafica.getNome() + " " + anagrafica.getCognome());
             row.put("email", credenzialiDAO.getCredenzialiByUtente(operator).getEmail());
             row.put("stato", actualStatus);
-            row.put("missione_corrente", busy ? "In missione" : "-");
+            row.put("missione_corrente", busy ? currentMission.getKey() : "-");
             row.put("monte_ore", operator.getMonteOre());
+            if (search != null && !row.get("nome").toString().toLowerCase().contains(search.toLowerCase())) {
+                continue;
+            }
             rows.add(row);
         }
         model.put("operatori", rows);
@@ -181,9 +194,11 @@ public class AdminDashboardController extends SoccorsoBaseController {
             throws DataException, ServletException {
         MezzoDAO dao = (MezzoDAO) this.dl(req).getDAO(Mezzo.class);
         String status = blankToNull(req.getParameter("stato"));
+        String search = blankToNull(req.getParameter("nome"));
         model.put("mezzi", dao.getMezziConStato().stream()
                 .map(this::vehicleRow)
                 .filter(row -> status == null || status.equals(row.get("stato")))
+            .filter(row -> search == null || row.get("nome").toString().toLowerCase().contains(search.toLowerCase()))
                 .toList());
     }
 
@@ -191,13 +206,80 @@ public class AdminDashboardController extends SoccorsoBaseController {
             throws DataException, ServletException {
         MaterialeDAO dao = (MaterialeDAO) this.dl(req).getDAO(Materiale.class);
         String status = blankToNull(req.getParameter("status"));
+        String search = blankToNull(req.getParameter("nome"));
         Set<Integer> availableIds = new HashSet<>(dao.getMaterialiDisponibili().stream()
             .map(Materiale::getKey)
             .toList());
         model.put("materiali", dao.getMateriali().stream()
             .map(material -> materialRow(material, availableIds.contains(material.getKey())))
                 .filter(row -> status == null || status.equals(row.get("stato")))
+                .filter(row -> search == null || row.get("nome").toString().toLowerCase().contains(search.toLowerCase()))
                 .toList());
+    }
+
+    private void applyTableState(Map<String, Object> model, String section, HttpServletRequest req) {
+        String itemKey = switch (section) {
+            case "requests" -> "richieste";
+            case "missions" -> "missioni";
+            case "operators" -> "operatori";
+            case "vehicles" -> "mezzi";
+            case "materials" -> "materiali";
+            case "abilities" -> "abilita";
+            case "licenses" -> "patenti";
+            default -> null;
+        };
+        if (itemKey == null || !(model.get(itemKey) instanceof List<?> rawItems)) {
+            return;
+        }
+
+        List<Map<String, Object>> items = new ArrayList<>();
+        for (Object item : rawItems) {
+            if (item instanceof Map<?, ?> row) {
+                Map<String, Object> copy = new HashMap<>();
+                row.forEach((key, value) -> copy.put(String.valueOf(key), value));
+                items.add(copy);
+            }
+        }
+
+        String sort = allowedSortField(section, req.getParameter("sort"));
+        String direction = "desc".equalsIgnoreCase(req.getParameter("direction")) ? "desc" : "asc";
+        Comparator<Map<String, Object>> comparator = (left, right) -> compareSortValues(
+            left.get(sort), right.get(sort));
+        items.sort("desc".equals(direction) ? comparator.reversed() : comparator);
+
+        int pageSize = 10;
+        int totalPages = Math.max(1, (items.size() + pageSize - 1) / pageSize);
+        int page = Math.max(1, getIntParameter(req, "page", 1));
+        page = Math.min(page, totalPages);
+        int from = Math.min((page - 1) * pageSize, items.size());
+        int to = Math.min(from + pageSize, items.size());
+
+        model.put(itemKey, items.subList(from, to));
+        model.put("page", page);
+        model.put("totalPages", totalPages);
+        model.put("sort", sort);
+        model.put("direction", direction);
+    }
+
+    private int compareSortValues(Object left, Object right) {
+        if (left instanceof Number leftNumber && right instanceof Number rightNumber) {
+            return Double.compare(leftNumber.doubleValue(), rightNumber.doubleValue());
+        }
+        return String.valueOf(left == null ? "" : left)
+                .compareToIgnoreCase(String.valueOf(right == null ? "" : right));
+    }
+
+    private String allowedSortField(String section, String requested) {
+        Map<String, Set<String>> fields = Map.of(
+                "requests", Set.of("id", "segnalante", "stato", "data_creazione"),
+                "missions", Set.of("id", "completata", "successo", "data_inizio"),
+                "operators", Set.of("id", "nome", "stato", "monte_ore"),
+                "vehicles", Set.of("id", "nome", "targa", "stato"),
+                "materials", Set.of("id", "nome", "stato"),
+                "abilities", Set.of("id", "nome"),
+                "licenses", Set.of("id", "numero", "tipo"));
+        Set<String> allowed = fields.getOrDefault(section, Set.of("id"));
+        return requested != null && allowed.contains(requested) ? requested : "id";
     }
 
             private void loadAbilitiesSection(Map<String, Object> model, HttpServletRequest req)
@@ -214,9 +296,11 @@ public class AdminDashboardController extends SoccorsoBaseController {
                 throws DataException, ServletException {
             PatenteDAO dao = (PatenteDAO) this.dl(req).getDAO(Patente.class);
             String search = blankToNull(req.getParameter("numero"));
+            String type = blankToNull(req.getParameter("tipo"));
             model.put("patenti", dao.getPatenti().stream()
                 .map(this::licenseRow)
                 .filter(row -> search == null || row.get("numero").toString().toLowerCase().contains(search.toLowerCase()))
+                .filter(row -> type == null || type.equals(row.get("tipo")))
                 .toList());
             }
 
@@ -237,8 +321,8 @@ public class AdminDashboardController extends SoccorsoBaseController {
         row.put("richiesta_id", mission.getRichiesta() == null ? "" : mission.getRichiesta().getKey());
         row.put("squadra", mission.getSquadra() == null ? "" : mission.getSquadra().getKey());
         row.put("obiettivo", mission.getObiettivo());
-        row.put("stato", mission.isCompletata() && mission.getEsito() != null
-                ? mission.getEsito().name() : "IN_CORSO");
+        row.put("completata", mission.isCompletata());
+        row.put("successo", mission.getEsito() == null ? "-" : mission.getEsito().ordinal());
         row.put("data_inizio", mission.getInizio());
         return row;
     }
@@ -289,13 +373,27 @@ public class AdminDashboardController extends SoccorsoBaseController {
         }
     }
 
-    private EsitoMissione parseMissionStatus(String value) {
-        if (value == null || value.isBlank() || "IN_CORSO".equals(value)) {
+    private Boolean parseBoolean(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        if ("true".equalsIgnoreCase(value)) {
+            return Boolean.TRUE;
+        }
+        if ("false".equalsIgnoreCase(value)) {
+            return Boolean.FALSE;
+        }
+        return null;
+    }
+
+    private Integer parseSuccessLevel(String value) {
+        if (value == null || value.isBlank()) {
             return null;
         }
         try {
-            return EsitoMissione.valueOf(value.toUpperCase());
-        } catch (IllegalArgumentException ex) {
+            int level = Integer.parseInt(value);
+            return level >= 0 && level <= 5 ? level : null;
+        } catch (NumberFormatException ex) {
             return null;
         }
     }

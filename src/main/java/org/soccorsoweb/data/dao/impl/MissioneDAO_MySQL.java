@@ -200,21 +200,25 @@ public class MissioneDAO_MySQL extends Dao implements MissioneDAO {
     }
 
     @Override
-    public List<Missione> getMissioniFiltrate(LocalDateTime inizio, LocalDateTime fine, EsitoMissione esito) throws DataException {
+    public List<Missione> getMissioniFiltrate(LocalDateTime inizio, LocalDateTime fine, Boolean completata, Integer successo) throws DataException {
         StringBuilder sql = new StringBuilder("SELECT ID FROM Missione WHERE 1=1");
         List<Object> params = new ArrayList<>();
 
         if (inizio != null) {
-            sql.append(" AND inizio >= ?");
+            sql.append(" AND (fine IS NULL OR fine >= ?)");
             params.add(Timestamp.valueOf(inizio));
         }
         if (fine != null) {
-            sql.append(" AND fine <= ?");
+            sql.append(" AND inizio <= ?");
             params.add(Timestamp.valueOf(fine));
         }
-        if (esito != null) {
+        if (completata != null) {
+            sql.append(" AND completata = ?");
+            params.add(completata);
+        }
+        if (successo != null) {
             sql.append(" AND successo = ?");
-            params.add(esito.ordinal());
+            params.add(successo);
         }
 
         List<Missione> res = new ArrayList<>();

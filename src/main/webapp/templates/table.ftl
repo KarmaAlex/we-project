@@ -1,14 +1,14 @@
 <#-- Table macro for paginated data lists -->
-<#macro table items columns currentPage totalPages section="list" filters={} path="" hasDetails=false>
+<#macro table items columns currentPage totalPages section="list" filters={} path="" hasDetails=false sort="" direction="asc">
 <div class="table-container">
-  <table class="data-table" data-section="${section}" data-path="${path}">
+  <table class="data-table" data-section="${section}" data-path="${path}" data-sort="${sort}" data-direction="${direction}">
     <thead>
       <tr>
         <#list columns as col>
-          <th <#if col.sortable?? && col.sortable>class="sortable" tabindex="0"</#if> data-field="${col.field}">
+          <th <#if col.sortable?? && col.sortable>class="sortable" tabindex="0" role="button"</#if> data-field="${col.field}">
             ${col.label}
             <#if col.sortable?? && col.sortable>
-              <span class="sort-icon" data-field="${col.field}">⇅</span>
+              <span class="sort-icon" data-field="${col.field}" aria-hidden="true">⇅</span>
             </#if>
           </th>
         </#list>
@@ -23,7 +23,9 @@
           <tr data-id="${item.id!''}" class="table-row">
             <#list columns as col>
               <td>
-                <#if col.type?? && col.type == "badge">
+                <#if item[col.field]?? && item[col.field]?is_boolean>
+                  <span class="badge ${item[col.field]?string('true', 'false')}">${item[col.field]?string('Si', 'No')}</span>
+                <#elseif col.type?? && col.type == "badge">
                   <span class="badge ${col.badgeClass!(item[col.field]!'')?lower_case}">${item[col.field]!'-'}</span>
                 <#else>
                   ${item[col.field]!''}
@@ -52,7 +54,7 @@
 
 <#-- Pagination footer -->
 <#if totalPages gt 1>
-  <@pagination currentPage=currentPage totalPages=totalPages section=section filters=filters />
+  <@pagination currentPage=currentPage totalPages=totalPages section=section filters=filters sort=sort direction=direction />
 </#if>
 </#macro>
 
