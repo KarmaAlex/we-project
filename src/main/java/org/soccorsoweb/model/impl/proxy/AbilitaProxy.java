@@ -7,11 +7,9 @@ import org.soccorsoweb.model.impl.AbilitaImpl;
 public class AbilitaProxy extends AbilitaImpl implements DataItemProxy {
 
     private boolean modified;
-    private final DataLayer dataLayer;
 
     public AbilitaProxy(DataLayer d) {
         super();
-        this.dataLayer = d;
         this.modified = false;
     }
 

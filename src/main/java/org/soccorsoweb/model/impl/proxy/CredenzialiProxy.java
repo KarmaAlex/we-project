@@ -7,11 +7,9 @@ import org.soccorsoweb.model.impl.CredenzialiImpl;
 public class CredenzialiProxy extends CredenzialiImpl implements DataItemProxy {
 
     private boolean modified;
-    private final DataLayer dataLayer;
 
     public CredenzialiProxy(DataLayer d) {
         super();
-        this.dataLayer = d;
         this.modified = false;
     }
 

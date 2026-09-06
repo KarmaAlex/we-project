@@ -6,7 +6,6 @@ import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.dao.RichiestaDAO;
 import org.soccorsoweb.data.dao.SquadraDAO;
 import org.soccorsoweb.data.dao.UtenteDAO;
-import org.soccorsoweb.data.dao.AggiornamentoDAO;
 import org.soccorsoweb.model.Missione;
 import org.soccorsoweb.model.Richiesta;
 import org.soccorsoweb.model.Squadra;

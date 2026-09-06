@@ -7,11 +7,9 @@ import org.soccorsoweb.model.impl.MezzoImpl;
 public class MezzoProxy extends MezzoImpl implements DataItemProxy {
 
     private boolean modified;
-    private final DataLayer dataLayer;
 
     public MezzoProxy(DataLayer d) {
         super();
-        this.dataLayer = d;
         this.modified = false;
     }
 

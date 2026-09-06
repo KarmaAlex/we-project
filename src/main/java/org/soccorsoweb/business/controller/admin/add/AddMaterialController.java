@@ -1,6 +1,5 @@
 package org.soccorsoweb.business.controller.admin.add;
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.io.IOException;
@@ -10,7 +9,6 @@ import java.util.Map;
 
 import org.soccorsoweb.business.controller.SoccorsoBaseController;
 import org.soccorsoweb.data.DataException;
-import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.MaterialeDAO;
 import org.soccorsoweb.framework.security.SecurityHelpers;
 import org.soccorsoweb.model.Materiale;

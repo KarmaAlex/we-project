@@ -15,8 +15,12 @@ import java.time.LocalDateTime;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+<<<<<<< HEAD
 import java.util.logging.Logger;
 import java.util.concurrent.ConcurrentHashMap;
+=======
+
+>>>>>>> 6284ef9 (Clean up)
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +31,6 @@ import org.soccorsoweb.model.Anagrafica;
  * @author Aurora
  */
 public class  SecurityHelpers {
-    private static final Logger LOG = Logger.getLogger(SecurityHelpers.class.getName());
 
     public static HttpSession checkSession(HttpServletRequest r) {
         return checkSession(r, false);

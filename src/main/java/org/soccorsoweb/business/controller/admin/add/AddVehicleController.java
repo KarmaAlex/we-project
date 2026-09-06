@@ -1,7 +1,6 @@
 package org.soccorsoweb.business.controller.admin.add;
 
 import java.io.IOException;
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import java.util.HashMap;

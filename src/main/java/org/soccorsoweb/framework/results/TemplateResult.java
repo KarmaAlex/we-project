@@ -28,15 +28,10 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -114,10 +109,10 @@ public class TemplateResult {
 //(qui inizializzato anche con informazioni di base utili alla gestione dell'outline)
 //this method returns a base data model (hash), initialized with
 //some useful information
-    protected Map getDefaultDataModel(HttpServletRequest request) {
+    protected Map<String, Object> getDefaultDataModel(HttpServletRequest request) {
         //inizializziamo il contenitore per i dati di deafult        
         //initialize the container for default data
-        Map default_data_model = new HashMap();
+        Map<String, Object> default_data_model = new HashMap<>();
 
         //iniettiamo alcuni dati di default nel data model
         //inject some default data in the data model
@@ -126,9 +121,9 @@ public class TemplateResult {
 
         //aggiungiamo altri dati di inizializzazione presi dal web.xml
         //add other data taken from web.xml
-        Map init_tpl_data = new HashMap();
+        Map<String, Object> init_tpl_data = new HashMap<>();
         default_data_model.put("defaults", init_tpl_data);
-        Enumeration parms = context.getInitParameterNames();
+        Enumeration<String> parms = context.getInitParameterNames();
         while (parms.hasMoreElements()) {
             String name = (String) parms.nextElement();
             if (name.startsWith("view.data.static.")) {
@@ -141,9 +136,9 @@ public class TemplateResult {
 
     //questo metodo restituisce un data model estratto dagli attributi della request
     //this method returns the data model extracted from the request attributes
-    protected Map getRequestDataModel(HttpServletRequest request) {
-        Map datamodel = new HashMap();
-        Enumeration attrs = request.getAttributeNames();
+    protected Map<String, Object> getRequestDataModel(HttpServletRequest request) {
+        Map<String, Object> datamodel = new HashMap<>();
+        Enumeration<String> attrs = request.getAttributeNames();
         while (attrs.hasMoreElements()) {
             String attrname = (String) attrs.nextElement();
             datamodel.put(attrname, request.getAttribute(attrname));
@@ -157,7 +152,7 @@ public class TemplateResult {
     //this main method calls Freemarker and compiles the template
     //if an outline template has been specified, the requested template is
     //embedded in the outline
-    protected void process(String tplname, Map datamodel, HttpServletRequest request, Writer out) throws TemplateManagerException {
+    protected void process(String tplname, Map<String, Object> datamodel, HttpServletRequest request, Writer out) throws TemplateManagerException {
         Template t;
         //assicuriamoci di avere sempre un data model da passare al template, che contenga anche tutti i default
         //ensure we have a data model, initialized with some default data
@@ -195,7 +190,7 @@ public class TemplateResult {
 
     //questa versione di activate accetta un modello dati esplicito
     //this activate method gets an explicit data model
-    public void activate(String tplname, Map datamodel, HttpServletResponse response) throws TemplateManagerException {
+    public void activate(String tplname, Map<String, Object> datamodel, HttpServletResponse response) throws TemplateManagerException {
         setupServletResponse(datamodel, response);
         try {
             process(tplname, datamodel, null, response.getWriter());
@@ -207,7 +202,7 @@ public class TemplateResult {
     //questa versione di activate estrae un modello dati dagli attributi della request
     //this acivate method extracts the data model from the request attributes
     public void activate(String tplname, HttpServletRequest request, HttpServletResponse response) throws TemplateManagerException {
-        Map datamodel = getRequestDataModel(request);
+        Map<String, Object> datamodel = getRequestDataModel(request);
         setupServletResponse(datamodel, response);
         try {
             process(tplname, datamodel, request, response.getWriter());
@@ -218,7 +213,7 @@ public class TemplateResult {
 
     //metodo interno per il setup della response
     //internal method for response setup
-    private void setupServletResponse(Map datamodel, HttpServletResponse response) {
+    private void setupServletResponse(Map<String, Object> datamodel, HttpServletResponse response) {
         //impostiamo il content type, se specificato dall'utente, o usiamo il default
         //set the output content type, if user-specified, or use the default
         String contentType = (String) datamodel.get("contentType");
@@ -257,7 +252,7 @@ public class TemplateResult {
     //questa versione di activate può essere usata per generare output non diretto verso il browser, ad esempio
     //su un file
     //this activate method can be used to generate output and save it to a file
-    public void activate(String tplname, Map datamodel, OutputStream out) throws TemplateManagerException {
+    public void activate(String tplname, Map<String, Object> datamodel, OutputStream out) throws TemplateManagerException {
         //impostiamo l'encoding, se specificato dall'utente, o usiamo il default
         String encoding = (String) datamodel.get("encoding");
         if (encoding == null) {

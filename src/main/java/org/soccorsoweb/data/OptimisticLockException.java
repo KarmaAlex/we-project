@@ -9,9 +9,9 @@ package org.soccorsoweb.data;
  * @author Mattia Nanni
  */
 public class OptimisticLockException extends DataException{
-    private DataItem item;
+    private DataItem<?> item;
 
-    public OptimisticLockException(DataItem item) {
+    public OptimisticLockException(DataItem<?> item) {
         super("Version mismatch (optimistic locking) for instance " + item.getKey() + " of class " + item.getClass().getCanonicalName());
         this.item = item;
     }
@@ -19,14 +19,14 @@ public class OptimisticLockException extends DataException{
     /**
      * @return the item
      */
-    public DataItem getItem() {
+    public DataItem<?> getItem() {
         return item;
     }
 
     /**
      * @param item the item to set
      */
-    public void setItem(DataItem item) {
+    public void setItem(DataItem<?> item) {
         this.item = item;
     }
 }

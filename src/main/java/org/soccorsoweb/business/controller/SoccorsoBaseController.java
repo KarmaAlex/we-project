@@ -2,7 +2,6 @@ package org.soccorsoweb.business.controller;
 
 import jakarta.servlet.ServletException;
 import java.sql.SQLException;
-import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 

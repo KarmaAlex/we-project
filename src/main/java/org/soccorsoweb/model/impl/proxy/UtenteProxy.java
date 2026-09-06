@@ -5,7 +5,6 @@ import org.soccorsoweb.model.Anagrafica;
 import org.soccorsoweb.data.DataItemProxy;
 import org.soccorsoweb.data.dao.AnagraficaDAO;
 import org.soccorsoweb.data.DataLayer;
-import org.soccorsoweb.data.DataItemProxy;
 import org.soccorsoweb.data.DataException;
 
 import java.util.logging.Level;

@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.soccorsoweb.data.DataException;
-import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.AnagraficaDAO;
 import org.soccorsoweb.data.dao.CredenzialiDAO;
 import org.soccorsoweb.data.dao.UtenteDAO;

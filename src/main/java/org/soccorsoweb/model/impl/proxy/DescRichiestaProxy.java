@@ -7,12 +7,10 @@ import org.soccorsoweb.model.impl.DescRichiestaImpl;
 public class DescRichiestaProxy extends DescRichiestaImpl implements DataItemProxy {
 
     private boolean modified;
-    private final DataLayer dataLayer;
     private int richiestaKey; // Identifica la FK numerica verso Richiesta
 
     public DescRichiestaProxy(DataLayer d) {
         super();
-        this.dataLayer = d;
         this.modified = false;
         this.richiestaKey = 0;
     }

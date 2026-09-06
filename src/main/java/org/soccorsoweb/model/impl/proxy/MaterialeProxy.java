@@ -7,11 +7,9 @@ import org.soccorsoweb.model.impl.MaterialeImpl;
 public class MaterialeProxy extends MaterialeImpl implements DataItemProxy {
 
     private boolean modified;
-    private final DataLayer dataLayer;
 
     public MaterialeProxy(DataLayer d) {
         super();
-        this.dataLayer = d;
         this.modified = false;
     }
 

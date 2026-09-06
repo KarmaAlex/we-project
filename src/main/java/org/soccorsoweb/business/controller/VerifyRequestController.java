@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.soccorsoweb.data.DataException;
-import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.RichiestaDAO;
 import org.soccorsoweb.model.Richiesta;
 import org.soccorsoweb.model.enums.StatoRichiesta;

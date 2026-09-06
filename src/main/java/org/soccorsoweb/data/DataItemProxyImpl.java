@@ -8,7 +8,7 @@ package org.soccorsoweb.data;
  *
  * @author Mattia Nanni
  */
-public class DataItemProxyImpl extends DataItemImpl implements DataItemProxy {
+public class DataItemProxyImpl<T> extends DataItemImpl<T> implements DataItemProxy {
     
      private boolean modified;
 

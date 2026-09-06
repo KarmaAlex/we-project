@@ -1,6 +1,5 @@
 package org.soccorsoweb.business.controller;
 
-import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import jakarta.servlet.ServletException;
@@ -15,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.soccorsoweb.data.DataException;
-import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.dao.AnagraficaDAO;
 import org.soccorsoweb.data.dao.CredenzialiDAO;
 import org.soccorsoweb.data.dao.UtenteDAO;

@@ -10,7 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.soccorsoweb.framework.util.ServletHelpers;
-import org.soccorsoweb.data.DataLayer;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.dao.DescRichiestaDAO;
 import org.soccorsoweb.data.dao.RichiestaDAO;

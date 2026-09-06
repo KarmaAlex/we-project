@@ -8,11 +8,9 @@ import org.soccorsoweb.model.enums.TipoPatente;
 public class PatenteProxy extends PatenteImpl implements DataItemProxy {
 
     private boolean modified;
-    private final DataLayer dataLayer;
 
     public PatenteProxy(DataLayer d) {
         super();
-        this.dataLayer = d;
         this.modified = false;
     }
 
