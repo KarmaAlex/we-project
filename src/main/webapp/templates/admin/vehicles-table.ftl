@@ -65,8 +65,8 @@
     columns=columns
     filters=filters
     hasDetails=true
-    detailModalTitle="Dettagli operatore"
-    editModalTitle="Modifica operatore"
+    detailModalTitle="Dettagli mezzo"
+    editModalTitle="Modifica mezzo"
     hasAddBtn=true
     addModalTitle="Aggiungi mezzo"
     addModalClass="add-modal"

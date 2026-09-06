@@ -96,8 +96,8 @@
     columns=columns
     filters=filters
     hasDetails=true
-    detailModalTitle="Dettagli operatore"
-    editModalTitle="Modifica operatore"
+    detailModalTitle="Dettagli richieata"
+    editModalTitle="Modifica richiesta"
     page=page!1
     totalPages=totalPages!1
 />
