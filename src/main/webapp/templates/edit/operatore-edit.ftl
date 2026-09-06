@@ -11,8 +11,8 @@
     <#list patentiDisponibili as patente>
         <#assign patenteOptions = patenteOptions + [
             {
-                "value":"${patente}",
-                "label":"${patente}"
+                "value":"${patente.value}",
+                "label":"${patente.label}"
             }
         ]>
     </#list>
@@ -23,8 +23,8 @@
     <#list abilitaDisponibili as abilita>
         <#assign abilitaOptions = abilitaOptions + [
             {
-                "value":"${abilita}",
-                "label":"${abilita}"
+                "value":"${abilita.value}",
+                "label":"${abilita.label}"
             }
         ]>
     </#list>
@@ -59,14 +59,6 @@
     "name":"email",
     "label":"Email",
     "value":dettaglio.email!'',
-    "required":true
-},
-
-{
-    "type":"tel",
-    "name":"telefono",
-    "label":"Telefono",
-    "value":dettaglio.telefono!'',
     "required":true
 },
 {

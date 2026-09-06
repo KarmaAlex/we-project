@@ -201,7 +201,7 @@ public class MissioneDAO_MySQL extends Dao implements MissioneDAO {
 
     @Override
     public List<Missione> getMissioniFiltrate(LocalDateTime inizio, LocalDateTime fine, Boolean completata, Integer successo) throws DataException {
-        StringBuilder sql = new StringBuilder("SELECT ID FROM Missione WHERE 1=1");
+        StringBuilder sql = new StringBuilder("SELECT * FROM Missione WHERE 1=1");
         List<Object> params = new ArrayList<>();
 
         if (inizio != null) {
@@ -228,7 +228,9 @@ public class MissioneDAO_MySQL extends Dao implements MissioneDAO {
             }
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    res.add(getMissione(rs.getInt("ID")));
+                    Missione missione = createMissione(rs);
+                    dataLayer.getCache().add(Missione.class, missione);
+                    res.add(missione);
                 }
             }
         } catch (SQLException ex) {

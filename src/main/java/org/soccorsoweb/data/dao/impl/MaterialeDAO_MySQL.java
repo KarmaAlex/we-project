@@ -23,6 +23,7 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
     private PreparedStatement uMateriale;
     private PreparedStatement dMateriale;
     private PreparedStatement iAssegnaMateriale; 
+    private PreparedStatement dAssegnaMateriale;
     private PreparedStatement sMaterialiDisponibili;
     private PreparedStatement sMaterialiConStato;
 
@@ -50,6 +51,7 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
                 "FROM Materiale m"
             );
             iAssegnaMateriale = connection.prepareStatement("INSERT INTO assegna_materiale (ID_MATERIALE, ID_MISSIONE) VALUES (?, ?)");
+            dAssegnaMateriale = connection.prepareStatement("DELETE FROM assegna_materiale WHERE ID_MATERIALE=? AND ID_MISSIONE=?");
         } catch (SQLException ex) {
             throw new DataException("Error initializing materiale data layer", ex);
         }
@@ -64,6 +66,7 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
             if (uMateriale != null) uMateriale.close();
             if (dMateriale != null) dMateriale.close();
             if (iAssegnaMateriale != null) iAssegnaMateriale.close();
+            if (dAssegnaMateriale != null) dAssegnaMateriale.close();
             if (sMaterialiDisponibili != null) sMaterialiDisponibili.close();
             if (sMaterialiConStato != null) sMaterialiConStato.close();
         } catch (SQLException ex) { }
@@ -78,6 +81,17 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
             iAssegnaMateriale.executeUpdate();
         } catch (SQLException ex) {
             throw new DataException("Errore nell'assegnazione materiale alla missione", ex);
+        }
+    }
+
+    @Override
+    public void slegaMaterialeDaMissione(Materiale mat, Missione mis) throws DataException {
+        try {
+            dAssegnaMateriale.setInt(1, mat.getKey());
+            dAssegnaMateriale.setInt(2, mis.getKey());
+            dAssegnaMateriale.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataException("Errore nella rimozione del materiale dalla missione", ex);
         }
     }
 

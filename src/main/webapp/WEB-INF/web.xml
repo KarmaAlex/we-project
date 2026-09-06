@@ -94,17 +94,7 @@
         <url-pattern>/api/detail/teams/*</url-pattern>
     </servlet-mapping>
 
-    <!-- Edit API Servlets --> 
-    <servlet>
-        <servlet-name>EditApi</servlet-name>
-        <servlet-class>org.soccorsoweb.test.EditApiServlet</servlet-class>
-    </servlet>
-    
-    <servlet-mapping>
-        <servlet-name>EditApi</servlet-name>
-        <url-pattern>/api/edit/*</url-pattern>
-    </servlet-mapping>
-
+    <!-- Edit API Servlets -->
     <servlet>
         <servlet-name>EditVehicleController</servlet-name>
         <servlet-class>org.soccorsoweb.business.controller.admin.edit.EditVehicleController</servlet-class>
@@ -113,7 +103,7 @@
     <servlet-mapping>
         <servlet-name>EditVehicleController</servlet-name>
         <url-pattern>/api/edit/mezzi/*</url-pattern>
-        <url-pattern>/api/edit/vehicles/*</url-pattern>
+        <url-pattern>/api/edit/vehicles</url-pattern>
     </servlet-mapping>
 
     <servlet>
@@ -151,7 +141,7 @@
 
     <servlet>
         <servlet-name>EditMaterialController</servlet-name>
-        <servlet-class>org.soccorsoweb.business.controller.admin.edit.EditMateralController</servlet-class>
+        <servlet-class>org.soccorsoweb.business.controller.admin.edit.EditMaterialController</servlet-class>
     </servlet>
 
     <servlet-mapping>

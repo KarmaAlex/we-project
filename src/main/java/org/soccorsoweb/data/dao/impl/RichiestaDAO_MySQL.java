@@ -187,7 +187,7 @@ public class RichiestaDAO_MySQL extends Dao implements RichiestaDAO {
     
     @Override
 public List<Richiesta> getRichiesteFiltrate(LocalDateTime dataInizio, LocalDateTime dataFine, StatoRichiesta stato, String email) throws DataException {
-    StringBuilder sql = new StringBuilder("SELECT ID FROM Richiesta WHERE 1=1");
+    StringBuilder sql = new StringBuilder("SELECT * FROM Richiesta WHERE 1=1");
     List<Object> params = new ArrayList<>();
 
     if (dataInizio != null) {
@@ -214,7 +214,9 @@ public List<Richiesta> getRichiesteFiltrate(LocalDateTime dataInizio, LocalDateT
         }
         try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                res.add(getRichiesta(rs.getInt("ID")));
+                Richiesta richiesta = createRichiesta(rs);
+                getDataLayer().getCache().add(Richiesta.class, richiesta);
+                res.add(richiesta);
             }
         }
     } catch (SQLException ex) {

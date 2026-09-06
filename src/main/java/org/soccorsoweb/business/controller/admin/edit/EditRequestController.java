@@ -104,7 +104,7 @@ public class EditRequestController extends AbstractIdRequiredController {
 		((RichiestaDAO) this.dl.getDAO(Richiesta.class)).storeRichiesta(richiesta);
 
 		response.setContentType("application/json;charset=UTF-8");
-		response.getWriter().write("{\"success\":true,\"message\":\"Richiesta modificata con successo\"}");
+		response.sendRedirect(request.getContextPath() + "/admin-dashboard?section=requests");
 	}
 
 

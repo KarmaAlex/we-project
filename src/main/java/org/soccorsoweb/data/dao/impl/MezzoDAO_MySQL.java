@@ -21,6 +21,7 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
     private PreparedStatement uMezzo;
     private PreparedStatement dMezzo;
     private PreparedStatement iAssegnaMezzo;
+    private PreparedStatement dAssegnaMezzo;
     private PreparedStatement sMezziConStato;
 
     public MezzoDAO_MySQL(DataLayer d) { super(d); }
@@ -46,6 +47,8 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
                 dMezzo = connection.prepareStatement("DELETE FROM Mezzo WHERE ID=?");
                 iAssegnaMezzo = connection.prepareStatement(
                     "INSERT INTO assegna_mezzo (ID_MEZZO, ID_MISSIONE) VALUES (?,?)");
+                dAssegnaMezzo = connection.prepareStatement(
+                    "DELETE FROM assegna_mezzo WHERE ID_MEZZO=? AND ID_MISSIONE=?");
                 sMezziConStato = connection.prepareStatement(
                     "SELECT m.*, (" +
                     "  SELECT mi.ID FROM assegna_mezzo am " +
@@ -70,6 +73,7 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
             if (uMezzo != null) uMezzo.close();
             if (dMezzo != null) dMezzo.close();
             if (iAssegnaMezzo != null) iAssegnaMezzo.close();
+            if (dAssegnaMezzo != null) dAssegnaMezzo.close();
             if (sMezziConStato != null) sMezziConStato.close();
         } catch (SQLException ex) { }
         super.destroy();
@@ -191,6 +195,17 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
             iAssegnaMezzo.executeUpdate();
         } catch (SQLException ex) {
             throw new DataException("Errore nell'assegnazione mezzo alla missione", ex);
+        }
+    }
+
+    @Override
+    public void slegaMezzoDaMissione(Mezzo m, Missione mis) throws DataException {
+        try {
+            dAssegnaMezzo.setInt(1, m.getKey());
+            dAssegnaMezzo.setInt(2, mis.getKey());
+            dAssegnaMezzo.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataException("Errore nella rimozione del mezzo dalla missione", ex);
         }
     }
     

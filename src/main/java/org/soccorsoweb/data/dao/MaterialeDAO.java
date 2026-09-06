@@ -18,4 +18,5 @@ public interface MaterialeDAO extends GenericDao {
     
     // Metodo aggiunto per la gestione dell'associazione
     void assegnaMaterialeAMissione(Materiale mat, Missione mis) throws DataException;
+    void slegaMaterialeDaMissione(Materiale mat, Missione mis) throws DataException;
 }

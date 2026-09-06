@@ -4,8 +4,8 @@
     <#list squadreDisponibili as squadra>
         <#assign squadraOptions = squadraOptions + [
             {
-                "value":"${squadra.id}",
-                "label":"${squadra.id}"
+                "value":"${squadra.value}",
+                "label":"${squadra.label}"
             }
         ]>
     </#list>
@@ -16,8 +16,8 @@
     <#list mezziDisponibili as mezzo>
         <#assign mezzoOptions = mezzoOptions + [
             {
-                "value":"${mezzo.id}",
-                "label":"${mezzo.id}"
+                "value":"${mezzo.value}",
+                "label":"${mezzo.label}"
             }
         ]>
     </#list>
@@ -28,8 +28,8 @@
     <#list materialiDisponibili as materiale>
         <#assign materialeOptions = materialeOptions + [
             {
-                "value":"${materiale.id}",
-                "label":"${materiale.id}"
+                "value":"${materiale.value}",
+                "label":"${materiale.label}"
             }
         ]>
     </#list>
@@ -46,7 +46,8 @@
     "name":"richiesta_id",
     "label":"Richiesta",
     "value":dettaglio.richiesta_id!'',
-    "readonly":true
+    "readonly":true,
+    "disabled":true
 },
 {
     "type":"select",
@@ -77,12 +78,13 @@
     "type":"select",
     "name":"esito",
     "label":"Esito",
-    "value":dettaglio.esito!'NON_DEFINITO',
+    "value":dettaglio.esito!'',
     "options":[
-        {"value":"NON_DEFINITO", "label":"Non definito"},
-        {"value":"SUCCESSO", "label":"Successo"},
-        {"value":"PARZIALE", "label":"Parziale"},
-        {"value":"FALLIMENTO", "label":"Fallimento"}
+        {"value":"1", "label":"1"},
+        {"value":"2", "label":"2"},
+        {"value":"3", "label":"3"},
+        {"value":"4", "label":"4"},
+        {"value":"5", "label":"5"}
     ]
 },
 {
@@ -116,7 +118,7 @@
 {
     "type":"text",
     "name":"indirizzo",
-    "label":"Indirizzo",
+    "label":"Posizione",
     "value":dettaglio.indirizzo!'',
     "required":true
 },

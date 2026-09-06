@@ -20,6 +20,7 @@ import java.util.Set;
 import org.soccorsoweb.business.controller.SoccorsoBaseController;
 import org.soccorsoweb.data.DataException;
 import org.soccorsoweb.data.DataLayer;
+import org.soccorsoweb.data.dao.AnagraficaDAO;
 import org.soccorsoweb.data.dao.CredenzialiDAO;
 import org.soccorsoweb.data.dao.AbilitaDAO;
 import org.soccorsoweb.data.dao.MaterialeDAO;
@@ -163,6 +164,7 @@ public class AdminDashboardController extends SoccorsoBaseController {
             throws DataException, ServletException {
         
         UtenteDAO dao = (UtenteDAO) this.dl.getDAO(Utente.class);
+        AnagraficaDAO anagraficaDAO = (AnagraficaDAO) this.dl.getDAO(Anagrafica.class);
         MissioneDAO missioneDAO = (MissioneDAO) this.dl.getDAO(Missione.class);
         CredenzialiDAO credenzialiDAO = (CredenzialiDAO) this.dl.getDAO(Credenziali.class);
         String status = blankToNull(req.getParameter("stato"));
@@ -178,15 +180,12 @@ public class AdminDashboardController extends SoccorsoBaseController {
             if (status != null && !status.equals(actualStatus)) {
                 continue;
             }
-            Map<String, Object> row = new HashMap<>();
-            Anagrafica anagrafica = operator.getAnagrafica();
-            row.put("id", operator.getKey());
-            row.put("nome", anagrafica == null ? operator.getNomeUtente()
-                    : anagrafica.getNome() + " " + anagrafica.getCognome());
-            row.put("email", credenzialiDAO.getCredenzialiByUtente(operator).getEmail());
-            row.put("stato", actualStatus);
-            row.put("missione_corrente", busy ? currentMission.getKey() : "-");
-            row.put("monte_ore", operator.getMonteOre());
+                Anagrafica anagrafica = anagraficaDAO.getAnagraficaByUtente(operator);
+                String nome = anagrafica == null ? operator.getNomeUtente()
+                    : anagrafica.getNome() + " " + anagrafica.getCognome();
+                Credenziali credenziali = credenzialiDAO.getCredenzialiByUtente(operator);
+            Map<String, Object> row = operatorRow(operator, currentMission,
+                    nome, credenziali == null ? "" : credenziali.getEmail());
             if (search != null && !row.get("nome").toString().toLowerCase().contains(search.toLowerCase())) {
                 continue;
             }
@@ -221,16 +220,9 @@ public class AdminDashboardController extends SoccorsoBaseController {
                     .filter(mission -> !mission.isCompletata())
                     .findFirst()
                     .orElse(null);
-            String status = currentMission == null ? "DISPONIBILE" : "OCCUPATA";
-            Utente capo = squadra.getCapoSquadra();
-            String capoName = capo == null ? "-" : operatorName(capo);
-
-            Map<String, Object> row = new HashMap<>();
-            row.put("id", squadra.getKey());
-            row.put("capo", capoName);
-            row.put("membri", squadra.getOperatori().size());
-            row.put("missione_corrente", currentMission == null ? "-" : currentMission.getKey());
-            row.put("stato", status);
+                Map<String, Object> row = teamRow(squadra, currentMission);
+                String status = row.get("stato").toString();
+                String capoName = row.get("capo").toString();
 
             if (capoFilter != null && !capoName.toLowerCase().contains(capoFilter.toLowerCase())) {
                 continue;
@@ -241,6 +233,30 @@ public class AdminDashboardController extends SoccorsoBaseController {
             rows.add(row);
         }
         model.put("squadre", rows);
+    }
+
+    private Map<String, Object> operatorRow(Utente operator, Missione currentMission,
+            String nome, String email) {
+        Map<String, Object> row = new HashMap<>();
+        row.put("id", operator.getKey());
+        row.put("nome", nome);
+        row.put("email", email);
+        row.put("stato", currentMission == null ? "DISPONIBILE" : "OCCUPATO");
+        row.put("missione_corrente", currentMission == null ? "-" : currentMission.getKey());
+        row.put("monte_ore", operator.getMonteOre());
+        row.put("editable", currentMission == null);
+        return row;
+    }
+
+    private Map<String, Object> teamRow(Squadra squadra, Missione currentMission) {
+        Map<String, Object> row = new HashMap<>();
+        Utente capo = squadra.getCapoSquadra();
+        row.put("id", squadra.getKey());
+        row.put("capo", capo == null ? "-" : operatorName(capo));
+        row.put("membri", squadra.getOperatori().size());
+        row.put("missione_corrente", currentMission == null ? "-" : currentMission.getKey());
+        row.put("stato", currentMission == null ? "DISPONIBILE" : "OCCUPATA");
+        return row;
     }
 
     private String operatorName(Utente operator) {
@@ -331,27 +347,27 @@ public class AdminDashboardController extends SoccorsoBaseController {
         return requested != null && allowed.contains(requested) ? requested : "id";
     }
 
-            private void loadAbilitiesSection(Map<String, Object> model, HttpServletRequest req)
-                throws DataException, ServletException {
-            AbilitaDAO dao = (AbilitaDAO) this.dl(req).getDAO(Abilita.class);
-            String search = blankToNull(req.getParameter("nome"));
-            model.put("abilita", dao.getAbilitaList().stream()
-                .map(this::abilityRow)
-                .filter(row -> search == null || row.get("nome").toString().toLowerCase().contains(search.toLowerCase()))
-                .toList());
-            }
+    private void loadAbilitiesSection(Map<String, Object> model, HttpServletRequest req)
+        throws DataException, ServletException {
+    AbilitaDAO dao = (AbilitaDAO) this.dl(req).getDAO(Abilita.class);
+    String search = blankToNull(req.getParameter("nome"));
+    model.put("abilita", dao.getAbilitaList().stream()
+        .map(this::abilityRow)
+        .filter(row -> search == null || row.get("nome").toString().toLowerCase().contains(search.toLowerCase()))
+        .toList());
+    }
 
-            private void loadLicensesSection(Map<String, Object> model, HttpServletRequest req)
-                throws DataException, ServletException {
-            PatenteDAO dao = (PatenteDAO) this.dl(req).getDAO(Patente.class);
-            String search = blankToNull(req.getParameter("numero"));
-            String type = blankToNull(req.getParameter("tipo"));
-            model.put("patenti", dao.getPatenti().stream()
-                .map(this::licenseRow)
-                .filter(row -> search == null || row.get("numero").toString().toLowerCase().contains(search.toLowerCase()))
-                .filter(row -> type == null || type.equals(row.get("tipo")))
-                .toList());
-            }
+    private void loadLicensesSection(Map<String, Object> model, HttpServletRequest req)
+        throws DataException, ServletException {
+    PatenteDAO dao = (PatenteDAO) this.dl(req).getDAO(Patente.class);
+    String search = blankToNull(req.getParameter("numero"));
+    String type = blankToNull(req.getParameter("tipo"));
+    model.put("patenti", dao.getPatenti().stream()
+        .map(this::licenseRow)
+        .filter(row -> search == null || row.get("numero").toString().toLowerCase().contains(search.toLowerCase()))
+        .filter(row -> type == null || type.equals(row.get("tipo")))
+        .toList());
+    }
 
     private Map<String, Object> requestRow(Richiesta request) {
         Map<String, Object> row = new HashMap<>();
@@ -361,6 +377,7 @@ public class AdminDashboardController extends SoccorsoBaseController {
         row.put("posizione", request.getDescrizioneDettaglio().getPosizione());
         row.put("stato", request.getStato() == null ? "" : request.getStato().name());
         row.put("data_creazione", request.getData());
+        row.put("editable", request.getStato() == StatoRichiesta.ATTIVA || request.getStato() == StatoRichiesta.IN_ATTESA);
         return row;
     }
 
@@ -373,6 +390,7 @@ public class AdminDashboardController extends SoccorsoBaseController {
         row.put("completata", mission.isCompletata());
         row.put("successo", mission.getEsito() == null ? "-" : mission.getEsito().ordinal());
         row.put("data_inizio", mission.getInizio());
+        row.put("editable", !mission.isCompletata());
         return row;
     }
 
@@ -385,6 +403,7 @@ public class AdminDashboardController extends SoccorsoBaseController {
         row.put("stato", vehicle.isAssegnato() ? "OCCUPATO" : "DISPONIBILE");
         row.put("missione_corrente", vehicle.getMissioneKey() == null ? "-" : vehicle.getMissioneKey());
         row.put("canDelete", !vehicle.isAssegnato());
+        row.put("editable", !vehicle.isAssegnato());
         return row;
     }
 
@@ -394,6 +413,7 @@ public class AdminDashboardController extends SoccorsoBaseController {
         row.put("stato", available ? "DISPONIBILE" : "OCCUPATO");
         row.put("nome", material.getNome());
         row.put("canDelete", available);
+        row.put("editable", available);
         return row;
     }
 
