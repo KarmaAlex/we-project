@@ -16,8 +16,8 @@
         "label":"Email"
     },
     {
-        "field":"indirizzo",
-        "label":"Indirizzo"
+        "field":"posizione",
+        "label":"Posizione"
     },
     {
         "field":"stato",

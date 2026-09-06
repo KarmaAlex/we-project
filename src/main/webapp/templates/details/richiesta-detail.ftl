@@ -7,8 +7,7 @@
     <div style="margin-bottom: 1rem;">
       <strong>Segnalante:</strong> ${dettaglio.segnalante!''}<br>
       <strong>Email:</strong> ${dettaglio.email!''}<br>
-      <strong>Indirizzo:</strong> ${dettaglio.indirizzo!''}<br>
-      <strong>Coordinate:</strong> ${dettaglio.coordinate!''}<br>
+      <strong>Posizione:</strong> ${dettaglio.posizione!''}<br>
       <strong>Stato:</strong> <span class="badge ${(dettaglio.stato!'')?lower_case}">${dettaglio.stato!''}</span><br>
       <strong>Data:</strong> ${dettaglio.data_creazione!''}<br>
       <strong>Verificato:</strong> <#if dettaglio.verificato??><#if dettaglio.verificato>Sì<#else>No</#if><#else>N/A</#if>
@@ -24,7 +23,7 @@
     <#if dettaglio.foto_url??>
       <div style="margin-bottom: 1rem;">
         <strong>Foto:</strong><br>
-        <img src="${dettaglio.foto_url}" alt="Foto richiesta" style="max-width: 100%; max-height: 300px; border-radius: 4px;">
+        <img src="uploads/${dettaglio.foto_url}" alt="Foto richiesta" style="max-width: 100%; max-height: 300px; border-radius: 4px;">
       </div>
     </#if>
 

@@ -89,7 +89,7 @@ public class CreaRichiestaController extends SoccorsoBaseController {
             request.getSession(true).setAttribute("ultima_richiesta", payload);
                 request.getSession().setAttribute("verification.email", richiesta.getEmail());
                 request.getSession().setAttribute("verification.link",
-                    org.soccorsoweb.business.controller.VerifyRequestController.buildVerificationLink(
+                    VerifyRequestController.buildVerificationLink(
                         request, richiesta.getString()));
                 ServletHelpers.redirectAndOpenTab(response, request.getContextPath() + "/home?success=true", request.getContextPath() + "/verify-request");
         } catch (IOException | DataException ex) {

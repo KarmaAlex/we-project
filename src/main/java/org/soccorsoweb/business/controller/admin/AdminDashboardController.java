@@ -358,7 +358,7 @@ public class AdminDashboardController extends SoccorsoBaseController {
         row.put("id", request.getKey());
         row.put("segnalante", request.getNome());
         row.put("email", request.getEmail());
-        row.put("indirizzo", request.getString());
+        row.put("posizione", request.getDescrizioneDettaglio().getPosizione());
         row.put("stato", request.getStato() == null ? "" : request.getStato().name());
         row.put("data_creazione", request.getData());
         return row;

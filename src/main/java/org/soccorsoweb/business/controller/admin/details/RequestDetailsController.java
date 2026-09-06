@@ -66,7 +66,7 @@ public class RequestDetailsController extends AbstractIdRequiredController {
 		dettaglio.put("segnalante", richiesta.getNome());
 		dettaglio.put("email", richiesta.getEmail());
 		dettaglio.put("indirizzo", descRichiesta == null ? "" : descRichiesta.getPosizione());
-		dettaglio.put("coordinate", richiesta.getString());
+		dettaglio.put("posizione", descRichiesta == null ? "" : descRichiesta.getPosizione());
 		dettaglio.put("stato", richiesta.getStato() == null ? "" : richiesta.getStato().name());
 		dettaglio.put("data_creazione", richiesta.getData() == null ? "" : richiesta.getData());
 		dettaglio.put("verificato", richiesta.isVerificato());
