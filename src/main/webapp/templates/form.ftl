@@ -37,7 +37,7 @@
                 type="${field.type}"
                 id="${field.name}"
                 name="${field.name}"
-                value="${field.value!''}"
+                <#if field.value?? && field.value != "">value="${field.value}"</#if>
                 <#if field.placeholder??>placeholder="${field.placeholder}"</#if>
                 <#if field.required?? && field.required>required aria-required="true"</#if>
                 <#if field.accept??>accept="${field.accept}"</#if>

@@ -36,7 +36,6 @@
           "label":"Posizione",
           "placeholder":"Indirizzo o coordinate",
           "required":true,
-          "autocomplete":"street-address",
           "help":"Inserisci un indirizzo oppure coordinate GPS."
       },
       {

@@ -32,7 +32,7 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="dashboard-main">
+    <div class="dashboard-main">
       <div class="dashboard-header">
         <h2>${title}</h2>
       </div>
@@ -40,7 +40,7 @@
       <div id="main-content">
         <#nested />
       </div>
-    </main>
+    </div>
   </div>
 
   <script>
