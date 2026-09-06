@@ -32,6 +32,13 @@ const ModalManager = {
     document.body.style.overflow = '';
   },
 
+  closeAll() {
+    document.querySelectorAll('.modal-overlay.show').forEach(modal => {
+      modal.classList.remove('show');
+    });
+    document.body.style.overflow = '';
+  },
+
   init() {
     // Close button
     document.querySelectorAll('[data-dismiss="modal"]').forEach(btn => {
@@ -65,6 +72,7 @@ const ModalManager = {
 // Table and pagination AJAX loader
 const DataLoader = {
   async loadSection(section, page = 1, filters = {}, sort = '', direction = 'asc') {
+    ModalManager.closeAll();
     try {
       const params = new URLSearchParams();
       params.append('section', section);
@@ -101,6 +109,7 @@ const DataLoader = {
         });
         
         this.attachHandlers();
+        ModalManager.init();
         console.log('Section loaded:', section, 'Filters:', filters);
       }
     } catch (error) {

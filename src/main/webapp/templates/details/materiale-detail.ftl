@@ -9,7 +9,7 @@
       <strong>Descrizione:</strong> ${dettaglio.descrizione!''}<br>
       <strong>Stato:</strong> <span class="badge ${(dettaglio.stato!'')?lower_case}">${dettaglio.stato!''}</span><br>
       <#if dettaglio.missione_corrente?has_content>
-        <strong>Missione Corrente:</strong> <a href="#" style="color: var(--accent);">${dettaglio.missione_corrente}</a>
+        <strong>Missione Corrente:</strong> <a href="${ctx}/admin-dashboard?section=missions">${dettaglio.missione_corrente}</a>
       </#if>
     </div>
 

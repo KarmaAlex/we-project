@@ -24,6 +24,7 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
     private PreparedStatement dMateriale;
     private PreparedStatement iAssegnaMateriale; 
     private PreparedStatement sMaterialiDisponibili;
+    private PreparedStatement sMaterialiConStato;
 
     public MaterialeDAO_MySQL(DataLayer d) {
         super(d);
@@ -39,6 +40,15 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
             uMateriale = connection.prepareStatement("UPDATE Materiale SET nome=?, `desc`=?, cod_mat=? WHERE ID=?");
             dMateriale = connection.prepareStatement("DELETE FROM Materiale WHERE ID=?");
             sMaterialiDisponibili = connection.prepareStatement("SELECT * FROM Materiale m WHERE NOT EXISTS (" + "  SELECT 1 FROM assegna_materiale am " + "  JOIN Missione mi ON am.ID_MISSIONE = mi.ID " +"WHERE am.ID_MATERIALE = m.ID AND mi.completata = false" +")");
+            sMaterialiConStato = connection.prepareStatement(
+                "SELECT m.*, (" +
+                "  SELECT mi.ID FROM assegna_materiale am " +
+                "  JOIN Missione mi ON mi.ID = am.ID_MISSIONE " +
+                "  WHERE am.ID_MATERIALE = m.ID AND mi.completata = false " +
+                "  ORDER BY mi.ID LIMIT 1" +
+                ") AS missione_id " +
+                "FROM Materiale m"
+            );
             iAssegnaMateriale = connection.prepareStatement("INSERT INTO assegna_materiale (ID_MATERIALE, ID_MISSIONE) VALUES (?, ?)");
         } catch (SQLException ex) {
             throw new DataException("Error initializing materiale data layer", ex);
@@ -55,6 +65,7 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
             if (dMateriale != null) dMateriale.close();
             if (iAssegnaMateriale != null) iAssegnaMateriale.close();
             if (sMaterialiDisponibili != null) sMaterialiDisponibili.close();
+            if (sMaterialiConStato != null) sMaterialiConStato.close();
         } catch (SQLException ex) { }
         super.destroy();
     }
@@ -128,6 +139,27 @@ public class MaterialeDAO_MySQL extends Dao implements MaterialeDAO {
             }
             return result;
         }
+
+    @Override
+    public List<Materiale> getMaterialiConStato() throws DataException {
+        List<Materiale> result = new ArrayList<>();
+        try (ResultSet rs = sMaterialiConStato.executeQuery()) {
+            while (rs.next()) {
+                MaterialeProxy materiale = (MaterialeProxy) createMateriale();
+                materiale.setKey(rs.getInt("ID"));
+                materiale.setNome(rs.getString("nome"));
+                materiale.setDesc(rs.getString("desc"));
+                materiale.setCodMat(rs.getString("cod_mat"));
+                materiale.setVersion(0);
+                int missioneId = rs.getInt("missione_id");
+                materiale.setMissioneKey(rs.wasNull() ? null : missioneId);
+                result.add(materiale);
+            }
+        } catch (SQLException ex) {
+            throw new DataException("Unable to load materiali con stato", ex);
+        }
+        return result;
+    }
 
     @Override
     public void storeMateriale(Materiale materiale) throws DataException {

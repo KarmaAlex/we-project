@@ -6,7 +6,7 @@
       <strong>Stato:</strong> <span class="badge ${(dettaglio.stato!'')?lower_case}">${dettaglio.stato!''}</span><br>
       <#if dettaglio.missione_corrente??>
         <strong>Missione corrente:</strong>
-        <a class="btn modal-trigger" href="${ctx}/api/detail/missions?id=${dettaglio.missione_corrente}" data-modal="missionsDetailModal" data-toggle="modal">${dettaglio.missione_corrente}</a>
+        <a href="${ctx}/admin-dashboard?section=missions">${dettaglio.missione_corrente}</a>
       </#if>
     </div>
     <div>

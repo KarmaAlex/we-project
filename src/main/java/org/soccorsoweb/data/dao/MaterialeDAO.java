@@ -13,6 +13,8 @@ public interface MaterialeDAO extends GenericDao {
     void storeMateriale(Materiale materiale) throws DataException;
     void deleteMateriale(int materiale_key) throws DataException;
     List<Materiale> getMaterialiDisponibili() throws DataException;
+
+    List<Materiale> getMaterialiConStato() throws DataException;
     
     // Metodo aggiunto per la gestione dell'associazione
     void assegnaMaterialeAMissione(Materiale mat, Missione mis) throws DataException;

@@ -41,7 +41,7 @@ public class MaterialDetailsController extends AbstractIdRequiredController {
 				throw new ServletException("DataLayer non inizializzato");
 			}
 
-			Materiale materiale = ((MaterialeDAO) this.dl.getDAO(Materiale.class)).getMateriale(materialeId);
+			Materiale materiale = findMateriale((MaterialeDAO) this.dl.getDAO(Materiale.class), materialeId);
 			if (materiale == null) {
 				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 				return;
@@ -51,6 +51,15 @@ public class MaterialDetailsController extends AbstractIdRequiredController {
 		} catch (DataException | IOException ex) {
 			handleError(ex, request, response);
 		}
+	}
+
+	private Materiale findMateriale(MaterialeDAO materialeDAO, int materialeId) throws DataException {
+		for (Materiale materiale : materialeDAO.getMaterialiConStato()) {
+			if (materiale.getKey() != null && materiale.getKey() == materialeId) {
+				return materiale;
+			}
+		}
+		return null;
 	}
 
 	private void renderMaterialDetails(HttpServletRequest request, HttpServletResponse response,

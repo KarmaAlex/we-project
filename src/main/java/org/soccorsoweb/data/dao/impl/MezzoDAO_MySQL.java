@@ -47,10 +47,13 @@ public class MezzoDAO_MySQL extends Dao implements MezzoDAO {
                 iAssegnaMezzo = connection.prepareStatement(
                     "INSERT INTO assegna_mezzo (ID_MEZZO, ID_MISSIONE) VALUES (?,?)");
                 sMezziConStato = connection.prepareStatement(
-                    "SELECT m.*, mi.ID AS missione_id " +
-                    "FROM Mezzo m " +
-                    "LEFT JOIN assegna_mezzo am ON am.ID_MEZZO = m.ID " +
-                    "LEFT JOIN Missione mi ON mi.ID = am.ID_MISSIONE AND mi.completata = false"
+                    "SELECT m.*, (" +
+                    "  SELECT mi.ID FROM assegna_mezzo am " +
+                    "  JOIN Missione mi ON mi.ID = am.ID_MISSIONE " +
+                    "  WHERE am.ID_MEZZO = m.ID AND mi.completata = false " +
+                    "  ORDER BY mi.ID LIMIT 1" +
+                    ") AS missione_id " +
+                    "FROM Mezzo m"
                 );
         } catch (SQLException ex) {
             throw new DataException("Error initializing mezzo data layer", ex);
