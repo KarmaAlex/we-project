@@ -92,6 +92,12 @@
             <p id="detailModalContent">Caricamento...</p>
         </@modal>
     </#if>
+
+    <#if section == "vehicles" || section == "materials">
+        <@modal id=section+"DeleteModal" title="Elimina">
+            <p id="deleteModalContent">Caricamento...</p>
+        </@modal>
+    </#if>
     
 
     <@modal id=section+"EditModal" title=editModalTitle >

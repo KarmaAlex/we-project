@@ -335,6 +335,7 @@ public class AdminDashboardController extends SoccorsoBaseController {
         row.put("targa", vehicle.getTarga());
         row.put("stato", vehicle.isAssegnato() ? "OCCUPATO" : "DISPONIBILE");
         row.put("missione_corrente", vehicle.getMissioneKey() == null ? "-" : vehicle.getMissioneKey());
+        row.put("canDelete", !vehicle.isAssegnato());
         return row;
     }
 
@@ -343,6 +344,7 @@ public class AdminDashboardController extends SoccorsoBaseController {
         row.put("id", material.getKey());
         row.put("stato", available ? "DISPONIBILE" : "OCCUPATO");
         row.put("nome", material.getNome());
+        row.put("canDelete", available);
         return row;
     }
 

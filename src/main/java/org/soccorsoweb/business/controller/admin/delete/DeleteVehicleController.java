@@ -57,7 +57,7 @@ public class DeleteVehicleController extends AbstractIdRequiredController {
 
 			mezzoDAO.deleteMezzo(mezzoId);
 			response.setContentType("application/json;charset=UTF-8");
-			response.getWriter().write("{\"success\":true,\"message\":\"Mezzo eliminato con successo\"}");
+			response.sendRedirect(request.getContextPath() + "/admin-dashboard?section=vehicles");
 		} catch (DataException ex) {
 			if ("POST".equalsIgnoreCase(request.getMethod())) {
 				response.setStatus(HttpServletResponse.SC_CONFLICT);
@@ -77,7 +77,6 @@ public class DeleteVehicleController extends AbstractIdRequiredController {
 		dettaglio.put("descrizione", mezzo.getDesc());
 		dettaglio.put("targa", mezzo.getTarga());
 		dettaglio.put("stato", mezzo.isAssegnato() ? "Occupato" : "Disponibile");
-		dettaglio.put("missione_corrente", mezzo.isAssegnato() ? mezzo.getMissioneKey() : "");
 
 		Map<String, Object> model = new HashMap<>();
 		model.put("ctx", request.getContextPath());

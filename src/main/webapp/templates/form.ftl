@@ -45,6 +45,7 @@
                 <#if field.help??>aria-describedby="${field.name}-help"</#if>
                 <#if field.readonly?? && field.readonly>readonly</#if>
                 <#if field.maxlength??>maxlength=${field.maxlength}</#if>
+                <#if field.disabled?? && field.disabled>disabled</#if>
                 <#if field.attrs??>
                     <#list field.attrs?keys as key>
                         ${key}="${field.attrs[key]}"
@@ -60,6 +61,8 @@
                 <#if field.required?? && field.required>required aria-required="true"</#if>
                 <#if field.placeholder??>placeholder="${field.placeholder}"</#if>
                 <#if field.help??>aria-describedby="${field.name}-help"</#if>
+                <#if field.readonly?? && field.readonly>readonly</#if>
+                <#if field.disabled?? && field.disabled>disabled</#if>
                 <#if field.attrs??>
                     <#list field.attrs?keys as key>
                         ${key}="${field.attrs[key]}"

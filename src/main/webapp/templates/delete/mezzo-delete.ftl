@@ -11,7 +11,8 @@
     "name":"nome",
     "label":"Nome",
     "value":dettaglio.nome!'',
-    "readonly":true
+    "readonly":true,
+    "disabled":true
 },
 {
     "type":"textarea",
@@ -19,28 +20,24 @@
     "label":"Descrizione",
     "value":dettaglio.descrizione!'',
     "rows":4,
-    "attrs":{"readonly":"readonly"}
+    "readonly":true,
+    "disabled":true
 },
 {
     "type":"text",
     "name":"targa",
     "label":"Targa",
     "value":dettaglio.targa!'',
-    "readonly":true
+    "readonly":true,
+    "disabled":true
 },
 {
     "type":"text",
     "name":"stato",
     "label":"Stato",
     "value":dettaglio.stato!'',
-    "readonly":true
-},
-{
-    "type":"text",
-    "name":"missione_corrente",
-    "label":"Missione Corrente",
-    "value":dettaglio.missione_corrente!'',
-    "readonly":true
+    "readonly":true,
+    "disabled":true
 }
 ]>
 

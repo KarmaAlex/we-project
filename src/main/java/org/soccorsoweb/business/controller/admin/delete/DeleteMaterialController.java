@@ -57,7 +57,7 @@ public class DeleteMaterialController extends AbstractIdRequiredController {
 
 			materialeDAO.deleteMateriale(materialeId);
 			response.setContentType("application/json;charset=UTF-8");
-			response.getWriter().write("{\"success\":true,\"message\":\"Materiale eliminato con successo\"}");
+			response.sendRedirect(request.getContextPath() + "/admin-dashboard?section=materials");
 		} catch (DataException ex) {
 			if ("POST".equalsIgnoreCase(request.getMethod())) {
 				response.setStatus(HttpServletResponse.SC_CONFLICT);
@@ -76,7 +76,6 @@ public class DeleteMaterialController extends AbstractIdRequiredController {
 		dettaglio.put("nome", materiale.getNome());
 		dettaglio.put("descrizione", materiale.getDesc());
 		dettaglio.put("stato", materiale.isAssegnato() ? "Occupato" : "Disponibile");
-		dettaglio.put("missione_corrente", materiale.isAssegnato() ? materiale.getMissioneKey() : "");
 
 		Map<String, Object> model = new HashMap<>();
 		model.put("ctx", request.getContextPath());
