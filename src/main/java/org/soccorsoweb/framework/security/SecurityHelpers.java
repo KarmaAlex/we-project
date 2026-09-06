@@ -32,6 +32,42 @@ import org.soccorsoweb.model.Anagrafica;
  */
 public class  SecurityHelpers {
 
+    private static final String CAPTCHA_SUM = "home.captcha.sum";
+    private static final String CAPTCHA_EXPIRES = "home.captcha.expires";
+    private static final SecureRandom CAPTCHA_RANDOM = new SecureRandom();
+    private static final Duration CAPTCHA_LIFETIME = Duration.ofMinutes(10);
+
+    public static int[] createCaptcha(HttpServletRequest request) {
+        int first = 10 + CAPTCHA_RANDOM.nextInt(90);
+        int second = 10 + CAPTCHA_RANDOM.nextInt(90);
+        HttpSession session = request.getSession(true);
+        session.setAttribute(CAPTCHA_SUM, first + second);
+        session.setAttribute(CAPTCHA_EXPIRES, LocalDateTime.now().plus(CAPTCHA_LIFETIME));
+        return new int[]{first, second};
+    }
+
+    public static boolean consumeCaptcha(HttpServletRequest request, String answer) {
+        HttpSession session = request.getSession(false);
+        Object expected = session == null ? null : session.getAttribute(CAPTCHA_SUM);
+        Object expires = session == null ? null : session.getAttribute(CAPTCHA_EXPIRES);
+
+        if (session != null) {
+            session.removeAttribute(CAPTCHA_SUM);
+            session.removeAttribute(CAPTCHA_EXPIRES);
+        }
+
+        if (!(expected instanceof Integer) || !(expires instanceof LocalDateTime)
+                || answer == null || !answer.matches("\\d+")) {
+            return false;
+        }
+        try {
+            return !LocalDateTime.now().isAfter((LocalDateTime) expires)
+                    && Integer.parseInt(answer) == (Integer) expected;
+        } catch (NumberFormatException ex) {
+            return false;
+        }
+    }
+
     public static HttpSession checkSession(HttpServletRequest r) {
         return checkSession(r, false);
     }

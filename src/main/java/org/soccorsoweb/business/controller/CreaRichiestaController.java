@@ -42,6 +42,15 @@ public class CreaRichiestaController extends SoccorsoBaseController {
             return;
         }
 
+        if (!SecurityHelpers.consumeCaptcha(request, request.getParameter("captcha"))) {
+            try {
+                response.sendRedirect(request.getContextPath() + "/home?error=true");
+            } catch (IOException ex) {
+                throw new ServletException("Unable to redirect after invalid captcha", ex);
+            }
+            return;
+        }
+
         try {
             
             RichiestaDAO richiestaDAO = (RichiestaDAO) this.dl.getDAO(Richiesta.class);
@@ -54,8 +63,6 @@ public class CreaRichiestaController extends SoccorsoBaseController {
             payload.put("descrizione", SecurityHelpers.sanitizeTextInput(request.getParameter("descrizione")));
             payload.put("coordinate", SecurityHelpers.sanitizeTextInput(request.getParameter("coordinate")));
             payload.put("foto", SecurityHelpers.sanitizeFileLink(ServletHelpers.saveUploadedFile(request)));
-            payload.put("captcha", SecurityHelpers.sanitizeTextInput(request.getParameter("captcha")));
-
             String richiestaSignature = SecurityHelpers.buildRequestSignature(
                     String.valueOf(payload.getOrDefault("nome", "")),
                     String.valueOf(payload.getOrDefault("email", "")),

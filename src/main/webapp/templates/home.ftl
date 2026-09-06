@@ -56,9 +56,8 @@
       {
           "type":"text",
           "name":"captcha",
-          "label":"Solve: 3 + 1 =",
+          "label":"Captcha: risolvi: ${captchaFirst} + ${captchaSecond} =",
           "required":true,
-          "help":"Usato per ridurre lo spam (mockup)"
       }
       ]>
 

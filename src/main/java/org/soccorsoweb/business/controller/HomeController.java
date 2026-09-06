@@ -33,6 +33,9 @@ public class HomeController extends SoccorsoBaseController {
         model.put("isLoggedIn", isUserLoggedIn(request));
         model.put("isAdmin", SecurityHelpers.isAdmin(request));
         model.put("isOperator", SecurityHelpers.isOperator(request));
+        int[] captcha = SecurityHelpers.createCaptcha(request);
+        model.put("captchaFirst", captcha[0]);
+        model.put("captchaSecond", captcha[1]);
         model.put("successMessage", request.getParameter("success"));
         model.put("csrfToken", SecurityHelpers.createCsrfToken(request));
         model.put("success", request.getParameter("success") != null ? true : false);
