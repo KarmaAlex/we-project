@@ -28,7 +28,7 @@ public class CreaRichiestaController extends SoccorsoBaseController {
 
     @Override
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException {
+            throws ServletException, IOException {
         if (!"POST".equalsIgnoreCase(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
             return;
@@ -36,6 +36,10 @@ public class CreaRichiestaController extends SoccorsoBaseController {
 
         if (!SecurityHelpers.isValidCsrfToken(request, request.getParameter("csrf"))) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+        }
+        if (SecurityHelpers.isRichiestaRateLimited(request)) {
+            response.sendRedirect(request.getContextPath() + "/home?error=rate_limit");
             return;
         }
 

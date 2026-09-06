@@ -16,7 +16,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-
+import java.util.concurrent.ConcurrentHashMap;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import jakarta.servlet.http.HttpServletRequest;
@@ -427,5 +427,20 @@ public static boolean isValidCsrfToken(HttpServletRequest request, String submit
     );
     session.removeAttribute(CSRF_SESSION_ATTR);   // monouso: valido o no, va scartato dopo il controllo
     return valid;
+}
+
+private static final Map<String, LocalDateTime> ULTIMA_RICHIESTA_PER_IP = new ConcurrentHashMap<>();
+private static final long RICHIESTA_COOLDOWN_SECONDS = 60;
+public static boolean isRichiestaRateLimited(HttpServletRequest request) {
+    String ip = request.getRemoteHost();
+    LocalDateTime now = LocalDateTime.now();
+
+    LocalDateTime ultima = ULTIMA_RICHIESTA_PER_IP.get(ip);
+    if (ultima != null && Duration.between(ultima, now).getSeconds() < RICHIESTA_COOLDOWN_SECONDS) {
+        return true;
+    }
+
+    ULTIMA_RICHIESTA_PER_IP.put(ip, now);
+    return false;
 }
 }
