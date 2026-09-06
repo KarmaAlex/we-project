@@ -5,32 +5,6 @@
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
          version="6.0">
 
-    <servlet>
-        <servlet-name>Servlet1</servlet-name>
-        <servlet-class>org.soccorsoweb.test.AServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>Servlet1</servlet-name>
-        <url-pattern>/aservletpath</url-pattern>
-        <!-- we can add more than a path for a servlet, even with (ending) wildcards -->
-        <!-- possiamo aggiungere più di un path per una servlet, anche con wildcard finali -->
-        <url-pattern>/another/servletpath</url-pattern>
-        <url-pattern>/all/these/*</url-pattern>
-    </servlet-mapping>
-    
-    
-    <!-- diagnostic servlet for development only -->
-    <servlet>
-        <servlet-name>Diagnostic</servlet-name>
-        <servlet-class>org.soccorsoweb.test.DiagnosticServlet</servlet-class>
-    </servlet>
-    
-    <servlet-mapping>
-        <servlet-name>Diagnostic</servlet-name>
-        <url-pattern>/diagnostic</url-pattern>
-    </servlet-mapping>
-    
-    
     <!-- Admin Dashboard -->
     <servlet>
         <servlet-name>AdminDashboardController</servlet-name>
@@ -120,7 +94,7 @@
         <url-pattern>/api/detail/teams/*</url-pattern>
     </servlet-mapping>
 
-    <!-- Edit API Servlet -->    
+    <!-- Edit API Servlets --> 
     <servlet>
         <servlet-name>EditApi</servlet-name>
         <servlet-class>org.soccorsoweb.test.EditApiServlet</servlet-class>
@@ -186,7 +160,7 @@
         <url-pattern>/api/edit/materials/*</url-pattern>
     </servlet-mapping>
 
-    <!-- Delete -->
+    <!-- Delete servlets -->
     <servlet>
         <servlet-name>DeleteMaterialController</servlet-name>
         <servlet-class>org.soccorsoweb.business.controller.admin.delete.DeleteMaterialController</servlet-class>
@@ -208,6 +182,8 @@
         <url-pattern>/api/delete/mezzi/*</url-pattern>
         <url-pattern>/api/delete/vehicles/*</url-pattern>
     </servlet-mapping>
+
+    <!-- Add servlets -->
 
     <servlet>
         <servlet-name>AddApi</servlet-name>
@@ -301,6 +277,8 @@
         <url-pattern>/submit</url-pattern>
     </servlet-mapping>
 
+    <!-- Request verification -->
+
     <servlet>
         <servlet-name>VerifyRequestController</servlet-name>
         <servlet-class>org.soccorsoweb.business.controller.VerifyRequestController</servlet-class>
@@ -310,6 +288,8 @@
         <servlet-name>VerifyRequestController</servlet-name>
         <url-pattern>/verify-request</url-pattern>
     </servlet-mapping>
+
+    <!-- Home and resource loading -->
 
     <servlet>
         <servlet-name>HomeController</servlet-name>
@@ -321,6 +301,8 @@
         <url-pattern>/</url-pattern>
         <url-pattern>/home</url-pattern>
     </servlet-mapping>
+
+    <!-- Login and logout servlets -->
 
     <servlet>
         <servlet-name>LoginController</servlet-name>
@@ -344,6 +326,8 @@
         <url-pattern>/Logout</url-pattern>
     </servlet-mapping>
 
+    <!-- Operator signup servlet -->
+
     <servlet>
         <servlet-name>SignupController</servlet-name>
         <servlet-class>org.soccorsoweb.business.controller.SignupController</servlet-class>
@@ -353,6 +337,8 @@
         <servlet-name>SignupController</servlet-name>
         <url-pattern>/signup</url-pattern>
     </servlet-mapping>
+
+    <!-- Operator profile page -->
 
     <servlet>
         <servlet-name>ProfileController</servlet-name>
@@ -382,9 +368,5 @@
             30
         </session-timeout>
     </session-config>
-    <!-- here we can specify (if we need to!) the default path for the context -->
-    <!-- qui possiamo specificare (se necessario!) il path di default del contesto -->
-    <welcome-file-list>
-        <welcome-file>/home</welcome-file>
-    </welcome-file-list>
+
 </web-app>
