@@ -104,10 +104,20 @@
         <servlet-class>org.soccorsoweb.business.controller.admin.details.VehicleDetailsController</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>TeamDetailsController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.details.TeamDetailsController</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>VehicleDetailsController</servlet-name>
         <url-pattern>/api/detail/vehicles/*</url-pattern>
         <url-pattern>/api/detail/mezzi/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>TeamDetailsController</servlet-name>
+        <url-pattern>/api/detail/teams/*</url-pattern>
     </servlet-mapping>
 
     <!-- Edit API Servlet -->    
@@ -266,9 +276,19 @@
         <servlet-class>org.soccorsoweb.business.controller.admin.add.AddOperatorController</servlet-class>
     </servlet>
 
+    <servlet>
+        <servlet-name>AddTeamController</servlet-name>
+        <servlet-class>org.soccorsoweb.business.controller.admin.add.AddTeamController</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>AddOperatorController</servlet-name>
         <url-pattern>/api/add/operators/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AddTeamController</servlet-name>
+        <url-pattern>/api/add/teams/*</url-pattern>
     </servlet-mapping>
 
     <servlet>

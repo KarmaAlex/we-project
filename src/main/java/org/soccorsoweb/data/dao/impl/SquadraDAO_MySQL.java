@@ -19,6 +19,7 @@ import java.util.List;
 
 public class SquadraDAO_MySQL extends Dao implements SquadraDAO {
     private PreparedStatement sSquadraByID;
+    private PreparedStatement sSquadre;
     private PreparedStatement iSquadra;
     private PreparedStatement uSquadra;
     private PreparedStatement iAssegnaSquadra;
@@ -36,6 +37,7 @@ public class SquadraDAO_MySQL extends Dao implements SquadraDAO {
             super.init();
 
             sSquadraByID = connection.prepareStatement("SELECT * FROM Squadra WHERE ID=?");
+            sSquadre = connection.prepareStatement("SELECT * FROM Squadra ORDER BY ID");
             
             iSquadra = connection.prepareStatement(
                 "INSERT INTO Squadra (ID_CAPO) VALUES(?)",
@@ -74,6 +76,7 @@ public class SquadraDAO_MySQL extends Dao implements SquadraDAO {
     public void destroy() throws DataException {
         try {
             if (sSquadraByID != null) sSquadraByID.close();
+            if (sSquadre != null) sSquadre.close();
             if (iSquadra != null) iSquadra.close();
             if (uSquadra != null) uSquadra.close();
             if (iAssegnaSquadra != null) iAssegnaSquadra.close();
@@ -101,6 +104,21 @@ public class SquadraDAO_MySQL extends Dao implements SquadraDAO {
             throw new DataException("Unable to create squadra object from ResultSet", ex);
         }
         return s;
+    }
+
+    @Override
+    public List<Squadra> getSquadre() throws DataException {
+        List<Squadra> result = new ArrayList<>();
+        try (ResultSet rs = sSquadre.executeQuery()) {
+            while (rs.next()) {
+                Squadra squadra = createSquadra(rs);
+                getDataLayer().getCache().add(Squadra.class, squadra);
+                result.add(squadra);
+            }
+        } catch (SQLException ex) {
+            throw new DataException("Unable to load squadre", ex);
+        }
+        return result;
     }
 
     @Override

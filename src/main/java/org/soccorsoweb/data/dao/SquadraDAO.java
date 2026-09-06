@@ -12,6 +12,8 @@ public interface SquadraDAO extends GenericDao{
 
     Squadra getSquadra(int squadra_key) throws DataException;
 
+    List<Squadra> getSquadre() throws DataException;
+
     void storeSquadra(Squadra squadra) throws DataException;
 
     void aggiungiMembroASquadra(Squadra squadra, Utente utente) throws DataException;

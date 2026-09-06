@@ -21,6 +21,9 @@
     <#case "vehicles">
         <#include "admin/vehicles-table.ftl">
     <#break>
+    <#case "teams">
+        <#include "admin/teams-table.ftl">
+    <#break>
     <#case "materials">
         <#include "admin/materials-table.ftl">
     <#break>

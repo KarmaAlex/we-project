@@ -27,6 +27,7 @@ import org.soccorsoweb.data.dao.MezzoDAO;
 import org.soccorsoweb.data.dao.MissioneDAO;
 import org.soccorsoweb.data.dao.PatenteDAO;
 import org.soccorsoweb.data.dao.RichiestaDAO;
+import org.soccorsoweb.data.dao.SquadraDAO;
 import org.soccorsoweb.data.dao.UtenteDAO;
 import org.soccorsoweb.framework.security.SecurityHelpers;
 import org.soccorsoweb.model.Anagrafica;
@@ -37,6 +38,7 @@ import org.soccorsoweb.model.Mezzo;
 import org.soccorsoweb.model.Missione;
 import org.soccorsoweb.model.Patente;
 import org.soccorsoweb.model.Richiesta;
+import org.soccorsoweb.model.Squadra;
 import org.soccorsoweb.model.Utente;
 import org.soccorsoweb.model.enums.StatoRichiesta;
 
@@ -77,6 +79,9 @@ public class AdminDashboardController extends SoccorsoBaseController {
                     break;
                 case "vehicles":
                     loadVehiclesSection(model, req);
+                    break;
+                case "teams":
+                    loadTeamsSection(model, req);
                     break;
                 case "materials":
                     loadMaterialsSection(model, req);
@@ -202,6 +207,48 @@ public class AdminDashboardController extends SoccorsoBaseController {
                 .toList());
     }
 
+    private void loadTeamsSection(Map<String, Object> model, HttpServletRequest req)
+            throws DataException, ServletException {
+        SquadraDAO squadraDAO = (SquadraDAO) this.dl(req).getDAO(Squadra.class);
+        MissioneDAO missioneDAO = (MissioneDAO) this.dl(req).getDAO(Missione.class);
+        String capoFilter = blankToNull(req.getParameter("capo"));
+        String statusFilter = blankToNull(req.getParameter("stato"));
+        List<Map<String, Object>> rows = new ArrayList<>();
+
+        for (Squadra squadra : squadraDAO.getSquadre()) {
+            List<Missione> missions = missioneDAO.getMissioniBySquadra(squadra);
+            Missione currentMission = missions.stream()
+                    .filter(mission -> !mission.isCompletata())
+                    .findFirst()
+                    .orElse(null);
+            String status = currentMission == null ? "DISPONIBILE" : "OCCUPATA";
+            Utente capo = squadra.getCapoSquadra();
+            String capoName = capo == null ? "-" : operatorName(capo);
+
+            Map<String, Object> row = new HashMap<>();
+            row.put("id", squadra.getKey());
+            row.put("capo", capoName);
+            row.put("membri", squadra.getOperatori().size());
+            row.put("missione_corrente", currentMission == null ? "-" : currentMission.getKey());
+            row.put("stato", status);
+
+            if (capoFilter != null && !capoName.toLowerCase().contains(capoFilter.toLowerCase())) {
+                continue;
+            }
+            if (statusFilter != null && !statusFilter.equals(status)) {
+                continue;
+            }
+            rows.add(row);
+        }
+        model.put("squadre", rows);
+    }
+
+    private String operatorName(Utente operator) {
+        Anagrafica anagrafica = operator.getAnagrafica();
+        return anagrafica == null ? operator.getNomeUtente()
+                : anagrafica.getNome() + " " + anagrafica.getCognome();
+    }
+
     private void loadMaterialsSection(Map<String, Object> model, HttpServletRequest req)
             throws DataException, ServletException {
         MaterialeDAO dao = (MaterialeDAO) this.dl(req).getDAO(Materiale.class);
@@ -223,6 +270,7 @@ public class AdminDashboardController extends SoccorsoBaseController {
             case "missions" -> "missioni";
             case "operators" -> "operatori";
             case "vehicles" -> "mezzi";
+            case "teams" -> "squadre";
             case "materials" -> "materiali";
             case "abilities" -> "abilita";
             case "licenses" -> "patenti";
@@ -275,6 +323,7 @@ public class AdminDashboardController extends SoccorsoBaseController {
                 "missions", Set.of("id", "completata", "successo", "data_inizio"),
                 "operators", Set.of("id", "nome", "stato", "monte_ore"),
                 "vehicles", Set.of("id", "nome", "targa", "stato"),
+                "teams", Set.of("id", "capo", "membri", "stato"),
                 "materials", Set.of("id", "nome", "stato"),
                 "abilities", Set.of("id", "nome"),
                 "licenses", Set.of("id", "numero", "tipo"));

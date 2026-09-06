@@ -16,6 +16,7 @@
             <li><a href="${ctx}/admin-dashboard?section=missions" class="menu-link ${(section == 'missions')?string('active', '')}" data-section="missions">Missioni</a></li>
             <li><a href="${ctx}/admin-dashboard?section=operators" class="menu-link ${(section == 'operators')?string('active', '')}" data-section="operators">Operatori</a></li>
             <li><a href="${ctx}/admin-dashboard?section=vehicles" class="menu-link ${(section == 'vehicles')?string('active', '')}" data-section="vehicles">Mezzi</a></li>
+            <li><a href="${ctx}/admin-dashboard?section=teams" class="menu-link ${(section == 'teams')?string('active', '')}" data-section="teams">Squadre</a></li>
             <li><a href="${ctx}/admin-dashboard?section=materials" class="menu-link ${(section == 'materials')?string('active', '')}" data-section="materials">Materiali</a></li>
             <li><a href="${ctx}/admin-dashboard?section=abilities" class="menu-link ${(section == 'abilities')?string('active', '')}" data-section="abilities">Abilità</a></li>
             <li><a href="${ctx}/admin-dashboard?section=licenses" class="menu-link ${(section == 'licenses')?string('active', '')}" data-section="licenses">Patenti</a></li>
